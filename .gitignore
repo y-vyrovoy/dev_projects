@@ -1,8 +1,7 @@
-# Java NetBeans folders with the built files
-build/
-dist/
-
-# Visual C++ built file folders
-Debug/
-Release/
+#ignoring giant VS folders and databases
 .vs/
+Backup*/
+Debug/
+ipch/
+*.sdf
+*.db
