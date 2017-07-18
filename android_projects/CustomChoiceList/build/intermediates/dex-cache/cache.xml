@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\0bca192c75e3b89cbae89899a00c91e4d95ee68a\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="f7ac4b327fdb9e2ee386f5adc46164927658de4b">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_af3f96bd4bcd728e69faee7d45557b15833d0d05\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\093d76456f34c119603047434b8012623a9e2c2c\output\jars\libs\internal_impl-25.0.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="f83b00041ecfba705603fec40363416c7de69719">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-25.0.1_8b015094b3e2bf6cefa44893bc87fc2a8368ee56\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\59a40425ed48195877f9c05157771d7da95a7ebd\output\jars\libs\internal_impl-25.0.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="c0bd6ffb002a85b5e7cad29f8558d1cc59539679">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-25.0.1_cc4a75f488c48aa7b42b25b527337d8c0b18ab52\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\25140f72e853eed5cca3f500103ab5227f75db04\output\jars\libs\internal_impl-25.0.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="e5343c9d19cb19ff55f6b268c7f3fe8c9d224f6f">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-25.0.1_3e86c9d79b8b68ede32f447399ecfe3b3d872d6c\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\71a529e2123f9f9e9fae01302d986b72881f7875\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="00d4c8eebf2b681073c72a26bd0849549e51c7cb">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_83133b45c8e84f905dd165853c817b75f7d973cc\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\25140f72e853eed5cca3f500103ab5227f75db04\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="bc7e99e8d0fc279a05aa91378530f467ad62d443">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_f126f5dafffc0630bb6b319d7831207664cbe5f4\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\cebf413f7a96b159cd55e00286b93780495303dc\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="772bed2d992b67b9d0327f766cc95cd63031dcd3">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_5a4769079cb55fdefb8a467d2a635bedf55986af\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="a80a02ac703a8b3fbcd45ad96701d0509823c7a5">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run-bootstrap_c74052a48df7e65620b3dcd94f25489d373b03b9\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\9e558f56e518df78401a6df03013a58c385a7056\output\jars\libs\internal_impl-25.0.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="3af8cc51ef7088e56f132780da8c0bd858b6a6ad">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-25.0.1_7874be90e36cc948f9944f8facd446533d21c8a5\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\0c072a13b4a904795284b9923352079a281f6eb0\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="4700f436ede140fb804204f806c9cc3f08e386f4">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_66e18903e4f5df4ec8904b4cd2dbd0fdeb3671d4\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\AppData\Local\Android\Sdk\extras\android\m2repository\com\android\support\support-annotations\25.0.1\support-annotations-25.0.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="a09194311f8f89c3e6db09d79f50897a889d615e">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\support-annotations-25.0.1_b80c22636e3b70cc5490ed7377c7a8184f25e19b\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\d0103a02f8557ed643808bf3c76d8811ebb05804\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="1108575c7dc7b7f5b378b3290ac90de81a9b8830">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_c33797a1eb7471fbf9a709d31a0d1672506eaadd\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\57e0a5e90f5109de267952c76e091ab68c7fa525\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="d7c42c80f6509b9ea4db28ca7859ffae08ec5741">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_c4d4ecc7ad3f5132802b90ae6432fe29455705a3\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\093d76456f34c119603047434b8012623a9e2c2c\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="6a1479afe9f1b3645e1cd9a87318976893472818">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_741fafade01a43934b9817075acae50eb327e670\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="3be78ebc2706b2e1fe2f12d5726887a92d6c183b">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run_9c9e77a795975d624fb7ebe39934d7c29e282259\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\9e558f56e518df78401a6df03013a58c385a7056\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="51eba4a4dd73044f90a9d58dd7ca34adbebfcf4e">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_5fae58fc78d13953fe794ae83fb48ad41e46d176\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\71a529e2123f9f9e9fae01302d986b72881f7875\output\jars\libs\internal_impl-25.0.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="c5b7145fb34779b6639147b8f2f8dd77c0db771b">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-25.0.1_bcb1f19af517a69d344c6b63224b93fa03f12284\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\59a40425ed48195877f9c05157771d7da95a7ebd\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="26c6eef571592c91f29e56fda0bac73321de0c92">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_850213ddb57315a5b9429738f61502c082bd146f\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Yura Vyrovoy\.android\build-cache\08ba5be4bd84eb54392f680c59a056cae23b1bb7\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="b24e1c688744078e1fa833ffadf696794761bbe5">
+        <dex dex="D:\dev_projects\Android_projects\CustomChoiceList\Application\build\intermediates\transforms\dex\debug\folders\1000\10\classes_7df7403451be526418b52bd4a3113821f706f1ce\classes.dex" />
+    </item>
+
+</items>

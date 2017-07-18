@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FrApp</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="blank_fragment_header">HEADER fragment text</string>
+    <string name="blank_fragment_text">TEXT fragment text</string>
+</resources>
