@@ -10,18 +10,18 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import static loadpaalim.CDownloadProcessor.SaveXMLDBFromLinksList;
+import static loadpaalim.CDownloadProcessor.SaveXMLDBFromWordsList;
 
 /**
  * FXML Controller class
@@ -30,24 +30,32 @@ import javafx.stage.FileChooser.ExtensionFilter;
  */
 public class InterfaceController implements Initializable {
 
+
+    @FXML
+    private Button btnDownloadLinks;
     
     @FXML
-    private TableView<CPaalData> tblVerbs;
-
-    @FXML
-    private TableColumn<CPaalData, String> colRus;
-
-    @FXML
-    private TableColumn<CPaalData, String> colHebrew;
-
-    @FXML
-    private Button btnDownload;
+    private Button btnDownloadWordsList;
     
     @FXML
     private Button btnSavePresent;
+    
+    @FXML
+    private ListView<String> lstErrorsView;
+  
+    @FXML
+    private ListView<String> lstStatusView;
+    
+    @FXML
+    private Button btnSetDBFile;
+    
+    @FXML
+    private TextField edtDBFile;
+    
 
 
-    private ObservableList<CPaalData> lstData;
+    private ObservableList<String> lstErrorsData;
+    private ObservableList<String> lstStatusData;
 
     /**
      * Initializes the controller class.
@@ -57,20 +65,29 @@ public class InterfaceController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         
-        lstData = FXCollections.observableArrayList();
+        assert btnDownloadLinks != null : "fx:id=\"btnDownloadLinks\" was not injected: check your FXML file 'Interface.fxml'.";
+        assert lstErrorsView != null : "fx:id=\"lstErrorsView\" was not injected: check your FXML file 'Interface.fxml'.";
+        assert lstStatusView != null : "fx:id=\"lstStatusView\" was not injected: check your FXML file 'Interface.fxml'.";
+        assert btnSavePresent != null : "fx:id=\"btnSavePresent\" was not injected: check your FXML file 'Interface.fxml'.";
+        assert btnSetDBFile != null : "fx:id=\"btnSetDBFile\" was not injected: check your FXML file 'Interface.fxml'.";
+        assert edtDBFile != null : "fx:id=\"edtDBFile\" was not injected: check your FXML file 'Interface.fxml'.";
         
-        tblVerbs.setItems(lstData);
+        lstErrorsData = FXCollections.observableArrayList();
+        lstErrorsView.setItems(lstErrorsData);
+
+        lstStatusData = FXCollections.observableArrayList();
+        lstStatusView.setItems(lstStatusData);
         
-        btnDownload.setOnAction(event -> handleBtnDownload());
-        btnSavePresent.setOnAction(event -> voidhandleBtnSavePresent());
+        btnDownloadLinks.setOnAction(event -> handleBtnDownloadLinkList());
+        btnDownloadWordsList.setOnAction(event -> handleBtnDownloadWordsList());
+        btnSavePresent.setOnAction(event -> handleBtnSavePresent());
+        btnSetDBFile.setOnAction(event -> handleSetDBFile());
     }    
     
     
-    private void handleBtnDownload(){
+    private void handleBtnDownloadLinkList(){
         
-        String sSourceFile = ""; //C:\\Users\\vyrovoy.ATOFFICE\\Desktop\\Рідна мова\\grabbing verbs\\Hebrew verbs.xml";
-        
-        String sCurrentFolder = null;
+        String sSourceFile = ""; 
         
         FileChooser fchDialog = new FileChooser();
         fchDialog.setTitle("Select verbs list");
@@ -78,62 +95,143 @@ public class InterfaceController implements Initializable {
                new ExtensionFilter("XML files", "*.xml") 
         );
         
-        
-        File selectedFile = fchDialog.showOpenDialog(btnDownload.getScene().getWindow());
+        File selectedFile = fchDialog.showOpenDialog(btnDownloadLinks.getScene().getWindow());
         
         if (selectedFile != null )
         {
             try{
                 sSourceFile  = selectedFile.getCanonicalPath();
-                Path pathCurrent = Paths.get(selectedFile.getPath());
-                sCurrentFolder = pathCurrent.getParent().toString();
                 
             }catch(IOException ex){
                 System.err.println(ex.getLocalizedMessage());
             }
         }
         
-        List<Map<String, String>> lstPaals = CDownloadProcessor.ProcessPaalims(sSourceFile);
-        
-        String sDestinationFile = sCurrentFolder + "\\Downloaded.xml";
+        String sDestinationFile = SaveXMLDBFromLinksList(sSourceFile, new iLogger() {
+            @Override
+            public void AddErrorMessage(String sMessage) {
+                lstErrorsData.add(sMessage);
+            }
 
-        CDownloadProcessor.SaveXMLVerbs(lstPaals, new File(sDestinationFile));
+            @Override
+            public void SetCurrentStatus(String sMessage) {
+                lstStatusData.add(sMessage);
+            }
+        });
+        edtDBFile.setText(sDestinationFile);
+    }
+
+    private void handleBtnDownloadWordsList(){
+        String sSourceFile = ""; 
         
+        FileChooser fchDialog = new FileChooser();
+        fchDialog.setTitle("Select verbs list");
+        fchDialog.getExtensionFilters().addAll(
+               new ExtensionFilter("XML files", "*.xml") 
+        );
+        
+        File selectedFile = fchDialog.showOpenDialog(btnDownloadLinks.getScene().getWindow());
+        
+        if (selectedFile != null )
+        {
+            try{
+                sSourceFile  = selectedFile.getCanonicalPath();
+                
+            }catch(IOException ex){
+                System.err.println(ex.getLocalizedMessage());
+            }
+        }
+        
+        String sDestinationFile = SaveXMLDBFromWordsList(sSourceFile, new iLogger() {
+            @Override
+            public void AddErrorMessage(String sMessage) {
+                lstErrorsData.add(sMessage);
+            }
+
+            @Override
+            public void SetCurrentStatus(String sMessage) {
+                lstStatusData.add(sMessage);
+            }
+        });
+        edtDBFile.setText(sDestinationFile);        
     }
     
-    private void voidhandleBtnSavePresent(){
+    private void handleBtnSavePresent(){
         
-        String sDestinationFile = "";
+//        String sDestinationFile = "";
+//        String sCurrentFolder = null;
+//        
+//        FileChooser fchDialog = new FileChooser();
+//        fchDialog.setTitle("Select downloaded file");
+//        fchDialog.getExtensionFilters().addAll(
+//               new ExtensionFilter("XML files", "*.xml") 
+//        );
+//        
+//        
+//        File selectedFile = fchDialog.showOpenDialog(btnDownloadLinks.getScene().getWindow());
+//        
+//
+//
+//        if (selectedFile != null )
+//        {
+//            try{
+//                sDestinationFile  = selectedFile.getCanonicalPath();
+//                Path pathCurrent = Paths.get(selectedFile.getPath());
+//                sCurrentFolder = pathCurrent.getParent().toString();
+//                
+//            }catch(IOException ex){
+//                System.err.println(ex.getLocalizedMessage());
+//            }
+//        }
+        
+        String sDestinationFile = edtDBFile.getText();
+        if(sDestinationFile.isEmpty()){
+            return;
+        }
+        
+        
+        String sCurrentFolder = Paths.get(sDestinationFile).getParent().toString();
+        
+        String sPresentCardsFile = sCurrentFolder + "\\Verbs present cards.txt";
+        
+        CDownloadProcessor.SaveVerbsCardsPresent(sDestinationFile, sPresentCardsFile, new iLogger() {
+            @Override
+            public void AddErrorMessage(String sMessage) {
+                lstErrorsData.add(sMessage);
+            }
+
+            @Override
+            public void SetCurrentStatus(String sMessage) {
+                lstStatusData.add(sMessage);
+            }
+        });
+        
+    }
+
+    private void handleSetDBFile(){
+        
+        String sDestinationFile = edtDBFile.getText();
         String sCurrentFolder = null;
         
         FileChooser fchDialog = new FileChooser();
         fchDialog.setTitle("Select downloaded file");
+        fchDialog.setInitialFileName(sDestinationFile);
+        
         fchDialog.getExtensionFilters().addAll(
                new ExtensionFilter("XML files", "*.xml") 
         );
         
         
-        File selectedFile = fchDialog.showOpenDialog(btnDownload.getScene().getWindow());
+        File selectedFile = fchDialog.showOpenDialog(btnDownloadLinks.getScene().getWindow());
         
         if (selectedFile != null )
         {
-            try{
-                sDestinationFile  = selectedFile.getCanonicalPath();
-                Path pathCurrent = Paths.get(selectedFile.getPath());
-                sCurrentFolder = pathCurrent.getParent().toString();
-                
-            }catch(IOException ex){
-                System.err.println(ex.getLocalizedMessage());
-            }
+            edtDBFile.setText(selectedFile.toString());
         }
         
-        String sPresentCardsFile = sCurrentFolder + "\\Verbs present cards.txt";
-        
-        CDownloadProcessor.SaveVerbsCardsPresent(sDestinationFile, sPresentCardsFile);
-        
     }
-    
-}
+            
 
+}
 
 
