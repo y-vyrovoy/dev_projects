@@ -30,16 +30,10 @@ public class ArticleFragment extends Fragment {
 
     }
 
-
-
     @Override
     public void onResume (){
         super.onResume();
         setText(mIndex);
-    }
-
-    public void setIndex(int index){
-        mIndex = index;
     }
 
     public void setText(int index){

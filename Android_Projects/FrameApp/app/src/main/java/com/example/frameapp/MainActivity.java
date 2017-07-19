@@ -1,7 +1,11 @@
 package com.example.frameapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
         }
     }
 
+    private boolean mDoublePane;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +44,9 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
         setContentView(R.layout.activity_main);
 
         InitLists();
+
+        View v = (View)findViewById(R.id.fragment_articles);
+        mDoublePane = (v != null) && (v.getVisibility() == View.VISIBLE);
     }
 
     @Override
@@ -50,13 +59,15 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
         ArticleFragment fragmentArticle = (ArticleFragment)getFragmentManager().
                                                             findFragmentById(R.id.fragment_articles);
 
-        if( fragmentArticle != null ){
-            if(fragmentArticle.isVisible() == true) {
-                fragmentArticle.setText(index);
-            }
-            else{
-                fragmentArticle.setIndex(index);
-            }
+        if( (fragmentArticle != null) && (mDoublePane == true) ){
+            fragmentArticle.setText(index);
+        }
+        else{
+
+            Intent intent = new Intent();
+            intent.setClass(this, ArticleActivity.class);
+            intent.putExtra(ArticleActivity.ARG_INDEX, index);
+            startActivity(intent);
         }
 
 

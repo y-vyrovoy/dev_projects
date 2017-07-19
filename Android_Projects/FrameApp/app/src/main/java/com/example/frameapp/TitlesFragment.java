@@ -31,13 +31,6 @@ public class TitlesFragment extends ListFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_title, container, false);
-    }
-
-    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
@@ -54,12 +47,8 @@ public class TitlesFragment extends ListFragment {
         }
 
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-    }
 
-    @Override
-    public void onResume (){
-        super.onResume();
-        showArticle(mCurrentIndex);
+        mCallback.OnClickAction(mCurrentIndex);
     }
 
     @Override
@@ -71,43 +60,14 @@ public class TitlesFragment extends ListFragment {
     @Override
     public void onAttach(Context context){
         super.onAttach(context);
-
         mCallback = (IOnListItemClickListener)context;
     }
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        showArticle(position);
-    }
-
-    public void showArticle(int index){
-        mCurrentIndex = index;
+        mCurrentIndex = position;
         mCallback.OnClickAction(mCurrentIndex);
-
-
-
-/*
-        ArticleFragment fragmentArticle = (ArticleFragment)
-                                    getFragmentManager().findFragmentById(R.id.fragment_articles);
-
-
-
-        boolean bDualPane = false;
-        if ( (fragmentArticle != null) && (fragmentArticle.isVisible() == true) ){
-            bDualPane = true;
-        }
-
-
-        if(bDualPane == true){
-            mCallback.OnClickAction(mCurrentIndex);
-        }
-        else{
-            Intent intent = new Intent();
-            intent.setClass(getActivity(), ArticleActivity.class);
-            intent.putExtra(ArticleFragment.ARG_INDEX, mCurrentIndex);
-            startActivity(intent);
-        }
-*/
     }
+
 
 }
