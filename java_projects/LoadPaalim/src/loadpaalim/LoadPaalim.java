@@ -5,6 +5,7 @@
  */
 package loadpaalim;
 
+import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -30,7 +31,7 @@ public class LoadPaalim extends Application {
 
             primaryStage.show();
             
-        }catch(Exception ex)
+        }catch(IOException ex)
         {
             System.out.println(ex.getMessage());
         }

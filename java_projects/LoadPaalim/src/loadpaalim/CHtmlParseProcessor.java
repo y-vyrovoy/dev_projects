@@ -5,7 +5,6 @@
  */
 package loadpaalim;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,8 +21,10 @@ import org.jsoup.select.Elements;
  * @author vyrovoy
  */
 public class CHtmlParseProcessor {
- 
-    public static Map<String, String> ParseWebPage(String sURL){
+
+    public static final String SITE_ADDRESS = "http://www.pealim.com";
+    
+    public static Map<String, String> ParseWebPage(String sURL, iLogger logger){
         
         try{
             
@@ -37,6 +38,7 @@ public class CHtmlParseProcessor {
             // looking for <div class="footer-wrap"> section
             Element eleFooterWrap = doc.getElementsByClass("footer-wrap").first();
             if(eleFooterWrap == null){
+                logger.AddErrorMessage("Cannot load: " + sURL);
                 return null;
             }
             
@@ -51,6 +53,7 @@ public class CHtmlParseProcessor {
                 }
             }
             if(eleContainer == null){
+                logger.AddErrorMessage("Cannot load: " + sURL);
                 return null;
             }
             
@@ -112,6 +115,7 @@ public class CHtmlParseProcessor {
             }
             
             if(eleHScrollWraper == null){
+                logger.AddErrorMessage("Loaded but not full: " + sURL);
                 return mapResult;
             }
 
@@ -154,14 +158,50 @@ public class CHtmlParseProcessor {
             mapResult.put("imperative_fp", eleHScrollWraper.getElementsByAttributeValue("id","IMP-2fp").first().getElementsByClass("menukad").text());            
             
 
-            
             System.out.println("Page [" + sURL + "] parsed. " + pdReturn.sTranslation + " : " + pdReturn.sInfinitive);
+            logger.SetCurrentStatus("Page [" + sURL + "] parsed. " + pdReturn.sTranslation + " : " + pdReturn.sInfinitive);
             return mapResult;            
             
-        }catch(IOException ex){
+        }catch(Exception ex){
             System.out.println(ex.getLocalizedMessage());
+            logger.AddErrorMessage("Cannot load: " + sURL);
             return null;
         }
     }
+    
+    public static String SearchForWordAtSite(String sWord, iLogger logger){
         
+        String sQuery = "http://www.pealim.com/search/?q=" + sWord;
+        
+        try{
+            Document doc = Jsoup.connect(sQuery).get();
+            
+            // looking for <div class="results-by-verb"> section
+            Element eleResultByVerb = doc.getElementsByClass("results-by-verb").first();
+            if(eleResultByVerb == null){
+                logger.AddErrorMessage("Cannot load: " + sWord + ". No  <div class=\"results-by-verb\">");
+                return null;
+            }
+
+            Element eleButton = eleResultByVerb.getElementsByAttributeValue("class", "btn btn-primary").first();
+
+            if(eleButton == null){
+                logger.AddErrorMessage("Cannot load: " + sWord + ". No  <a class=\"btn btn-primary\">");
+                return null;
+            }
+            
+            String sHref = SITE_ADDRESS + eleButton.attr("href");
+            
+            logger.SetCurrentStatus(sWord + " -> " + sHref);
+            System.out.println(sWord + " -> " + sHref);
+            
+            return sHref;
+            
+        }catch(Exception ex){
+            System.out.println(ex.getLocalizedMessage());
+            logger.AddErrorMessage("Cannot load: " + sWord);
+            return null;
+        }
+        
+    }
 }

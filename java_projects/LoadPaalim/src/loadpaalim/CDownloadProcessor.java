@@ -11,6 +11,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import static loadpaalim.CHtmlParseProcessor.SearchForWordAtSite;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -46,12 +49,18 @@ public class CDownloadProcessor {
     public static final String TAG_ID = "id";
     public static final String TAG_VERB = "verb";
     public static final String TAG_URL = "link";
+    public static final String TAG_WORD = "word";
     
     public static final String TAG_BODY = "body";
     public static final String TAG_P = "p";
     public static final String TAG_DIV = "div";
     
-    public static List<Map<String, String>> ProcessPaalims(String sSourceFile){
+    public static String SaveXMLDBFromLinksList(String sSourceFile, iLogger logger){
+        
+        Path p = Paths.get(sSourceFile);
+        Path sCurrentFolder = p.getParent();
+        String sDestinationFile = sCurrentFolder + "\\Downloaded.xml";
+
         
         File fileSelected = new File(sSourceFile);
         if(fileSelected.canRead() == false){
@@ -59,19 +68,56 @@ public class CDownloadProcessor {
             return null;
         }
         
-        List<String> lstURLs = ReadXMLVerbsList(fileSelected);
+        List<String> lstURLs = ReadXMLVerbsList(fileSelected, logger);      
+        
+        List<Map<String, String>> lstPaals = 
+                CDownloadProcessor.ProcessPaalimsFromList(lstURLs, logger);        
+        
+        CDownloadProcessor.SaveXMLVerbs(lstPaals, new File(sDestinationFile), logger);  
+        
+        return sDestinationFile;
+    }
+    
+    public static String SaveXMLDBFromWordsList(String sSourceFile, iLogger logger){
+        
+        Path p = Paths.get(sSourceFile);
+        Path sCurrentFolder = p.getParent();
+        String sDestinationFile = sCurrentFolder + "\\Downloaded.xml";
+        
+        File fileSelected = new File(sSourceFile);
+        if(fileSelected.canRead() == false){
+            System.out.println("Can't read file " + fileSelected.getAbsolutePath());
+            return null;
+        }
+        
+        List<String> lstURLs = SearchXMLVerbsList(fileSelected, logger); 
+        
+        List<Map<String, String>> lstPaals = 
+                CDownloadProcessor.ProcessPaalimsFromList(lstURLs, logger);        
+        
+        CDownloadProcessor.SaveXMLVerbs(lstPaals, new File(sDestinationFile), logger);  
+        
+        return sDestinationFile;
+    }
+    
+    public static List<Map<String, String>> ProcessPaalimsFromList(List<String> lstURLs, iLogger logger){
+
         
         List<Map<String, String>> lstResults = new ArrayList<>();
         
-        lstURLs.stream().forEach((u) -> lstResults.add(CHtmlParseProcessor.ParseWebPage(u)));
+        lstURLs.stream().forEach((u) -> {
+                                        Map<String, String> result = CHtmlParseProcessor.ParseWebPage(u, logger);
+                                        if( result != null){
+                                            lstResults.add(result);
+                                        }
+                                    });
         
         return lstResults;
     }
+
+    
+    public static List<String> ReadXMLVerbsList(File fileSelected, iLogger logger){
        
-    
-    
-    public static List<String> ReadXMLVerbsList(File fileSelected){
-        
         // Make an  instance of the DocumentBuilderFactory
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
@@ -102,13 +148,11 @@ public class CDownloadProcessor {
                 lstURLs.add(sAnswer);
             }            
             
+            
             return lstURLs;
 
-        } catch (ParserConfigurationException pce) {
+        } catch (ParserConfigurationException | SAXException pce) {
             System.out.println(pce.getMessage());
-            return null;
-        } catch (SAXException se) {
-            System.out.println(se.getMessage());
             return null;
         } catch (IOException ioe) {
             System.err.println(ioe.getMessage());
@@ -117,7 +161,52 @@ public class CDownloadProcessor {
         
     }
 
-    public static boolean SaveXMLVerbs(List<Map<String, String>> lstVerbs, File fileDestination){
+    public static List<String> SearchXMLVerbsList(File fileSelected, iLogger logger){
+        
+        // Make an  instance of the DocumentBuilderFactory
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        try {
+            
+            List<String> lstURLs = new ArrayList<>();
+            
+            // use the factory to take an instance of the document builder
+            DocumentBuilder builder = factory.newDocumentBuilder();
+        
+            // parse using the builder to get the DOM mapping of the    
+            // XML file
+            Document document = builder.parse(fileSelected);
+
+            // is it proper document
+            NodeList nlRoot = document.getElementsByTagName(TAG_DATA_SET);
+            if( (nlRoot == null) || (nlRoot.getLength() < 1)){
+                return null;
+            }
+            
+            NodeList nlDataUnits = ((Element)nlRoot.item(0)).getElementsByTagName(TAG_DATA_UNIT);
+            if( (nlDataUnits == null) || (nlDataUnits.getLength() < 1)){
+                return null;
+            }
+
+            for(int iNode = 0; iNode < nlDataUnits.getLength(); iNode++){
+                
+                String sWord = ((Element)nlDataUnits.item(iNode).getChildNodes()).getElementsByTagName(TAG_WORD).item(0).getTextContent();
+                String sURL = SearchForWordAtSite(sWord, logger);
+                lstURLs.add(sURL);
+            }            
+            
+            logger.SetCurrentStatus("Words search finished");
+            return lstURLs;
+
+        } catch (ParserConfigurationException | SAXException pce) {
+            System.out.println(pce.getMessage());
+            return null;
+        } catch (IOException ioe) {
+            System.err.println(ioe.getMessage());
+            return null;
+        }   
+    }
+    
+    public static boolean SaveXMLVerbs(List<Map<String, String>> lstVerbs, File fileDestination, iLogger logger){
         
         // instance of a DocumentBuilderFactory
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -182,7 +271,7 @@ public class CDownloadProcessor {
         return true;
     }
     
-    public static boolean SaveVerbsCardsPresent(String sSourceFile, String sDestinationFile){
+    public static boolean SaveVerbsCardsPresent(String sSourceFile, String sDestinationFile, iLogger logger){
         
         BufferedWriter bwDestination = null;
                 
@@ -215,9 +304,11 @@ public class CDownloadProcessor {
             int iNode;
             for(iNode = 0; iNode < nlDataUnits.getLength(); iNode++){
 
-                String sCard = ((Element)nlDataUnits.item(iNode).getChildNodes()).getElementsByTagName("verb_translation").item(0).getTextContent();
-                sCard += ";";
-
+                String sTranlation = ((Element)nlDataUnits.item(iNode).getChildNodes()).getElementsByTagName("verb_translation").item(0).getTextContent();
+                sTranlation = sTranlation.replaceAll("; ", "<br>");
+                
+                String sCard = sTranlation + ";";
+                
                 sCard += "<span class=\"annotation\">(inf)</span> " + ((Element)nlDataUnits.item(iNode).getChildNodes()).getElementsByTagName("verb_infinitive").item(0).getTextContent() + "<br>";
                 sCard += "<hr>";
                 sCard += "<span class=\"annotation\">(m.s)</span> " + ((Element)nlDataUnits.item(iNode).getChildNodes()).getElementsByTagName("present_ms").item(0).getTextContent() + "<br>";
@@ -232,6 +323,8 @@ public class CDownloadProcessor {
                 bwDestination.write(sCard + "\r\n");
                 bwDestination.flush();
                 
+                System.out.println("Flushed: " + Integer.toString(iNode) +". "+ sTranlation);
+                
             }
             
             bwDestination.close();
@@ -240,15 +333,13 @@ public class CDownloadProcessor {
             
             return true;
 
-        } catch (ParserConfigurationException pce) {
+        } catch (ParserConfigurationException | SAXException pce) {
             System.out.println(pce.getMessage());
             //oswDestination.close();
             return false;
-        } catch (SAXException se) {
-            System.out.println(se.getMessage());
-            //oswDestination.close();
-            return false;
-        } catch (IOException ioe) {
+        }
+        //oswDestination.close();
+         catch (IOException ioe) {
             System.err.println(ioe.getMessage());
             //oswDestination.close();
             return false;
