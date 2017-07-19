@@ -2,12 +2,10 @@ package com.example.frameapp;
 
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 
@@ -15,6 +13,9 @@ import android.widget.TextView;
  * A simple {@link Fragment} subclass.
  */
 public class ArticleFragment extends Fragment {
+
+    public static String ARG_INDEX = "com.example.frameapp.ArticleFragment.ARG_INDEX";
+    private int mIndex;
 
 
     public ArticleFragment() {
@@ -25,20 +26,24 @@ public class ArticleFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_article, container, false);
 
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
-        setText(0);
+
+    @Override
+    public void onResume (){
+        super.onResume();
+        setText(mIndex);
+    }
+
+    public void setIndex(int index){
+        mIndex = index;
     }
 
     public void setText(int index){
-
+        mIndex = index;
         TextView textView = (TextView)getActivity().findViewById(R.id.text_article);
         textView.setText(MainActivity.mListTexts.get(index));
     }

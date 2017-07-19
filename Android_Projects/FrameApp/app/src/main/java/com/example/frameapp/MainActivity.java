@@ -1,9 +1,7 @@
 package com.example.frameapp;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-
+import android.support.v7.app.AppCompatActivity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,11 +47,18 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
 
     private void showData(int index){
 
-        ArticleFragment fragmentArticle = (ArticleFragment)getSupportFragmentManager().
-                                            findFragmentById(R.id.fragment_articles);
+        ArticleFragment fragmentArticle = (ArticleFragment)getFragmentManager().
+                                                            findFragmentById(R.id.fragment_articles);
 
-        if(fragmentArticle != null){
-            fragmentArticle.setText(index);
+        if( fragmentArticle != null ){
+            if(fragmentArticle.isVisible() == true) {
+                fragmentArticle.setText(index);
+            }
+            else{
+                fragmentArticle.setIndex(index);
+            }
         }
+
+
     }
 }
