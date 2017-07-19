@@ -14,9 +14,7 @@ import android.widget.TextView;
  */
 public class ArticleFragment extends Fragment {
 
-    public static String ARG_INDEX = "com.example.frameapp.ArticleFragment.ARG_INDEX";
     private int mIndex;
-
 
     public ArticleFragment() {
         // Required empty public constructor
@@ -30,6 +28,7 @@ public class ArticleFragment extends Fragment {
 
     }
 
+
     @Override
     public void onResume (){
         super.onResume();
@@ -38,7 +37,12 @@ public class ArticleFragment extends Fragment {
 
     public void setText(int index){
         mIndex = index;
-        TextView textView = (TextView)getActivity().findViewById(R.id.text_article);
-        textView.setText(MainActivity.mListTexts.get(index));
+        TextView textView = getActivity().findViewById(R.id.text_article);
+        if(index >= 0) {
+            textView.setText(MainActivity.mListTexts.get(index));
+        }
+        else{
+            textView.setText("--- NO TEXT ---");
+        }
     }
 }

@@ -3,9 +3,7 @@ package com.example.frameapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +12,7 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
     public static List<String> mListHeaders;
     public static List<String> mListTexts;
 
-    int nLastChoice;
+
 
     private void InitLists(){
 
@@ -35,17 +33,18 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
         }
     }
 
-    private boolean mDoublePane;
+    public MainActivity(){
+        InitLists();
+    }
 
+    private boolean mDoublePane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        InitLists();
-
-        View v = (View)findViewById(R.id.fragment_articles);
+        View v = findViewById(R.id.fragment_articles);
         mDoublePane = (v != null) && (v.getVisibility() == View.VISIBLE);
     }
 
@@ -62,8 +61,7 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
         if( (fragmentArticle != null) && (mDoublePane == true) ){
             fragmentArticle.setText(index);
         }
-        else{
-
+        else if(index >= 0){
             Intent intent = new Intent();
             intent.setClass(this, ArticleActivity.class);
             intent.putExtra(ArticleActivity.ARG_INDEX, index);

@@ -35,7 +35,7 @@ public class TitlesFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
         // Populate list with our static array of titles.
-        setListAdapter(new ArrayAdapter<String>(getActivity(),
+        setListAdapter(new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_activated_1, MainActivity.mListHeaders));
 
         if(savedInstanceState != null){
@@ -43,7 +43,7 @@ public class TitlesFragment extends ListFragment {
             getListView().setItemChecked(mCurrentIndex, true);
         }
         else{
-            mCurrentIndex = 0;
+            mCurrentIndex = -1;
         }
 
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
