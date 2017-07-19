@@ -64,6 +64,12 @@ public class TitlesFragment extends ListFragment {
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallback = null;
+    }
+	
+    @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         mCurrentIndex = position;
         mCallback.OnClickAction(mCurrentIndex);
