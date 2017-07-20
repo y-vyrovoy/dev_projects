@@ -7,6 +7,7 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
@@ -40,9 +41,15 @@ public  class CursorLoaderListFragment extends ListFragment
 
         // Create an empty adapter we will use to display the loaded data.
         mAdapter = new SimpleCursorAdapter(getActivity(),
-                android.R.layout.simple_list_item_2, null,
-                new String[] { ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.CONTACT_STATUS },
-                new int[] { android.R.id.text1, android.R.id.text2 }, 0);
+                                            android.R.layout.two_line_list_item,
+                                            null,
+                                            new String[] { ContactsContract.Contacts.DISPLAY_NAME,
+                                                                ContactsContract.Contacts.CONTACT_STATUS },
+                                            new int[] { android.R.id.text1,
+                                                                android.R.id.text2 },
+                                            0);
+
+
         setListAdapter(mAdapter);
 
         // Prepare the loader.  Either re-connect with an existing one,
@@ -96,7 +103,7 @@ public  class CursorLoaderListFragment extends ListFragment
         Uri baseUri;
         if (mCurFilter != null) {
             baseUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_FILTER_URI,
-                    Uri.encode(mCurFilter));
+                                                                            Uri.encode(mCurFilter));
         } else {
             baseUri = ContactsContract.Contacts.CONTENT_URI;
         }
