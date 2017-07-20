@@ -61,7 +61,8 @@ public class MainActivity extends AppCompatActivity implements TitlesFragment.IO
         if( (fragmentArticle != null) && (mDoublePane == true) ){
             fragmentArticle.setText(index);
         }
-        else if(index >= 0){
+
+        if(index >= 0){
             Intent intent = new Intent();
             intent.setClass(this, ArticleActivity.class);
             intent.putExtra(ArticleActivity.ARG_INDEX, index);

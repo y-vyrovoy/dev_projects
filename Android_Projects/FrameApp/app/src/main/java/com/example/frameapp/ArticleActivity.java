@@ -22,8 +22,11 @@ public class ArticleActivity extends AppCompatActivity {
             finish();
             return;
         }
-        if(savedInstanceState != null){
-            int index = savedInstanceState.getInt(ARG_INDEX);
+
+        Bundle bundle = getIntent().getExtras();
+
+        if(bundle != null){
+            int index = bundle.getInt(ARG_INDEX);
             ArticleFragment articleFragment = (ArticleFragment)getFragmentManager().findFragmentById(R.id.fragment_in_act_articles);
 
             if(articleFragment != null){
