@@ -8,6 +8,7 @@
     tools:context="com.example.yuravyrovoy.trylocation.MainActivity">
 
 
+
     <TextView
         android:id="@+id/textMessage"
         android:layout_width="wrap_content"
@@ -22,16 +23,68 @@
         app:layout_constraintTop_toTopOf="parent"
         android:text="TextView"/>
 
-    <Button
-        android:id="@+id/button"
+
+
+    <LinearLayout
+        android:id="@+id/buttons_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:onClick="onButtonClick"
-        android:text="Button"
+        android:orientation="horizontal"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textMessage" />
+        app:layout_constraintTop_toBottomOf="@+id/textMessage">
+
+
+        <Button
+            android:id="@+id/buttonRequest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:onClick="onClickRequest"
+            android:text="@string/btnRequest"/>
+
+        <Button
+            android:id="@+id/buttonStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:onClick="onClickStop"
+            android:text="@string/btnStop" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:name="@+id/results_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttons_layout">
+
+        <TextView
+            android:id="@+id/text_network"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/text_gps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+
+
 </android.support.constraint.ConstraintLayout>

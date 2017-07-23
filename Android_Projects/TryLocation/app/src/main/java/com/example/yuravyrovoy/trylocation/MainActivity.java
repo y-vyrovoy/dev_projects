@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
 
     final private static int MY_PERMISSIONS_REQUEST_GET_LOCATION = 124;
     private boolean mLocationPermitted;
+    LocationListener mNetworkListener;
+    LocationListener mGPSListener;
 
 
     @Override
@@ -98,10 +100,10 @@ public class MainActivity extends AppCompatActivity {
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         // Define a listener that responds to location updates
-        LocationListener locationListener = new LocationListener() {
+        mGPSListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
-                makeUseOfNewLocation(location);
+                makeUseOfNewGPSLocation(location);
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -114,6 +116,21 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        mNetworkListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                // Called when a new location is found by the network location provider.
+                makeUseOfNewNetworkLocation(location);
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            public void onProviderEnabled(String provider) {
+            }
+
+            public void onProviderDisabled(String provider) {
+            }
+        };
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -125,27 +142,50 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mGPSListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mNetworkListener);
     }
 
-    private void makeUseOfNewLocation(Location location){
-        setMessage(location.toString());
+    private void makeUseOfNewGPSLocation(Location location){
+
+        setMessage("GPS location achieved");
+        ((TextView)findViewById(R.id.text_gps)).setText("GPS: " + location.toString());
     }
+
+    private void makeUseOfNewNetworkLocation(Location location){
+        setMessage("Network location achieved");
+        ((TextView)findViewById(R.id.text_network)).setText("Network: " + location.toString());
+    }
+
 
     private void setMessage(String sMessage){
         TextView textView = (TextView) findViewById(R.id.textMessage);
         textView.setText(sMessage);
     }
 
-    public void onButtonClick(View v) {
+    public void onClickRequest(View v) {
         if(mLocationPermitted == true){
             setMessage("Location requested");
+            clearTexts();
             setLocationListener();
         }
         else{
             setMessage("Location request is not permitted");
         }
-
     }
+
+    public void onClickStop(View v) {
+
+        setMessage("Location request is canceled");
+        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.removeUpdates(mGPSListener);
+        locationManager.removeUpdates(mNetworkListener);
+    }
+
+    private void clearTexts(){
+        ((TextView)findViewById(R.id.text_network)).setText("");
+        ((TextView)findViewById(R.id.text_gps)).setText("");
+    }
+
 }
 
