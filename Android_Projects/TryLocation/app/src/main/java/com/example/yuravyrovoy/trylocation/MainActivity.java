@@ -52,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED) {
 
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_GET_LOCATION);
+
+
+/*
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION) == false) {
@@ -65,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
                         MY_PERMISSIONS_REQUEST_GET_LOCATION);
 
             }
+*/
         }
     }
 
@@ -93,6 +100,16 @@ public class MainActivity extends AppCompatActivity {
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+
+    @Override
+    public void onPause (){
+        super.onPause();
+
+        setMessage("Location request is canceled");
+        setNetworkMessage("");
+        setGPSkMessage("");
+        removeLocationListeners();
     }
 
     private void setLocationListener() {
@@ -149,24 +166,21 @@ public class MainActivity extends AppCompatActivity {
     private void makeUseOfNewGPSLocation(Location location){
 
         setMessage("GPS location achieved");
-        ((TextView)findViewById(R.id.text_gps)).setText("GPS: " + location.toString());
+        setGPSkMessage("GPS: " + location.toString());
     }
 
     private void makeUseOfNewNetworkLocation(Location location){
         setMessage("Network location achieved");
-        ((TextView)findViewById(R.id.text_network)).setText("Network: " + location.toString());
-    }
-
-
-    private void setMessage(String sMessage){
-        TextView textView = (TextView) findViewById(R.id.textMessage);
-        textView.setText(sMessage);
+        setNetworkMessage("Network: " + location.toString());
     }
 
     public void onClickRequest(View v) {
+
         if(mLocationPermitted == true){
             setMessage("Location requested");
-            clearTexts();
+            setNetworkMessage("Network location: Waiting...");
+            setGPSkMessage("GPS location: Waiting...");
+
             setLocationListener();
         }
         else{
@@ -177,14 +191,39 @@ public class MainActivity extends AppCompatActivity {
     public void onClickStop(View v) {
 
         setMessage("Location request is canceled");
+        removeLocationListeners();
+    }
+
+    private void removeLocationListeners(){
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         locationManager.removeUpdates(mGPSListener);
         locationManager.removeUpdates(mNetworkListener);
     }
 
-    private void clearTexts(){
-        ((TextView)findViewById(R.id.text_network)).setText("");
-        ((TextView)findViewById(R.id.text_gps)).setText("");
+    private void setMessage(String sMessage){
+        TextView textView = (TextView) findViewById(R.id.textMessage);
+
+        if(textView != null) {
+            textView.setText(sMessage);
+        }
+    }
+
+    private void setNetworkMessage(String sMessage){
+        TextView textNetworkMessage = (TextView)findViewById(R.id.text_network);
+
+        if(textNetworkMessage != null) {
+            textNetworkMessage.setText(sMessage);
+        }
+    }
+
+    private void setGPSkMessage(String sMessage){
+
+        TextView textGPSMessage = (TextView)findViewById(R.id.text_gps);
+
+        if(textGPSMessage != null) {
+            textGPSMessage.setText(sMessage);
+        }
+
     }
 
 }
