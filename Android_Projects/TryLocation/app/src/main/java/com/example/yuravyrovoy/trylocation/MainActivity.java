@@ -1,21 +1,17 @@
 package com.example.yuravyrovoy.trylocation;
 
 import android.Manifest;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -196,8 +192,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void removeLocationListeners(){
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.removeUpdates(mGPSListener);
-        locationManager.removeUpdates(mNetworkListener);
+        if(locationManager == null) return;
+
+        if(mGPSListener != null) {
+            locationManager.removeUpdates(mGPSListener);
+        }
+
+        if(mNetworkListener != null) {
+            locationManager.removeUpdates(mNetworkListener);
+        }
     }
 
     private void setMessage(String sMessage){
