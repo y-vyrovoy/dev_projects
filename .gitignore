@@ -6,6 +6,9 @@ ipch/
 *.sdf
 *.db
 
-#ignoring giant java folders and databases
+#ignoring giant java folders
 dist/
 build/
+
+#ignoring android compiled files
+*.apk

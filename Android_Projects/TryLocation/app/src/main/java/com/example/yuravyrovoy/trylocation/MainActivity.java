@@ -165,8 +165,6 @@ public class MainActivity extends AppCompatActivity {
 
     private String getLocationString (Location location){
 
-        setMessage("GPS location achieved");
-
         double dblLongitude = location.getLongitude();
         double dblLatitude = location.getLatitude();
         Geocoder geoCoder = new Geocoder(this);
@@ -174,13 +172,14 @@ public class MainActivity extends AppCompatActivity {
         String sMessage = new String();
 
         try {
-            List<Address> lstAddresses = geoCoder.getFromLocation(dblLatitude, dblLongitude, 1);
+            List<Address> lstAddresses = geoCoder.getFromLocation(dblLatitude, dblLongitude, 5);
 
+            for(int j = 0; j < lstAddresses.size(); j++) {
 
-            for (int i = 0; i < lstAddresses.get(0).getMaxAddressLineIndex(); i++) {
-                sMessage += "\r\n" + lstAddresses.get(0).getAddressLine(i);
+                for (int i = 0; i < lstAddresses.get(j).getMaxAddressLineIndex(); i++) {
+                    sMessage += "\r\n" + lstAddresses.get(j).getAddressLine(i);
+                }
             }
-
         }catch (Exception ex){
             sMessage = location.toString();
         }
@@ -191,14 +190,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void makeUseOfNewGPSLocation(Location location){
 
-        setMessage("GPS location achieved");
-        setGPSkMessage("GPS: " + getLocationString(location));
+        setMessage("GPS location received");
+        setGPSkMessage("GPS: " + getLocationString(location) + "\r\n--- === ---");
 
     }
 
     private void makeUseOfNewNetworkLocation(Location location){
-        setMessage("Network location achieved");
-        setNetworkMessage("Network: " + getLocationString(location));
+        setMessage("Network location received");
+        setNetworkMessage("Network: " + getLocationString(location) + "\r\n--- === ---");
     }
 
     public void onClickRequest(View v) {
