@@ -3,6 +3,8 @@ package com.example.yuravyrovoy.trylocation;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,6 +14,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -159,15 +163,42 @@ public class MainActivity extends AppCompatActivity {
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mNetworkListener);
     }
 
+    private String getLocationString (Location location){
+
+        setMessage("GPS location achieved");
+
+        double dblLongitude = location.getLongitude();
+        double dblLatitude = location.getLatitude();
+        Geocoder geoCoder = new Geocoder(this);
+
+        String sMessage = new String();
+
+        try {
+            List<Address> lstAddresses = geoCoder.getFromLocation(dblLatitude, dblLongitude, 1);
+
+
+            for (int i = 0; i < lstAddresses.get(0).getMaxAddressLineIndex(); i++) {
+                sMessage += "\r\n" + lstAddresses.get(0).getAddressLine(i);
+            }
+
+        }catch (Exception ex){
+            sMessage = location.toString();
+        }
+
+        return sMessage;
+    }
+
+
     private void makeUseOfNewGPSLocation(Location location){
 
         setMessage("GPS location achieved");
-        setGPSkMessage("GPS: " + location.toString());
+        setGPSkMessage("GPS: " + getLocationString(location));
+
     }
 
     private void makeUseOfNewNetworkLocation(Location location){
         setMessage("Network location achieved");
-        setNetworkMessage("Network: " + location.toString());
+        setNetworkMessage("Network: " + getLocationString(location));
     }
 
     public void onClickRequest(View v) {
