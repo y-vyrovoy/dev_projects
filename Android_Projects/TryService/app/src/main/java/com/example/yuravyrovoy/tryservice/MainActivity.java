@@ -5,26 +5,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    public static final int MSG_SEND_HANDLER_NOTIFICATION = 1;
-    private Handler serviceHandler;
-    public static Handler activityHandler;
+    private TextView viewMessages;
+    private SeekBar seekBar;
+    private EditText editText;
 
-// Handler that receives messages from the thread
 
 
     @Override
@@ -32,33 +29,59 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        activityHandler = new Handler(new Handler.Callback() {
+    // initializing controls variables
+        viewMessages = (TextView) findViewById(R.id.textMessages);
+        if (viewMessages == null)
+            Log.e(TAG, "Can't find R.id.textMessages", new Throwable("Can't find control"));
 
-            @Override
-            public boolean handleMessage(Message message) {
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        if (seekBar == null)
+            Log.e(TAG, "Can't find R.id.seekBar", new Throwable("Can't find control"));
 
-                switch (message.what)
-                {
-                    case MSG_SEND_HANDLER_NOTIFICATION:
-                        serviceHandler = (Handler)message.obj;
-                        break;
-                }
-                return true;
-            }
-        });
+        editText = (EditText) findViewById(R.id.editText);
+        if (editText == null)
+            Log.e(TAG, "Can't find R.id.editText", new Throwable("Can't find control"));
 
+
+    // Broadcast receiver setup
         IntentFilter intentFilter = new IntentFilter(WonderService.REPLY_ACTION);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Log.i(TAG, "BroadcastReceiver.onReceive()");
-                TextView textView = (TextView)findViewById(R.id.textView);
 
                 String intentMessage = intent.getStringExtra("message");
-                textView.setText(intentMessage);
+                AddMessage(intentMessage);
             }
         }, intentFilter);
+
+
+    // TextView setup
+        if(viewMessages != null)
+        {
+            viewMessages.setMovementMethod(new ScrollingMovementMethod());
+        }
+
+    // SeekBar setup
+        if(seekBar != null){
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    seekBarPositionChanged();
+                }
+            });
+        }
 
     }
 
@@ -72,8 +95,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void onBtnSendMessage(View v){
         Log.i(TAG, "click click");
-
-        EditText editText = (EditText)findViewById(R.id.editText);
 
         int nDelay = -1;
         try{
@@ -89,16 +110,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void seekBarPositionChanged(){
+
+        int nNewValue = seekBar.getProgress();
+        String sMessage = new String();
+
+        for(int i = 0; i < nNewValue; i++)
+        {
+            sMessage += "[" + Integer.toString(i) + "]<-";
+        }
+        sMessage += "|";
+
+        AddMessage(sMessage);
+    }
+
     private static int nCounter333 = 0;
 
     public void onBtnStopService(View v){
         Log.i(TAG, "click click " + Integer.toString(nCounter333++));
 
-/*
         Intent intent = new Intent(new Intent(this, WonderService.class));
         intent.putExtra("delay", -2);
-        startService(intent);
-*/
+        stopService(intent);
+
+    }
+
+    public void AddMessage(String sMessage){
+        viewMessages.setText(viewMessages.getText() + "\r\n" + sMessage);
     }
 
 }

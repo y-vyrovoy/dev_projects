@@ -2,7 +2,6 @@ package com.example.yuravyrovoy.tryservice;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -60,6 +59,8 @@ public class WonderService extends Service {
                     LocalBroadcastManager.getInstance(WonderService.this).sendBroadcast(intent);
                     Log.i(TAG,  "Finished delay:" + msg.arg1 + " | Counter:" + mCounter++);
 
+                    Toast.makeText(WonderService.this, "task done", Toast.LENGTH_SHORT).show();
+
                     break;
             }
 
@@ -74,6 +75,7 @@ public class WonderService extends Service {
 
     @Override
     public void onCreate() {
+        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
 
         HandlerThread  handlerThread = new HandlerThread(SERVICE_THREAD_NAME, Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
@@ -82,7 +84,7 @@ public class WonderService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "task starting", Toast.LENGTH_SHORT).show();
 
         int nDelay = intent.getIntExtra("delay", -1);
 
