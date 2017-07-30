@@ -105,14 +105,20 @@ public class CDownloadProcessor {
         
         List<Map<String, String>> lstResults = new ArrayList<>();
         
-        lstURLs.stream().forEach((u) -> {
-                                        Map<String, String> result = CHtmlParseProcessor.ParseWebPage(u, logger);
-                                        if( result != null){
-                                            lstResults.add(result);
-                                        }
-                                    });
+        if(lstURLs.size() > 0){
+
+            lstURLs.stream().forEach((u) -> {
+                                            Map<String, String> result = CHtmlParseProcessor.ParseWebPage(u, logger);
+                                            if( result != null){
+                                                lstResults.add(result);
+                                            }
+                                        });
+        
+
+        }
         
         return lstResults;
+            
     }
 
     
@@ -157,7 +163,7 @@ public class CDownloadProcessor {
         } catch (IOException ioe) {
             System.err.println(ioe.getMessage());
             return null;
-        }        
+        }      
         
     }
 
