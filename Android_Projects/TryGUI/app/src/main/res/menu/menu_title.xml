@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/itemShare"
-        android:icon="@drawable/ic_action_name"
+        android:icon="@drawable/title_share"
         android:title="str_title_share"
         app:showAsAction="always"/>
 
     <item
         android:id="@+id/itemClose"
-        android:icon="@drawable/ic_share"
+        android:icon="@drawable/title_close"
         android:title="str_title_close"
         app:showAsAction="always"/>
 
