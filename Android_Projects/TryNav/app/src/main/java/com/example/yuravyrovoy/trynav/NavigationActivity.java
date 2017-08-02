@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -19,22 +18,22 @@ public class NavigationActivity extends AppCompatActivity
 
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
-        super.setContentView(layoutResID);
-        setNavigationToolbar();
+        super.setContentView(R.layout.navigation_toolbar);
+
+        ViewGroup layoutContent = (ViewGroup)findViewById(R.id.content_frame_to_inflate);
+
+        if(layoutContent != null) {
+            getLayoutInflater().inflate(layoutResID, layoutContent);
+            setNavigationToolbar();
+        }
+        else{
+            super.setContentView(layoutResID);
+        }
     }
 
 
     protected boolean setNavigationToolbar(){
 
-        ViewGroup viewRoot = (ViewGroup)findViewById(R.id.main_root);
-        if(viewRoot != null){
-
-            View inflatedView = View.inflate(this, R.layout.navigation_toolbar, null);
-            viewRoot.addView(inflatedView, 0);
-        }
-        else{
-            return false;
-        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
