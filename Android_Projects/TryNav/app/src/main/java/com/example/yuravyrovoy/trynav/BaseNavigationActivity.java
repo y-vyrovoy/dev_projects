@@ -13,7 +13,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-public class NavigationActivity extends AppCompatActivity
+public class BaseNavigationActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
@@ -80,14 +80,13 @@ public class NavigationActivity extends AppCompatActivity
         switch (id){
 
             case R.id.action_share:
-                Toast.makeText(this, "bar Share", Toast.LENGTH_LONG ).show();
                 break;
 
             case R.id.action_close:
-                Toast.makeText(this, "bar Close", Toast.LENGTH_LONG ).show();
                 break;
         }
 
+        showMessage("Menu item was pressed");
 
         return super.onOptionsItemSelected(item);
     }
@@ -98,21 +97,13 @@ public class NavigationActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.itemInfo) {
-            showMessage("nav Info");
-        } else if (id == R.id.intemShare) {
-            showMessage("nav Share");
-        } else if (id == R.id.intemSettings) {
-            showMessage("nav Settings");
-        }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
     private void showMessage(String sMessage){
-        Snackbar.make(findViewById(android.R.id.content), sMessage, Snackbar.LENGTH_LONG).setAction("Action", null).show();
-        //Toast.makeText(this, sMessage, Toast.LENGTH_LONG ).show();
+        //Snackbar.make(findViewById(android.R.id.content), sMessage, Snackbar.LENGTH_LONG).setAction("Action", null).show();
+        Toast.makeText(this, "" + sMessage, Toast.LENGTH_LONG ).show();
     }
 }
