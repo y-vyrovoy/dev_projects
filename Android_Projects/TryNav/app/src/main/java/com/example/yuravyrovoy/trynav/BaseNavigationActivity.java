@@ -35,7 +35,7 @@ public class BaseNavigationActivity extends AppCompatActivity
     protected boolean setNavigationToolbar(){
 
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarTop);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
