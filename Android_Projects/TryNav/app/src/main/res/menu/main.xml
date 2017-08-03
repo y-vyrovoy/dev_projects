@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_share"
-        android:title="@string/str_share"
-        android:icon="@drawable/title_share"
+        android:id="@+id/action_squidward"
+        android:title="@string/str_squidward"
+        android:icon="@drawable/squidward"
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_close"
-        android:title="@string/str_close"
-        android:icon="@drawable/title_close"
+        android:id="@+id/action_patric"
+        android:title="@string/str_patric"
+        android:icon="@drawable/patric"
         app:showAsAction="always" />
 
 </menu>

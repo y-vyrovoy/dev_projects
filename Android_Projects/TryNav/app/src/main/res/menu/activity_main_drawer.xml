@@ -3,17 +3,17 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/itemInfo"
-            android:icon="@drawable/ic_info_outline"
-            android:title="Info" />
+            android:id="@+id/nav_sponge_bob"
+            android:icon="@drawable/sponge_bob"
+            android:title="@string/str_sponge_bob" />
         <item
-            android:id="@+id/intemShare"
-            android:icon="@drawable/ic_share"
-            android:title="Share" />
+            android:id="@+id/nav_patric"
+            android:icon="@drawable/patric"
+            android:title="@string/str_patric" />
         <item
-            android:id="@+id/intemSettings"
-            android:icon="@drawable/ic_settings"
-            android:title="Settings" />
+            android:id="@+id/nav_squidward"
+            android:icon="@drawable/squidward"
+            android:title="@string/str_squidward" />
     </group>
 
 

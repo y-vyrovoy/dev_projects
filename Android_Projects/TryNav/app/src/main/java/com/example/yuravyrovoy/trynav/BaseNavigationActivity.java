@@ -79,11 +79,7 @@ public class BaseNavigationActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         switch (id){
 
-            case R.id.action_share:
-                break;
 
-            case R.id.action_close:
-                break;
         }
 
         showMessage("Menu item was pressed");

@@ -25,12 +25,12 @@ public class MainActivity extends BaseNavigationActivity {
 
         switch (id){
 
-            case R.id.action_share:
-                showMessage("bar Share");
+            case R.id.action_squidward:
+                showMessage("bar Squidward");
                 break;
 
-            case R.id.action_close:
-                showMessage("bar Close");
+            case R.id.action_patric:
+                showMessage("bar Patric");
                 break;
         }
 
@@ -46,12 +46,12 @@ public class MainActivity extends BaseNavigationActivity {
 
         int id = item.getItemId();
 
-        if (id == R.id.itemInfo) {
-            showMessage("nav Info");
-        } else if (id == R.id.intemShare) {
-            showMessage("nav Share");
-        } else if (id == R.id.intemSettings) {
-            showMessage("nav Settings");
+        if (id == R.id.nav_patric) {
+            showMessage("nav Patric");
+        } else if (id == R.id.nav_squidward) {
+            showMessage("nav Squidward");
+        } else if (id == R.id.nav_sponge_bob) {
+            showMessage("nav SpongeBob");
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
