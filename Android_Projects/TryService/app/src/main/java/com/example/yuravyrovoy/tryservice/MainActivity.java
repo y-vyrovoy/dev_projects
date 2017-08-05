@@ -1,10 +1,13 @@
 package com.example.yuravyrovoy.tryservice;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -22,7 +25,23 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar seekBar;
     private EditText editText;
 
+    private BindedService mBindService;
+    private boolean mBound = false;
 
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            BindedService.LocalBinder binder = (BindedService.LocalBinder) iBinder;
+            mBindService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,14 +86,10 @@ public class MainActivity extends AppCompatActivity {
         if(seekBar != null){
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
-                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-                }
+                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {}
 
                 @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
+                public void onStartTrackingTouch(SeekBar seekBar) {}
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
@@ -89,8 +104,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart (){
         super.onStart ();
 
+        Intent intentWonder = new Intent(this, WonderService.class);
+        startService(intentWonder);
+
+        Intent intentBided = new Intent(this, BindedService.class);
+        bindService(intentBided, mServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
         Intent intent = new Intent(new Intent(this, WonderService.class));
-        startService(intent);
+        stopService(intent);
+
+        if (mBound) {
+            unbindService(mServiceConnection);
+            mBound = false;
+        }
     }
 
     public void onBtnSendMessage(View v){
