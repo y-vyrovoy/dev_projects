@@ -15,6 +15,7 @@ import android.widget.Toast;
 public class WonderService extends Service {
 
     private static final String TAG = WonderService.class.getSimpleName();
+
     public static final int MSG_SEND_NOTIFICATION = 1;
     private static final String SERVICE_THREAD_NAME = "com.example.yuravyrovoy.tryservice.WonderService.Thread";
     public static final String REPLY_ACTION = "com.example.yuravyrovoy.tryservice.WonderService.WONDER_REPLY";
@@ -88,7 +89,7 @@ public class WonderService extends Service {
 
         int nDelay = intent.getIntExtra("delay", -1);
 
-        if( nDelay != -1){
+        if( nDelay != -1 ){
             Message msg = Message.obtain(null, WonderService.MSG_SEND_NOTIFICATION, nDelay, startId);
             mServiceHandler.sendMessage(msg);
         }

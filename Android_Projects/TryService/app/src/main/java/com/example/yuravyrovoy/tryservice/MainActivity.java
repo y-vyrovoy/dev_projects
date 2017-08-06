@@ -107,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intentWonder = new Intent(this, WonderService.class);
         startService(intentWonder);
 
-        Intent intentBided = new Intent(this, BindedService.class);
-        bindService(intentBided, mServiceConnection, Context.BIND_AUTO_CREATE);
+        Intent intentBinded = new Intent(this, BindedService.class);
+        bindService(intentBinded, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(nDelay > 0) {
-            Intent intent = new Intent(new Intent(this, WonderService.class));
+            Intent intent = new Intent(this, WonderService.class);
             intent.putExtra("delay", nDelay);
             startService(intent);
         }
