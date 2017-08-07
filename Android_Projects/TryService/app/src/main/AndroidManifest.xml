@@ -23,7 +23,7 @@
             android:exported="true" />
 
         <service
-            android:name=".BindedService"
+            android:name=".MyBoundedService"
             android:enabled="true"
             android:exported="true"></service>
     </application>

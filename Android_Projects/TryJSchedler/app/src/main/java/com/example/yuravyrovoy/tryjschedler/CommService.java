@@ -25,18 +25,19 @@ public class CommService extends Service {
 
     private static final String TAG = CommService.class.getSimpleName();
 
-    public static final int MSG_CHANGE_DELAY = 1;
-    public static final int MSG_NEXT_ITERATION = 2;
-    public static final int MSG_WAKEUP = 3;
-    public static final int MSG_DIE = 4;
+    public static final int CMD_CHANGE_DELAY = 1;
+    public static final int CMD_NEXT_ITERATION = 2;
+    public static final int CMD_ANSWER_PING = 3;
+    public static final int CMD_DIE = 4;
 
-    public static final String CMD_DELAY = "delay";
-    public static final String CMD_DIE = "die";
-    public static final String CMD_WAKEUP = "wake_up";
+    public static final String MSG_DELAY = TAG + "[delay]";
+    public static final String MSG_DIE = TAG + "[die]";
+    public static final String MSG_PING = TAG + "[ping]";
+    public static final String MSG_PING_ANSWER = TAG + "[ping_answer]";
+    public static final String MSG_SEND_TIME = TAG + "[send_time]";
 
+    private static final String SERVICE_THREAD_NAME = TAG + "[thread]";
 
-    private static final String SERVICE_THREAD_NAME = "Thread [" + TAG + "]";
-    public static final String REPLY_ACTION = "com.example.yuravyrovoy.tryservice.WonderService.WONDER_REPLY";
 
     private ServiceHandler mServiceHandler;
     private int mCounter;
@@ -49,10 +50,10 @@ public class CommService extends Service {
 
         public ServiceHandler(Looper looper) {
             super(looper);
+
             mCounter = 0;
             mDelay = -1;
         }
-
 
 
         @Override
@@ -60,125 +61,99 @@ public class CommService extends Service {
 
             switch (msg.what)
             {
-                case MSG_CHANGE_DELAY:
+                case CMD_NEXT_ITERATION:
 
-                    Log.i(TAG, "Change delay: " + Integer.toString(mDelay));
+                    Log.i(TAG, ". Next iteration: " + Integer.toString(mDelay));
 
-                    boolean bStart = mDelay< 1 ? true : false;
-                    mDelay = msg.arg1;
+                    if(mDelay > 0) {
+                        try {
+                            Thread.sleep(mDelay);
+                        } catch (InterruptedException e) {
+                            // Restore interrupt status.
+                            Thread.currentThread().interrupt();
+                        }
 
-                    if(mDelay == -2) {
-                        Log.i(TAG,  "Try to stop. nDelay = " + msg.arg1 + " | Counter:" + mCounter++);
-                        stopSelf();
-                        return;
+                        Intent intent = new Intent(MainActivity.REPLY_ACTION);
+                        intent.putExtra(MainActivity.MSG_MESSAGE, "Finished delay: " + Integer.toString(mDelay));
+
+                        LocalBroadcastManager.getInstance(CommService.this).sendBroadcast(intent);
+                        Log.i(TAG, ". Finished delay: " + msg.arg1 + " | Counter:" + mCounter++);
                     }
 
-                    if(bStart == true){
-                        Message msgNew = Message.obtain(null, CommService.MSG_NEXT_ITERATION, mDelay, 0);
-                        sendMessage(msgNew);
-                        Log.i(TAG, "Send next iteration: " + Integer.toString(mDelay));
-                    }
+                    int nNextDelay = mDelay > 0 ? mDelay : 0;
 
-                    break;
-
-                case MSG_NEXT_ITERATION:
-
-                    Log.i(TAG, "Next iteration: " + Integer.toString(mDelay));
-
-                    try {
-                        Thread.sleep(mDelay);
-                    } catch (InterruptedException e) {
-                        // Restore interrupt status.
-                        Thread.currentThread().interrupt();
-                    }
-
-
-                    Intent intent = new Intent(REPLY_ACTION);
-                    intent.putExtra("message", "Delay finished: " + Integer.toString(mDelay));
-
-                    LocalBroadcastManager.getInstance(CommService.this).sendBroadcast(intent);
-                    Log.i(TAG,  "Finished delay:" + msg.arg1 + " | Counter:" + mCounter++);
-
-                    if(mDelay > 0){
-                        Message msgNew = Message.obtain(null, MSG_NEXT_ITERATION, mDelay, 0);
-                        sendMessage(msgNew);
-                    }
-                    break;
-
-                case MSG_WAKEUP:
-
-                    Log.i(TAG, "MSG_WAKEUP: mDelay: " + Integer.toString(msg.arg1));
-
-                    mDelay = msg.arg1;
-
-                    Message msgNew = Message.obtain(null, MSG_NEXT_ITERATION, mDelay, 0);
+                    Message msgNew = Message.obtain(null, CMD_NEXT_ITERATION, nNextDelay, 0);
                     sendMessage(msgNew);
+                    break;
+
+                case CMD_ANSWER_PING:
+                    Intent intent = new Intent(CommService.this, PeriodicJobService.class);
+                    intent.putExtra(MSG_PING_ANSWER, true);
+                    startService(intent);
 
                     break;
 
-                case MSG_DIE:
+                case CMD_DIE:
                     die();
+                    break;
+
+                default:
+                    super.handleMessage(msg);
                     break;
             }
 
-
-            // Stop the service using the startId, so that we don't stop
-            // the service in the middle of handling another job
-            //stopSelf(msg.arg1);
         }
     }
 
-
-
-    public CommService() {}
+    public CommService() {
+        handlerThread = null;
+    }
 
     private void startHandleThread(){
-        handlerThread = new HandlerThread(SERVICE_THREAD_NAME, Process.THREAD_PRIORITY_BACKGROUND);
-        handlerThread.start();
-        mServiceHandler = new ServiceHandler(handlerThread.getLooper());
+
+        if( (handlerThread == null) || (handlerThread.isAlive() == false) )
+        {
+            handlerThread = new HandlerThread(SERVICE_THREAD_NAME, Process.THREAD_PRIORITY_BACKGROUND);
+            handlerThread.start();
+            mServiceHandler = new ServiceHandler(handlerThread.getLooper());
+        }
     }
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, TAG + " service starting", Toast.LENGTH_SHORT).show();
         startHandleThread();
+    }
 
-
+    @Override
+    public void onDestroy (){
+        Toast.makeText(this, TAG + " onDestroy", Toast.LENGTH_SHORT).show();
+        mServiceHandler.removeMessages(0);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "task starting", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, TAG + " task starting", Toast.LENGTH_SHORT).show();
 
-        boolean bDie = intent.getBooleanExtra(CMD_DIE, false);
-        if(bDie == true){
-            Log.i(TAG, "CMD_DIE");
-            Message msg = Message.obtain(null, CommService.MSG_DIE, 0, startId);
+        if(intent.getBooleanExtra(MSG_DIE, false) == true){
+            Log.i(TAG, "MSG_DIE");
+            Message msg = Message.obtain(null, CMD_DIE, 0, startId);
             mServiceHandler.sendMessage(msg);
 
-            return START_STICKY;
         }
+        else if(intent.getBooleanExtra(MSG_PING, false) == true){
+            Log.i(TAG, "MSG_PING");
 
-        boolean bWakeUp = intent.getBooleanExtra(CMD_WAKEUP, false);
-        if(bWakeUp == true){
-            Log.i(TAG, "CMD_WAKEUP");
-
-            if( (handlerThread == null) || (handlerThread.isAlive() == false) ){
-                startHandleThread();
-            }
-
-            Message msg = Message.obtain(null, CommService.MSG_WAKEUP, 1234, startId);
+            Message msg = Message.obtain(null, CMD_ANSWER_PING, 0, startId);
             mServiceHandler.sendMessage(msg);
 
-            return START_STICKY;
         }
+        else {
 
-        int nDelay = intent.getIntExtra(CMD_DELAY, -1);
+            mDelay = intent.getIntExtra(MSG_DELAY, -1);
+            Log.i(TAG, "MSG_DELAY: " + Integer.toString(mDelay));
 
-        Log.i(TAG, "onStartCommand: " + Integer.toString(mDelay));
-
-        if( nDelay != -1 ){
-            Message msg = Message.obtain(null, CommService.MSG_CHANGE_DELAY, nDelay, startId);
+            Message msg = Message.obtain(null, CMD_NEXT_ITERATION, mDelay, startId);
             mServiceHandler.sendMessage(msg);
         }
 

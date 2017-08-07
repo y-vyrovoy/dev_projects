@@ -19,6 +19,8 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String MSG_MESSAGE = TAG + "[message]";
+    public static final String REPLY_ACTION = TAG + "[reply_action]";
 
     public static EditText textDelay;
     public static EditText textJobScheduleDelay;
@@ -36,12 +38,12 @@ public class MainActivity extends AppCompatActivity {
         mServiceComponent = new ComponentName(this, PeriodicJobService.class);
 
         // Broadcast receiver setup
-        IntentFilter intentFilter = new IntentFilter(CommService.REPLY_ACTION);
+        IntentFilter intentFilter = new IntentFilter(REPLY_ACTION);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String intentMessage = intent.getStringExtra("message");
+                String intentMessage = intent.getStringExtra(MSG_MESSAGE);
                 AddMessage(intentMessage);
             }
         }, intentFilter);
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         int nDelay = Integer.parseInt(textDelay.getText().toString());
 
         Intent intentComm = new Intent(this, CommService.class);
-        intentComm.putExtra(CommService.CMD_DELAY,nDelay);
+        intentComm.putExtra(CommService.MSG_DELAY, nDelay);
         startService(intentComm);
     }
 
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onBtnThrowException(View view){
         Intent intentComm = new Intent(this, CommService.class);
-        intentComm.putExtra(CommService.CMD_DIE, true);
+        intentComm.putExtra(CommService.MSG_DIE, true);
         startService(intentComm);
     }
 
@@ -83,4 +85,9 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, intentMessage);
     }
 
+
+    public void onBtnStopCommService (View view) {
+
+
+    }
 }

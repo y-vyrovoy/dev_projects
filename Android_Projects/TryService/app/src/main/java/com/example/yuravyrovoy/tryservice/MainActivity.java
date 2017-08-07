@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
@@ -20,21 +22,26 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String REPLY_ACTION = TAG + "[WONDER_REPLY]";
+    public static final String MSG_MESSAGE = TAG + "[MESSAGE]";
 
     private TextView viewMessages;
     private SeekBar seekBar;
     private EditText editText;
 
-    private BindedService mBindService;
+    private MyBoundedService mBoundedService;
     private boolean mBound = false;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
+
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            BindedService.LocalBinder binder = (BindedService.LocalBinder) iBinder;
-            mBindService = binder.getService();
+            MyBoundedService.LocalBinder binder = (MyBoundedService.LocalBinder) iBinder;
+            mBoundedService = binder.getService();
             mBound = true;
+
+            binder.setMainActivityHandler(new Handler(Looper.getMainLooper()));
         }
 
         @Override
@@ -50,27 +57,19 @@ public class MainActivity extends AppCompatActivity {
 
     // initializing controls variables
         viewMessages = (TextView) findViewById(R.id.textMessages);
-        if (viewMessages == null)
-            Log.e(TAG, "Can't find R.id.textMessages", new Throwable("Can't find control"));
-
         seekBar = (SeekBar) findViewById(R.id.seekBar);
-        if (seekBar == null)
-            Log.e(TAG, "Can't find R.id.seekBar", new Throwable("Can't find control"));
-
         editText = (EditText) findViewById(R.id.editText);
-        if (editText == null)
-            Log.e(TAG, "Can't find R.id.editText", new Throwable("Can't find control"));
 
 
     // Broadcast receiver setup
-        IntentFilter intentFilter = new IntentFilter(WonderService.REPLY_ACTION);
+        IntentFilter intentFilter = new IntentFilter(REPLY_ACTION);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Log.i(TAG, "BroadcastReceiver.onReceive()");
 
-                String intentMessage = intent.getStringExtra("message");
+                String intentMessage = intent.getStringExtra(MSG_MESSAGE);
                 AddMessage(intentMessage);
             }
         }, intentFilter);
@@ -87,10 +86,8 @@ public class MainActivity extends AppCompatActivity {
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {}
-
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {}
-
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
                     seekBarPositionChanged();
@@ -104,28 +101,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart (){
         super.onStart ();
 
-        Intent intentWonder = new Intent(this, WonderService.class);
-        startService(intentWonder);
+        startService(new Intent(this, WonderService.class));
 
-        Intent intentBinded = new Intent(this, BindedService.class);
-        bindService(intentBinded, mServiceConnection, Context.BIND_AUTO_CREATE);
+        Intent intentBounded = new Intent(this, MyBoundedService.class);
+        boolean bBounded = bindService(intentBounded, mServiceConnection, Context.BIND_AUTO_CREATE);
+
+        Log.i(TAG, "Service is bounded = " + Boolean.toString(bBounded));
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        Intent intent = new Intent(new Intent(this, WonderService.class));
-        stopService(intent);
+        // stop WonderService
+        stopService(new Intent(new Intent(this, WonderService.class)));
 
+        // stop MyBoundedService
         if (mBound) {
             unbindService(mServiceConnection);
             mBound = false;
         }
+
     }
 
     public void onBtnSendMessage(View v){
-        Log.i(TAG, "click click");
 
         int nDelay = -1;
         try{
@@ -136,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(nDelay > 0) {
             Intent intent = new Intent(this, WonderService.class);
-            intent.putExtra("delay", nDelay);
+            intent.putExtra(WonderService.MSG_DELAY, nDelay);
             startService(intent);
         }
     }
@@ -144,30 +143,26 @@ public class MainActivity extends AppCompatActivity {
     private void seekBarPositionChanged(){
 
         int nNewValue = seekBar.getProgress();
-        String sMessage = new String();
-
-        for(int i = 0; i < nNewValue; i++)
-        {
-            sMessage += "[" + Integer.toString(i) + "]<-";
+        if(mBound == true) {
+            mBoundedService.doTask(nNewValue);
         }
-        sMessage += "|";
-
-        AddMessage(sMessage);
     }
 
-    private static int nCounter333 = 0;
-
     public void onBtnStopService(View v){
-        Log.i(TAG, "click click " + Integer.toString(nCounter333++));
 
-        Intent intent = new Intent(new Intent(this, WonderService.class));
-        intent.putExtra("delay", -2);
-        stopService(intent);
+        // stop WonderService
+        stopService(new Intent(new Intent(this, WonderService.class)));
+
+        // stop MyBoundedService
+        if (mBound) {
+            unbindService(mServiceConnection);
+            mBound = false;
+        }
 
     }
 
     public void AddMessage(String sMessage){
-        viewMessages.setText(viewMessages.getText() + "\r\n" + sMessage);
+        viewMessages.setText(sMessage+ "\r\n" + viewMessages.getText() );
     }
 
 }
