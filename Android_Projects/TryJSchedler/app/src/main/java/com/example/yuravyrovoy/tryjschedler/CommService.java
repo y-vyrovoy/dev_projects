@@ -40,10 +40,12 @@ public class CommService extends Service {
 
 
     private ServiceHandler mServiceHandler;
-    private int mCounter;
+    private int mHandlerId;
     private int mDelay;
 
     private HandlerThread handlerThread;
+
+    private static int nSendMessageID = 0;
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
@@ -51,33 +53,41 @@ public class CommService extends Service {
         public ServiceHandler(Looper looper) {
             super(looper);
 
-            mCounter = 0;
+            mHandlerId = 0;
             mDelay = -1;
         }
+
 
 
         @Override
         public void handleMessage(Message msg) {
 
+            mHandlerId++;
+
             switch (msg.what)
             {
                 case CMD_NEXT_ITERATION:
 
-                    Log.i(TAG, ". Next iteration: " + Integer.toString(mDelay));
+
 
                     if(mDelay > 0) {
                         try {
                             Thread.sleep(mDelay);
+                            nSendMessageID++;
                         } catch (InterruptedException e) {
                             // Restore interrupt status.
                             Thread.currentThread().interrupt();
                         }
 
+                        String sMessage = "D = " + Integer.toString(mDelay) +
+                                                " [ msgId =" + Integer.toString(nSendMessageID) + ", " +
+                                                "hndlrId =" + Integer.toString(mHandlerId) +"]";
+
                         Intent intent = new Intent(MainActivity.REPLY_ACTION);
-                        intent.putExtra(MainActivity.MSG_MESSAGE, "Finished delay: " + Integer.toString(mDelay));
+                        intent.putExtra(MainActivity.MSG_MESSAGE, "Message: " + sMessage);
 
                         LocalBroadcastManager.getInstance(CommService.this).sendBroadcast(intent);
-                        Log.i(TAG, ". Finished delay: " + msg.arg1 + " | Counter:" + mCounter++);
+                        //Log.i(TAG, "Log: " + sMessage);
                     }
 
                     int nNextDelay = mDelay > 0 ? mDelay : 0;
@@ -157,7 +167,7 @@ public class CommService extends Service {
             mServiceHandler.sendMessage(msg);
         }
 
-        return START_STICKY;
+        return START_REDELIVER_INTENT ;
     }
 
 

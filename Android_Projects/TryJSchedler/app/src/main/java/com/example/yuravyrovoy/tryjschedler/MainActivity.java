@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onBtnScheduleJob(View view){
 
-        JobInfo.Builder builder = new JobInfo.Builder(mJobId++, mServiceComponent);
+        JobInfo.Builder builder = new JobInfo.Builder(mJobId, mServiceComponent);
 
         long  REFRESH_INTERVAL = Integer.parseInt(textJobScheduleDelay.getText().toString());
 

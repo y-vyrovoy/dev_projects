@@ -26,7 +26,7 @@ public class PeriodicJobService extends JobService {
 
     private ServiceHandler mServiceHandler;
 
-    private JobParameters mJobParameteres;
+    private JobParameters mJobParameters;
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
@@ -37,11 +37,11 @@ public class PeriodicJobService extends JobService {
 
         @Override
         public void handleMessage(Message msg) {
-
+            Log.i(TAG, "handleMessage" );
             switch (msg.what)
             {
                 case CMD_PING:
-                    Log.i(TAG, "CMD_PING message handled" );
+                    //Log.i(TAG, "CMD_PING message handled" );
 
                     pingRequestTime = System.currentTimeMillis();
                     bPingSucceeded = false;
@@ -62,15 +62,12 @@ public class PeriodicJobService extends JobService {
                         if (System.currentTimeMillis() - pingRequestTime > PING_TIMEOUT) {
                             Log.i(TAG, "> PING_TIMEOUT" );
                             RestartService();
-                            jobFinished(mJobParameteres, true);
+                            jobFinished(mJobParameters, true);
                         }
                         else {
                             Message msgReWait = Message.obtain(null, CMD_WAIT_ANSWER, 0, 0);
                             mServiceHandler.sendMessage(msgReWait);
                         }
-                    }
-                    else{
-                        Log.i(TAG, "bPingSucceeded == true" );
                     }
 
                     break;
@@ -78,7 +75,7 @@ public class PeriodicJobService extends JobService {
                 case CMD_PING_ANSWER:
                     Log.i(TAG, "bPingSucceeded -> true" );
                     bPingSucceeded = true;
-                    jobFinished(mJobParameteres, true);
+                    jobFinished(mJobParameters, true);
                     break;
             }
         }
@@ -92,7 +89,7 @@ public class PeriodicJobService extends JobService {
         handlerThread.start();
         mServiceHandler = new ServiceHandler(handlerThread.getLooper());
 
-        Log.i(TAG, "Periodic Service created");
+        //Log.i(TAG, "Periodic Service created");
     }
 
     @Override
@@ -100,7 +97,7 @@ public class PeriodicJobService extends JobService {
 
         if(intent.getBooleanExtra(CommService.MSG_PING_ANSWER, false) == true) {
 
-            Log.i(TAG, "onStartCommand: MSG_PING_ANSWER" );
+            //Log.i(TAG, "onStartCommand: MSG_PING_ANSWER" );
 
             Message msgWait = Message.obtain(null, CMD_PING_ANSWER, 0, 0);
             mServiceHandler.sendMessage(msgWait);
@@ -122,7 +119,6 @@ public class PeriodicJobService extends JobService {
     private  static int nCounter = 0;
 
 
-
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
         Log.i(TAG, "Periodic Job started #" + Integer.toString(nCounter++) );
@@ -131,7 +127,7 @@ public class PeriodicJobService extends JobService {
         Message msg = Message.obtain(null, CMD_PING, 0, 0);
         mServiceHandler.sendMessage(msg);
 
-        mJobParameteres = jobParameters;
+        mJobParameters = jobParameters;
         return true;
     }
 
