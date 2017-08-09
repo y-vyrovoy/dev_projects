@@ -32,7 +32,6 @@ public class MyJobService extends JobService {
 
     private static final int CMD_CANCEL_RESCHEDULING = 1;
 
-    private ServiceHandler mServiceHandler;
     private JobParameters mParameters;
 
 
@@ -42,10 +41,6 @@ public class MyJobService extends JobService {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        HandlerThread handlerThread = new HandlerThread(SERVICE_THREAD_NAME, Process.THREAD_PRIORITY_BACKGROUND);
-        handlerThread.start();
-        mServiceHandler = new ServiceHandler(handlerThread.getLooper());
 
         Log.i(TAG, "Periodic Service created");
     }
@@ -144,23 +139,4 @@ public class MyJobService extends JobService {
         mNotificationManager.notify(11, mBuilder.build());
     }
 
-
-    // Handler that receives messages from the thread
-    private final class ServiceHandler extends Handler {
-
-        public ServiceHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-
-            switch (msg.what)
-            {
-                case CMD_CANCEL_RESCHEDULING:
-
-                    break;
-            }
-        }
-    }
 }
