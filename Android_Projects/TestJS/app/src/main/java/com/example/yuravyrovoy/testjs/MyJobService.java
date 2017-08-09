@@ -5,12 +5,6 @@ import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Process;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -67,7 +61,7 @@ public class MyJobService extends JobService {
         LogSaver logSaver = new LogSaver();
         new Thread(logSaver).run();
 
-        return true;
+        return false;
     }
 
     @Override
@@ -95,8 +89,6 @@ public class MyJobService extends JobService {
                 bw.append(sMessage);
                 bw.close();
 
-                broadCastToMediaScanner(MyJobService.this, myFile);
-
                 Toast.makeText(MyJobService.this, "Log Complete", Toast.LENGTH_SHORT).show();
 
             } catch (FileNotFoundException e) {
@@ -108,19 +100,10 @@ public class MyJobService extends JobService {
                 e.printStackTrace();
             }
 
-
             Log.i(TAG, "JobService is always on service!");
             jobFinished(mParameters, true);
         }
 
-    }
-
-    public static void broadCastToMediaScanner(Context context, File file) {
-
-        Uri contentUri = Uri.fromFile(file);
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        mediaScanIntent.setData(contentUri);
-        context.sendBroadcast(mediaScanIntent);
     }
 
     private void sendNotification(String sMessage){

@@ -7,14 +7,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,20 +20,22 @@ public class MainActivity extends AppCompatActivity {
     public static final String MSG_MESSAGE = TAG + "[message]";
     public static final String REPLY_ACTION = TAG + "[reply_action]";
 
-    public static EditText textDelay;
-    public static EditText textJobScheduleDelay;
+    public static EditText editDelay;
+    public static EditText editJobScheduleDelay;
+    public static TextView textMessage;
 
-    private ComponentName mServiceComponent;
-    private int mJobId = 0;
+    private int JOB_SERVICE_ID = 122;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        textDelay = (EditText)findViewById(R.id.textDelay);
-        textJobScheduleDelay = (EditText)findViewById(R.id.textDelayJobSchedule);
-        mServiceComponent = new ComponentName(this, PeriodicJobService.class);
+        editDelay = (EditText)findViewById(R.id.editDelay);
+        editJobScheduleDelay = (EditText)findViewById(R.id.editDelayJobSchedule);
+        textMessage = (TextView)findViewById(R.id.textOutput);
+
 
         // Broadcast receiver setup
         IntentFilter intentFilter = new IntentFilter(REPLY_ACTION);
@@ -47,11 +47,18 @@ public class MainActivity extends AppCompatActivity {
                 AddMessage(intentMessage);
             }
         }, intentFilter);
+
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable throwable) {
+
+            }
+        });
     }
 
     public void onBtnSetDelay(View view){
 
-        int nDelay = Integer.parseInt(textDelay.getText().toString());
+        int nDelay = Integer.parseInt(editDelay.getText().toString());
 
         Intent intentComm = new Intent(this, CommService.class);
         intentComm.putExtra(CommService.MSG_DELAY, nDelay);
@@ -61,18 +68,17 @@ public class MainActivity extends AppCompatActivity {
 
     public void onBtnScheduleJob(View view){
 
-        JobInfo.Builder builder = new JobInfo.Builder(mJobId, mServiceComponent);
+        long checkupInterval = Integer.parseInt(editJobScheduleDelay.getText().toString());
 
-        long  REFRESH_INTERVAL = Integer.parseInt(textJobScheduleDelay.getText().toString());
+        JobInfo.Builder builder = new JobInfo.Builder(JOB_SERVICE_ID,
+                                                new ComponentName(this, PeriodicJobService.class));
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            builder.setMinimumLatency(REFRESH_INTERVAL);
-        } else {
-            builder.setPeriodic(REFRESH_INTERVAL);
-        }
+        //builder.setPeriodic(checkupInterval);
+        builder.setMinimumLatency(checkupInterval);
 
         JobScheduler tm = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
         tm.schedule(builder.build());
+
     }
 
     public void onBtnThrowException(View view){
@@ -81,13 +87,14 @@ public class MainActivity extends AppCompatActivity {
         startService(intentComm);
     }
 
-    private void AddMessage(String intentMessage){
-        Log.i(TAG, intentMessage);
+    private void AddMessage(String sMessage){
+        textMessage.setText(sMessage + "\r\n" + textMessage.getText());
     }
 
 
     public void onBtnStopCommService (View view) {
-
-
+        Intent intentComm = new Intent(this, CommService.class);
+        intentComm.putExtra(CommService.MSG_STOP, true);
+        startService(intentComm);
     }
 }

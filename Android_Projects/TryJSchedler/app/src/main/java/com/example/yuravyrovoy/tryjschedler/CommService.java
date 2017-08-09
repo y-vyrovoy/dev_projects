@@ -2,7 +2,10 @@ package com.example.yuravyrovoy.tryjschedler;
 
 import android.app.IntentService;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -12,7 +15,6 @@ import android.os.Process;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 
 /**
@@ -25,16 +27,16 @@ public class CommService extends Service {
 
     private static final String TAG = CommService.class.getSimpleName();
 
-    public static final int CMD_CHANGE_DELAY = 1;
-    public static final int CMD_NEXT_ITERATION = 2;
-    public static final int CMD_ANSWER_PING = 3;
-    public static final int CMD_DIE = 4;
+    public static final int CMD_NEXT_ITERATION = 1;
+    public static final int CMD_ANSWER_WAKEUP = 2;
+    public static final int CMD_DIE = 3;
+    public static final int CMD_STOP = 4;
 
     public static final String MSG_DELAY = TAG + "[delay]";
     public static final String MSG_DIE = TAG + "[die]";
-    public static final String MSG_PING = TAG + "[ping]";
-    public static final String MSG_PING_ANSWER = TAG + "[ping_answer]";
-    public static final String MSG_SEND_TIME = TAG + "[send_time]";
+    public static final String MSG_RESTART = TAG + "[restart]";
+    public static final String MSG_WAKEUP = TAG + "[wakeup]";
+    public static final String MSG_STOP = TAG + "[stop]";
 
     private static final String SERVICE_THREAD_NAME = TAG + "[thread]";
 
@@ -47,6 +49,8 @@ public class CommService extends Service {
 
     private static int nSendMessageID = 0;
 
+    private static int nWakeupResponseCounter = 0;
+
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
 
@@ -58,7 +62,6 @@ public class CommService extends Service {
         }
 
 
-
         @Override
         public void handleMessage(Message msg) {
 
@@ -67,8 +70,6 @@ public class CommService extends Service {
             switch (msg.what)
             {
                 case CMD_NEXT_ITERATION:
-
-
 
                     if(mDelay > 0) {
                         try {
@@ -96,15 +97,22 @@ public class CommService extends Service {
                     sendMessage(msgNew);
                     break;
 
-                case CMD_ANSWER_PING:
-                    Intent intent = new Intent(CommService.this, PeriodicJobService.class);
-                    intent.putExtra(MSG_PING_ANSWER, true);
-                    startService(intent);
+                case CMD_ANSWER_WAKEUP:
+
+                    LocalBroadcastManager.getInstance(CommService.this)
+                            .sendBroadcast(new Intent(PeriodicJobService.MSG_WAKEUP_ANSWER)
+                                    .putExtra("counter", nWakeupResponseCounter++));
+
 
                     break;
 
                 case CMD_DIE:
                     die();
+                    break;
+
+                case CMD_STOP:
+                    Thread.currentThread().interrupt();
+                    stopSelf();
                     break;
 
                 default:
@@ -129,35 +137,59 @@ public class CommService extends Service {
         }
     }
 
+
     @Override
     public void onCreate() {
-        Toast.makeText(this, TAG + " service starting", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "service starting");
+
         startHandleThread();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Log.i(TAG, "local broadcast: " +
+                                    MSG_WAKEUP +
+                                    "[" + Integer.toString(intent.getIntExtra("counter", -1)) + "]") ;
+
+                        Message msg = Message.obtain(null, CMD_ANSWER_WAKEUP, 0, 0);
+                        mServiceHandler.sendMessage(msg);
+
+                    }
+                }, new IntentFilter(MSG_WAKEUP));
+
     }
 
     @Override
     public void onDestroy (){
-        Toast.makeText(this, TAG + " onDestroy", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "service destroyed");
         mServiceHandler.removeMessages(0);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, TAG + " task starting", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "task starting");
 
         if(intent.getBooleanExtra(MSG_DIE, false) == true){
+
             Log.i(TAG, "MSG_DIE");
+
             Message msg = Message.obtain(null, CMD_DIE, 0, startId);
             mServiceHandler.sendMessage(msg);
 
         }
-        else if(intent.getBooleanExtra(MSG_PING, false) == true){
-            Log.i(TAG, "MSG_PING");
+        else if (intent.getBooleanExtra(MSG_RESTART, false) == true) {
+            startHandleThread();
 
-            Message msg = Message.obtain(null, CMD_ANSWER_PING, 0, startId);
+            mDelay = 1234;
+            Message msg = Message.obtain(null, CMD_NEXT_ITERATION, 0, startId);
             mServiceHandler.sendMessage(msg);
-
         }
+        else if (intent.getBooleanExtra(MSG_STOP, false) == true) {
+            Message msg = Message.obtain(null, CMD_STOP, 0, startId);
+            mServiceHandler.sendMessage(msg);
+        }
+
         else {
 
             mDelay = intent.getIntExtra(MSG_DELAY, -1);
@@ -169,7 +201,6 @@ public class CommService extends Service {
 
         return START_REDELIVER_INTENT ;
     }
-
 
     private void die(){
         throw new RuntimeException("Testing unhandled exception processing.");

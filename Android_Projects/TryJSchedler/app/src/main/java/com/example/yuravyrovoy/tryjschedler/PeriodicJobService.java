@@ -2,12 +2,16 @@ package com.example.yuravyrovoy.tryjschedler;
 
 import android.app.job.JobParameters;
 import android.app.job.JobService;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class PeriodicJobService extends JobService {
@@ -15,14 +19,15 @@ public class PeriodicJobService extends JobService {
     private static final String TAG = PeriodicJobService.class.getSimpleName();
     private static final String SERVICE_THREAD_NAME = "Thread [" + TAG + "]";
 
-    private static final int CMD_PING = 1;
-    private static final int CMD_WAIT_ANSWER = 2;
-    private static final int CMD_PING_ANSWER = 3;
+    private static final int CMD_WAIT_ANSWER = 1;
 
-    public static final int PING_TIMEOUT = 1000;
+    public static final int WAKEUP_TIMEOUT = 1000;
+
+    public static final String MSG_WAKEUP_ANSWER = TAG + "[wakeup_answer]";
+
 
     private long pingRequestTime;
-    private boolean bPingSucceeded;
+    private boolean bWaitForWakeupAnswer;
 
     private ServiceHandler mServiceHandler;
 
@@ -37,32 +42,24 @@ public class PeriodicJobService extends JobService {
 
         @Override
         public void handleMessage(Message msg) {
-            Log.i(TAG, "handleMessage" );
+
             switch (msg.what)
             {
-                case CMD_PING:
-                    //Log.i(TAG, "CMD_PING message handled" );
-
-                    pingRequestTime = System.currentTimeMillis();
-                    bPingSucceeded = false;
-
-                    Intent intentComm = new Intent(PeriodicJobService.this, CommService.class);
-                    intentComm.putExtra(CommService.MSG_PING, true);
-                    startService(intentComm);
-
-                    Message msgWait = Message.obtain(null, CMD_WAIT_ANSWER, 0, 0);
-                    mServiceHandler.sendMessage(msgWait);
-
-                    break;
-
                 case CMD_WAIT_ANSWER:
 
-                    if(bPingSucceeded == false) {
+                    Log.i(TAG, "handling CMD_WAIT_ANSWER message" );
 
-                        if (System.currentTimeMillis() - pingRequestTime > PING_TIMEOUT) {
+                    if(bWaitForWakeupAnswer == true) {
+
+                        if (System.currentTimeMillis() - pingRequestTime > WAKEUP_TIMEOUT) {
                             Log.i(TAG, "> PING_TIMEOUT" );
+
+                            bWaitForWakeupAnswer = false;
                             RestartService();
-                            jobFinished(mJobParameters, true);
+
+                            if(mJobParameters != null) {
+                                jobFinished(mJobParameters, true);
+                            }
                         }
                         else {
                             Message msgReWait = Message.obtain(null, CMD_WAIT_ANSWER, 0, 0);
@@ -72,10 +69,8 @@ public class PeriodicJobService extends JobService {
 
                     break;
 
-                case CMD_PING_ANSWER:
-                    Log.i(TAG, "bPingSucceeded -> true" );
-                    bPingSucceeded = true;
-                    jobFinished(mJobParameters, true);
+                default:
+                    Log.i(TAG, "handle unknown message #" + Integer.toString(msg.what) );
                     break;
             }
         }
@@ -85,50 +80,58 @@ public class PeriodicJobService extends JobService {
     public void onCreate() {
         super.onCreate();
 
+        Log.i(TAG, "Periodic Service. onCreate");
+
         HandlerThread handlerThread = new HandlerThread(SERVICE_THREAD_NAME, Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
         mServiceHandler = new ServiceHandler(handlerThread.getLooper());
 
-        //Log.i(TAG, "Periodic Service created");
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Log.i(TAG, "local broadcast: " +
+                                        MSG_WAKEUP_ANSWER +
+                                        "[" + Integer.toString(intent.getIntExtra("counter", -1)) + "]");
+
+                        bWaitForWakeupAnswer = false;
+
+                        if(mJobParameters != null) {
+                            jobFinished(mJobParameters, true);
+                        }
+
+                    }
+                }, new IntentFilter(MSG_WAKEUP_ANSWER));
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if(intent.getBooleanExtra(CommService.MSG_PING_ANSWER, false) == true) {
-
-            //Log.i(TAG, "onStartCommand: MSG_PING_ANSWER" );
-
-            Message msgWait = Message.obtain(null, CMD_PING_ANSWER, 0, 0);
-            mServiceHandler.sendMessage(msgWait);
-        }
-
         return START_STICKY;
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "Periodic Service destroyed");
-    }
-
-
-    public PeriodicJobService() {
-    }
-
     private  static int nCounter = 0;
-
+    private static int nWakeupRequestCounter = 0;
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
-        Log.i(TAG, "Periodic Job started #" + Integer.toString(nCounter++) );
-        pingRequestTime = -1;
 
-        Message msg = Message.obtain(null, CMD_PING, 0, 0);
-        mServiceHandler.sendMessage(msg);
+        Log.i(TAG, "Periodic Job started #" + Integer.toString(nCounter++) );
+
+        pingRequestTime = System.currentTimeMillis();
+        bWaitForWakeupAnswer = true;
 
         mJobParameters = jobParameters;
-        return true;
+
+        Message msg = Message.obtain(null, CMD_WAIT_ANSWER, 0, 0);
+        mServiceHandler.sendMessage(msg);
+
+        LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(new Intent(CommService.MSG_WAKEUP)
+                        .putExtra("counter", nWakeupRequestCounter++));
+
+        return false;
     }
 
     @Override
@@ -138,10 +141,16 @@ public class PeriodicJobService extends JobService {
     }
 
     private void RestartService(){
+
+        startActivity(new Intent(this, MainActivity.class));
+
         Intent intentComm = new Intent(PeriodicJobService.this, CommService.class);
+        intentComm.putExtra(CommService.MSG_RESTART, true);
         stopService(intentComm);
-        intentComm.putExtra(CommService.MSG_DELAY, 1122);
         startService(intentComm);
+
+
+
     }
 
 }
