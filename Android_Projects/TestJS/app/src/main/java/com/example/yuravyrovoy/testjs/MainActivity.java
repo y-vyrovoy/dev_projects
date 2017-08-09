@@ -28,12 +28,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void onBtnStart(View v){
 
-        long  REFRESH_INTERVAL = Integer.parseInt(textJobScheduleDelay.getText().toString());
+        long nRefreshInterval = Integer.parseInt(textJobScheduleDelay.getText().toString());
 
         JobInfo.Builder builder = new JobInfo.Builder(JOB_SERVICE_ID,
-                                                        new ComponentName(getPackageName(), MyJobService.class.getName()));
+                                                        new ComponentName(getPackageName(),
+                                                                            MyJobService.class.getName()));
 
-        builder.setPeriodic(REFRESH_INTERVAL);
+        builder.setPeriodic(nRefreshInterval);
 
         JobScheduler tm = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
         tm.schedule(builder.build());
