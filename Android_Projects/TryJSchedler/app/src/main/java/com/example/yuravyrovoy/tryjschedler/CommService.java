@@ -16,6 +16,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Calendar;
+
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -30,25 +37,26 @@ public class CommService extends Service {
     public static final int CMD_NEXT_ITERATION = 1;
     public static final int CMD_ANSWER_WAKEUP = 2;
     public static final int CMD_DIE = 3;
-    public static final int CMD_STOP = 4;
 
     public static final String MSG_DELAY = TAG + "[delay]";
     public static final String MSG_DIE = TAG + "[die]";
-    public static final String MSG_RESTART = TAG + "[restart]";
     public static final String MSG_WAKEUP = TAG + "[wakeup]";
     public static final String MSG_STOP = TAG + "[stop]";
+    public static final String MSG_SAVE_MESSAGE = TAG + "[save_message]";
+    public static final String PARAM_MESSAGE = TAG + "[param_message]";
 
     private static final String SERVICE_THREAD_NAME = TAG + "[thread]";
 
-
     private ServiceHandler mServiceHandler;
+    private HandlerThread handlerThread;
+    private BroadcastReceiver receiverWakeup;
+    private BroadcastReceiver receiverStop;
+    private BroadcastReceiver receiverSaveMessage;
+    private BroadcastReceiver receiverDie;
+
     private int mHandlerId;
     private int mDelay;
-
-    private HandlerThread handlerThread;
-
     private static int nSendMessageID = 0;
-
     private static int nWakeupResponseCounter = 0;
 
     // Handler that receives messages from the thread
@@ -81,14 +89,9 @@ public class CommService extends Service {
                         }
 
                         String sMessage = "D = " + Integer.toString(mDelay) +
-                                                " [ msgId =" + Integer.toString(nSendMessageID) + ", " +
-                                                "hndlrId =" + Integer.toString(mHandlerId) +"]";
+                                                " [msgId = " + Integer.toString(nSendMessageID)  + "]";
 
-                        Intent intent = new Intent(MainActivity.REPLY_ACTION);
-                        intent.putExtra(MainActivity.MSG_MESSAGE, "Message: " + sMessage);
-
-                        LocalBroadcastManager.getInstance(CommService.this).sendBroadcast(intent);
-                        //Log.i(TAG, "Log: " + sMessage);
+                        sendUserMessage("MSG: " + sMessage);
                     }
 
                     int nNextDelay = mDelay > 0 ? mDelay : 0;
@@ -99,21 +102,20 @@ public class CommService extends Service {
 
                 case CMD_ANSWER_WAKEUP:
 
+                    // answer to periodic service
                     LocalBroadcastManager.getInstance(CommService.this)
                             .sendBroadcast(new Intent(PeriodicJobService.MSG_WAKEUP_ANSWER)
-                                    .putExtra("counter", nWakeupResponseCounter++));
+                                    .putExtra(PeriodicJobService.PARAM_COUNTER, nWakeupResponseCounter++));
 
-
+                    sendUserMessage(TAG + "->" + PeriodicJobService.MSG_WAKEUP_ANSWER);
                     break;
 
                 case CMD_DIE:
+                    sendUserMessage(MSG_DIE);
+
                     die();
                     break;
 
-                case CMD_STOP:
-                    Thread.currentThread().interrupt();
-                    stopSelf();
-                    break;
 
                 default:
                     super.handleMessage(msg);
@@ -129,75 +131,111 @@ public class CommService extends Service {
 
     private void startHandleThread(){
 
-        if( (handlerThread == null) || (handlerThread.isAlive() == false) )
-        {
+        boolean bRestartThread = false;
+
+        if( handlerThread == null) {
+            bRestartThread = true;
+        }
+        else if(handlerThread.isAlive() == false){
+            handlerThread.interrupt();
+            handlerThread.quit();
+            bRestartThread = true;
+        }
+
+        if(bRestartThread == true){
             handlerThread = new HandlerThread(SERVICE_THREAD_NAME, Process.THREAD_PRIORITY_BACKGROUND);
             handlerThread.start();
             mServiceHandler = new ServiceHandler(handlerThread.getLooper());
         }
     }
 
-
     @Override
     public void onCreate() {
-        Log.i(TAG, "service starting");
+
+        sendUserMessage(TAG + ".onCreate()");
 
         startHandleThread();
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        Log.i(TAG, "local broadcast: " +
-                                    MSG_WAKEUP +
-                                    "[" + Integer.toString(intent.getIntExtra("counter", -1)) + "]") ;
-
-                        Message msg = Message.obtain(null, CMD_ANSWER_WAKEUP, 0, 0);
-                        mServiceHandler.sendMessage(msg);
-
-                    }
-                }, new IntentFilter(MSG_WAKEUP));
-
+        registerBroadcastManagers();
     }
 
     @Override
     public void onDestroy (){
+
+        unregisterBroadcastManagers();
+
         Log.i(TAG, "service destroyed");
-        mServiceHandler.removeMessages(0);
+    }
+
+    private void registerBroadcastManagers(){
+
+        receiverWakeup = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                sendUserMessage(MSG_WAKEUP + ". #" +
+                        Integer.toString(intent.getIntExtra(PeriodicJobService.PARAM_COUNTER, -1)));
+
+                Message msg = Message.obtain(null, CMD_ANSWER_WAKEUP, 0, 0);
+                mServiceHandler.sendMessage(msg);
+
+            }
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverWakeup, new IntentFilter(MSG_WAKEUP));
+
+        receiverStop =  new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                sendUserMessage(TAG + "." + MSG_STOP);
+
+                handlerThread.interrupt();
+                handlerThread.quit();
+                stopSelf();
+
+            }
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverStop, new IntentFilter(MSG_STOP));
+
+        receiverSaveMessage =  new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String sMessage = intent.getStringExtra(PARAM_MESSAGE);
+
+                sendUserMessage(sMessage);
+            }
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverSaveMessage, new IntentFilter(MSG_SAVE_MESSAGE));
+
+
+        receiverDie = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Message msg = Message.obtain(null, CMD_DIE, 0, 0);
+                mServiceHandler.sendMessage(msg);
+
+            }
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverDie, new IntentFilter(MSG_DIE));
+    }
+
+    private void unregisterBroadcastManagers(){
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverWakeup);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverStop);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverSaveMessage);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverDie);
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "task starting");
 
-        if(intent.getBooleanExtra(MSG_DIE, false) == true){
+        startHandleThread();
 
-            Log.i(TAG, "MSG_DIE");
+        sendUserMessage("CommService starting");
 
-            Message msg = Message.obtain(null, CMD_DIE, 0, startId);
-            mServiceHandler.sendMessage(msg);
+        mDelay = intent.getIntExtra(MSG_DELAY, -1);
 
-        }
-        else if (intent.getBooleanExtra(MSG_RESTART, false) == true) {
-            startHandleThread();
-
-            mDelay = 1234;
-            Message msg = Message.obtain(null, CMD_NEXT_ITERATION, 0, startId);
-            mServiceHandler.sendMessage(msg);
-        }
-        else if (intent.getBooleanExtra(MSG_STOP, false) == true) {
-            Message msg = Message.obtain(null, CMD_STOP, 0, startId);
-            mServiceHandler.sendMessage(msg);
-        }
-
-        else {
-
-            mDelay = intent.getIntExtra(MSG_DELAY, -1);
-            Log.i(TAG, "MSG_DELAY: " + Integer.toString(mDelay));
-
-            Message msg = Message.obtain(null, CMD_NEXT_ITERATION, mDelay, startId);
-            mServiceHandler.sendMessage(msg);
-        }
+        Message msg = Message.obtain(null, CMD_NEXT_ITERATION, mDelay, startId);
+        mServiceHandler.sendMessage(msg);
 
         return START_REDELIVER_INTENT ;
     }
@@ -206,6 +244,54 @@ public class CommService extends Service {
         throw new RuntimeException("Testing unhandled exception processing.");
     }
 
+
+    public void sendUserMessage(String sMessage){
+
+        saveMessageToLog(sMessage);
+
+        LocalBroadcastManager.getInstance(null)
+                .sendBroadcast(new Intent(MainActivity.REPLY_ACTION)
+                        .putExtra(MainActivity.PARAM_MESSAGE, sMessage));
+
+        Log.i(TAG, sMessage);
+
+    }
+    public void saveMessageToLog(String sMessage){
+
+        class myRunnable implements Runnable{
+
+            private String sMessage;
+
+            public  myRunnable(String message){
+                sMessage = message;
+            }
+
+            @Override
+            public void run() {
+
+                try {
+
+                    String sToWrite = "\r\n" + android.text.format.DateFormat.format("dd.MM.yyyy kk:mm:ss", Calendar.getInstance()) +
+                            " : " + sMessage;
+
+                    File myFile = new File(getExternalFilesDir(null), "TryCommRestoring.log");
+
+                    BufferedWriter bw = new BufferedWriter(new FileWriter(myFile, true));
+                    bw.append(sToWrite);
+                    bw.close();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        myRunnable logSaver = new myRunnable(sMessage);
+
+        new Thread(logSaver).run();
+    }
 
     @Nullable
     @Override
