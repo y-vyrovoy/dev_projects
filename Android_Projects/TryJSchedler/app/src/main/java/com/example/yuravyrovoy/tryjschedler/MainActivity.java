@@ -17,8 +17,9 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    public static final String MSG_MESSAGE = TAG + "[message]";
+    public static final String PARAM_MESSAGE = TAG + "[message]";
     public static final String REPLY_ACTION = TAG + "[reply_action]";
+
 
     public static EditText editDelay;
     public static EditText editJobScheduleDelay;
@@ -26,27 +27,29 @@ public class MainActivity extends AppCompatActivity {
 
     private int JOB_SERVICE_ID = 122;
 
+    private BroadcastReceiver receiverMessage = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         editDelay = (EditText)findViewById(R.id.editDelay);
         editJobScheduleDelay = (EditText)findViewById(R.id.editDelayJobSchedule);
         textMessage = (TextView)findViewById(R.id.textOutput);
 
-
         // Broadcast receiver setup
         IntentFilter intentFilter = new IntentFilter(REPLY_ACTION);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+        receiverMessage = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                String intentMessage = intent.getStringExtra(MSG_MESSAGE);
+                String intentMessage = intent.getStringExtra(PARAM_MESSAGE);
                 AddMessage(intentMessage);
             }
-        }, intentFilter);
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiverMessage, intentFilter);
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
@@ -56,45 +59,68 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void onBtnSetDelay(View view){
+    @Override
+    protected  void onDestroy(){
+        super.onDestroy();
 
-        int nDelay = Integer.parseInt(editDelay.getText().toString());
-
-        Intent intentComm = new Intent(this, CommService.class);
-        intentComm.putExtra(CommService.MSG_DELAY, nDelay);
-        startService(intentComm);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverMessage);
     }
 
+
+    public void onBtnSetDelay(View view){
+
+        int nDelay = -1;
+        try {
+            nDelay = Integer.parseInt(editDelay.getText().toString());
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        if(nDelay > 0) {
+            Intent intentComm = new Intent(this, CommService.class);
+            intentComm.putExtra(CommService.MSG_DELAY, nDelay);
+            startService(intentComm);
+        }
+    }
 
     public void onBtnScheduleJob(View view){
 
-        long checkupInterval = Integer.parseInt(editJobScheduleDelay.getText().toString());
+        long checkupInterval = -1;
+
+        try {
+            checkupInterval = Integer.parseInt(editJobScheduleDelay.getText().toString());
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
 
         JobInfo.Builder builder = new JobInfo.Builder(JOB_SERVICE_ID,
-                                                new ComponentName(this, PeriodicJobService.class));
-
-        //builder.setPeriodic(checkupInterval);
-        builder.setMinimumLatency(checkupInterval);
+                                                new ComponentName(this, PeriodicJobService.class))
+                                        .setPeriodic(checkupInterval)
+                                        //.setMinimumLatency(checkupInterval)
+                                        .setPersisted(true);
 
         JobScheduler tm = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
         tm.schedule(builder.build());
-
     }
 
     public void onBtnThrowException(View view){
-        Intent intentComm = new Intent(this, CommService.class);
-        intentComm.putExtra(CommService.MSG_DIE, true);
-        startService(intentComm);
+        LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(new Intent(CommService.MSG_DIE));
+    }
+
+    public void onBtnStopCommService (View view) {
+        LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(new Intent(CommService.MSG_STOP));
+    }
+
+    public void onBtnStopPeriodicService(View view) {
+        //TODO stop periodic service
+
     }
 
     private void AddMessage(String sMessage){
         textMessage.setText(sMessage + "\r\n" + textMessage.getText());
     }
 
-
-    public void onBtnStopCommService (View view) {
-        Intent intentComm = new Intent(this, CommService.class);
-        intentComm.putExtra(CommService.MSG_STOP, true);
-        startService(intentComm);
-    }
 }

@@ -8,62 +8,62 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
-        <EditText
-            android:id="@+id/editDelay"
-            android:inputType="number"
+    <EditText
+        android:id="@+id/editDelay"
+        android:inputType="number"
 
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginStart="8dp"
-            app:layout_constraintRight_toLeftOf="@+id/buttonSetDelay"
-            android:layout_marginEnd="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="8dp"
+        app:layout_constraintRight_toLeftOf="@+id/buttonSetDelay"
+        android:layout_marginEnd="8dp"
 
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            app:layout_constraintBaseline_toBaselineOf="@+id/buttonSetDelay" />
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonSetDelay" />
 
-        <Button
-            android:id="@+id/buttonSetDelay"
+    <Button
+        android:id="@+id/buttonSetDelay"
 
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="8dp"
-            app:layout_constraintLeft_toRightOf="@+id/editDelay"
-            android:layout_marginStart="8dp"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toRightOf="@+id/editDelay"
+        android:layout_marginStart="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginEnd="8dp"
 
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="onBtnSetDelay"
-            android:text="Set delay" />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:onClick="onBtnSetDelay"
+        android:text="Set delay" />
 
 
-        <EditText
-            android:id="@+id/editDelayJobSchedule"
-            android:inputType="number"
+    <EditText
+        android:id="@+id/editDelayJobSchedule"
+        android:inputType="number"
 
-            app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginStart="8dp"
-            app:layout_constraintRight_toLeftOf="@+id/buttonSetDelay"
-            android:layout_marginEnd="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="8dp"
+        app:layout_constraintRight_toLeftOf="@+id/buttonSetDelay"
+        android:layout_marginEnd="8dp"
 
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            app:layout_constraintBaseline_toBaselineOf="@+id/buttonScheduleJob" />
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/buttonScheduleJob" />
 
-        <Button
-            android:id="@+id/buttonScheduleJob"
+    <Button
+        android:id="@+id/buttonScheduleJob"
 
-            app:layout_constraintTop_toBottomOf="@+id/buttonSetDelay"
-            android:layout_marginTop="8dp"
-            app:layout_constraintLeft_toRightOf="@+id/editDelayJobSchedule"
-            android:layout_marginStart="8dp"
-            app:layout_constraintRight_toRightOf="parent"
-            android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSetDelay"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toRightOf="@+id/editDelayJobSchedule"
+        android:layout_marginStart="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginEnd="8dp"
 
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:onClick="onBtnScheduleJob"
-            android:text="Schedule job"  />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:onClick="onBtnScheduleJob"
+        android:text="Schedule job"  />
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbarButtons"
@@ -82,7 +82,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -104,13 +104,6 @@
 
 
 
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/buttonStopCommService"
