@@ -96,8 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
         JobInfo.Builder builder = new JobInfo.Builder(JOB_SERVICE_ID,
                                                 new ComponentName(this, PeriodicJobService.class))
-                                        .setPeriodic(checkupInterval)
-                                        //.setMinimumLatency(checkupInterval)
+                                        //.setPeriodic(checkupInterval)
+                                        .setMinimumLatency(checkupInterval)
                                         .setPersisted(true);
 
         JobScheduler tm = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);

@@ -35,7 +35,6 @@ public class CommService extends Service {
     private static final String TAG = CommService.class.getSimpleName();
 
     public static final int CMD_NEXT_ITERATION = 1;
-    public static final int CMD_ANSWER_WAKEUP = 2;
     public static final int CMD_DIE = 3;
     public static final int CMD_SET_DELAY = 4;
 
@@ -51,16 +50,16 @@ public class CommService extends Service {
 
     private ServiceHandler mServiceHandler;
     private HandlerThread handlerThread;
-    private BroadcastReceiver receiverWakeup;
     private BroadcastReceiver receiverStop;
     private BroadcastReceiver receiverSaveMessage;
     private BroadcastReceiver receiverDie;
 
-    private int mDelayINT;
+    private int mDelayINT = 0;
     private static int nSendMessageID = 0;
-    private static int nWakeupResponseCounter = 0;
 
     private long cycleStart;
+    private long lastHandleMessageCallMS = 0;
+    public static long RESPONSE_TIMEOUT = 1000;
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
@@ -68,12 +67,14 @@ public class CommService extends Service {
         public ServiceHandler(Looper looper) {
             super(looper);
 
-            mDelayINT = -1;
         }
 
 
         @Override
         public void handleMessage(Message msg) {
+
+            // to be able to check whether thread is alive or not
+            lastHandleMessageCallMS = System.currentTimeMillis();
 
             switch (msg.what)
             {
@@ -110,16 +111,6 @@ public class CommService extends Service {
                     sendMessage(msgNext);
                 break;
 
-                case CMD_ANSWER_WAKEUP:
-
-                    // answer to periodic service
-                    LocalBroadcastManager.getInstance(CommService.this)
-                            .sendBroadcast(new Intent(PeriodicJobService.MSG_WAKEUP_ANSWER)
-                                    .putExtra(PeriodicJobService.PARAM_COUNTER, nWakeupResponseCounter++));
-
-                    sendUserMessage(TAG + "->" + PeriodicJobService.MSG_WAKEUP_ANSWER);
-                break;
-
                 case CMD_DIE:
                     sendUserMessage(MSG_DIE);
 
@@ -134,6 +125,8 @@ public class CommService extends Service {
 
         }
     }
+
+
 
     public CommService() {
         handlerThread = null;
@@ -166,6 +159,7 @@ public class CommService extends Service {
 
         startHandleThread();
         registerBroadcastManagers();
+
     }
 
     @Override
@@ -178,28 +172,14 @@ public class CommService extends Service {
 
     private void registerBroadcastManagers(){
 
-        receiverWakeup = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                sendUserMessage(MSG_WAKEUP + ". #" +
-                        Integer.toString(intent.getIntExtra(PeriodicJobService.PARAM_COUNTER, -1)));
-
-                Message msg = Message.obtain(null, CMD_ANSWER_WAKEUP, 0, 0);
-                mServiceHandler.sendMessage(msg);
-
-            }
-        };
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiverWakeup, new IntentFilter(MSG_WAKEUP));
 
         receiverStop =  new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 sendUserMessage(TAG + "." + MSG_STOP);
 
-                handlerThread.interrupt();
-                handlerThread.quit();
-                stopSelf();
+                Message msg = Message.obtain(null, CMD_SET_DELAY, 0, 0);
+                mServiceHandler.sendMessage(msg);
 
             }
         };
@@ -228,26 +208,40 @@ public class CommService extends Service {
     }
 
     private void unregisterBroadcastManagers(){
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverWakeup);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverStop);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverSaveMessage);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiverDie);
 
     }
 
+    private static int nStartCommandCounter = 0;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        sendUserMessage("CommService starting #" + Integer.toString(nStartCommandCounter++));
+
         startHandleThread();
 
-        sendUserMessage("CommService starting");
+        int nDelay = -1;
 
-        int nDelay = intent.getIntExtra(MSG_DELAY, -1);
+        if( intent.getIntExtra(MSG_DELAY, -1) >=0 ) {
+            nDelay = intent.getIntExtra(MSG_DELAY, -1);
+        }
+        else if(intent.getBooleanExtra(MSG_WAKEUP, false) == true){
+            if(System.currentTimeMillis() - lastHandleMessageCallMS > RESPONSE_TIMEOUT) {
+                nDelay = 5000;
+            }
+        }
 
-        Message msg = Message.obtain(null, CMD_SET_DELAY, nDelay, startId);
-        mServiceHandler.sendMessage(msg);
+        if(nDelay >= 0) {
+            Message msg = Message.obtain(null, CMD_SET_DELAY, nDelay, startId);
+            mServiceHandler.sendMessage(msg);
 
-        return START_REDELIVER_INTENT ;
+
+        }
+
+        return START_REDELIVER_INTENT;
     }
 
     private void die(){
@@ -308,4 +302,6 @@ public class CommService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+
 }
