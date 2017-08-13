@@ -2,21 +2,12 @@ package com.example.yuravyrovoy.tryjschedler;
 
 import android.app.job.JobParameters;
 import android.app.job.JobService;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Process;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
-public class PeriodicJobService extends JobService {
+public class WakeupPeriodicJobService extends JobService {
 
-    private static final String TAG = PeriodicJobService.class.getSimpleName();
+    private static final String TAG = WakeupPeriodicJobService.class.getSimpleName();
 
 
 
@@ -59,7 +50,7 @@ public class PeriodicJobService extends JobService {
 
         saveMessage(TAG + ". Waking up CommService #" + Integer.toString(nWakeupCounter++));
 
-        Intent intentComm = new Intent(PeriodicJobService.this, CommService.class);
+        Intent intentComm = new Intent(WakeupPeriodicJobService.this, CommService.class);
         intentComm.putExtra(CommService.MSG_WAKEUP, true);
         startService(intentComm);
     }
