@@ -32,10 +32,12 @@ public class MainActivity extends AppCompatActivity {
 
         JobInfo.Builder builder =
                 new JobInfo.Builder(JOB_SERVICE_ID,
-                                                        new ComponentName(getPackageName(),
-                                                                            MyJobService.class.getName()));
+                                        new ComponentName(getPackageName(),
+                                                            MyJobService.class.getName()));
 
-        builder.setPeriodic(nRefreshInterval)
+        builder
+                //.setMinimumLatency(nRefreshInterval)
+                .setPeriodic(nRefreshInterval)
                 .setPersisted(true);
 
         JobScheduler tm = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);

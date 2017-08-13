@@ -237,8 +237,6 @@ public class CommService extends Service {
         if(nDelay >= 0) {
             Message msg = Message.obtain(null, CMD_SET_DELAY, nDelay, startId);
             mServiceHandler.sendMessage(msg);
-
-
         }
 
         return START_REDELIVER_INTENT;
@@ -278,7 +276,7 @@ public class CommService extends Service {
                     String sToWrite = "\r\n" + android.text.format.DateFormat.format("dd.MM.yyyy kk:mm:ss", Calendar.getInstance()) +
                             " : " + sMessage;
 
-                    File myFile = new File(getExternalFilesDir(null), "TryCommRestoring.log");
+                    File myFile = new File(getExternalFilesDir(null), "TryJScheduler.log");
 
                     BufferedWriter bw = new BufferedWriter(new FileWriter(myFile, true));
                     bw.append(sToWrite);

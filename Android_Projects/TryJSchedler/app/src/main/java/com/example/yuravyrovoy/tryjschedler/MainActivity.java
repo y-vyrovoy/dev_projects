@@ -51,12 +51,14 @@ public class MainActivity extends AppCompatActivity {
         };
         LocalBroadcastManager.getInstance(this).registerReceiver(receiverMessage, intentFilter);
 
+
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable throwable) {
 
             }
         });
+
     }
 
     @Override
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         JobInfo.Builder builder = new JobInfo.Builder(JOB_SERVICE_ID,
-                                                new ComponentName(this, PeriodicJobService.class))
+                                                new ComponentName(this, WakeupPeriodicJobService.class))
                                         //.setPeriodic(checkupInterval)
                                         .setMinimumLatency(checkupInterval)
                                         .setPersisted(true);
@@ -115,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onBtnStopPeriodicService(View view) {
-        //TODO stop periodic service
 
     }
 
