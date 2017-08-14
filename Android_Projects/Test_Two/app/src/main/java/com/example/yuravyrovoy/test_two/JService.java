@@ -1,7 +1,9 @@
-package com.example.yuravyrovoy.test_one;
+package com.example.yuravyrovoy.test_two;
 
-import android.app.IntentService;
+import android.app.job.JobParameters;
+import android.app.job.JobService;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.BufferedWriter;
@@ -11,27 +13,31 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Calendar;
 
+public class JService extends JobService {
 
-/**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions and extra parameters.
- */
-public class MyIntentService extends IntentService {
+    private static final String TAG = JService.class.getSimpleName();
 
-
-    public MyIntentService() {
-        super("MyIntentService");
+    public JService() {
     }
+
+
+    private static int nStartCounter = 0;
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public boolean onStartJob(JobParameters jobParameters) {
 
-        saveMessageToLog("onHandleIntent() #" + Integer.toString(nCounter++));
+        Log.i(TAG, "onStartJob()");
+
+        startService(new Intent(this, MyService.class).putExtra(MyService.PARAM_START_ID, nStartCounter));
+
+        saveMessageToLog( "onStartJob() " + Integer.toString(nStartCounter));
+
+        nStartCounter++;
+
+        jobFinished(jobParameters, true);
+        return false;
     }
 
-    private static int nCounter = 0;
 
     public void saveMessageToLog(String sMessage){
 
@@ -49,16 +55,14 @@ public class MyIntentService extends IntentService {
                 try {
 
                     String sToWrite = "\r\n" + android.text.format.DateFormat
-                                        .format("dd.MM.yyyy kk:mm:ss", Calendar.getInstance()) +
-                                                                                " : " + sMessage;
+                            .format("dd.MM.yyyy kk:mm:ss", Calendar.getInstance()) +
+                            " : " + sMessage;
 
-                    File myFile = new File(getExternalFilesDir(null), "Fire02.log");
+                    File myFile = new File(getExternalFilesDir(null), "Fire_Test_(job service #2).log");
 
                     BufferedWriter bw = new BufferedWriter(new FileWriter(myFile, true));
                     bw.append(sToWrite);
                     bw.close();
-
-                    Toast.makeText(MyIntentService.this, sToWrite, Toast.LENGTH_SHORT).show();
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -72,5 +76,14 @@ public class MyIntentService extends IntentService {
 
         new Thread(logSaver).run();
     }
+
+
+    @Override
+    public boolean onStopJob(JobParameters jobParameters) {
+        return false;
+    }
+
+
+
 
 }

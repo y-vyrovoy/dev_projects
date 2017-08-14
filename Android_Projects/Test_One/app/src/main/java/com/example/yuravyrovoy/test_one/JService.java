@@ -21,8 +21,6 @@ public class JService extends JobService {
     }
 
 
-    private static int nCounter = 0;
-
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
 
