@@ -306,7 +306,7 @@ public class CircuitContainer {
 
             for (CircuitItem item : lstNotSorted) {
 
-                // if both inputs are lower - adding item tu current level`
+                // if both inputs are lower - adding item to current level
                 if( (item.getIn_one() == null) && (item.getIn_two() != null)){
 
                 }
@@ -326,7 +326,9 @@ public class CircuitContainer {
                         lstCurrent = lstReturn.get(currentLevel - 1);
                     }
 
+                    item.setLevel(currentLevel);
                     lstCurrent.add(item);
+
 
                 }
             }
@@ -411,7 +413,9 @@ public class CircuitContainer {
     }
 
 
-
+    public int getLevelNumber(){
+        return lstOperatorLevels.size();
+    }
 
 
     public String getName() {
@@ -545,5 +549,7 @@ public class CircuitContainer {
         return mapReturn;
 
     }
+
+
 }
 

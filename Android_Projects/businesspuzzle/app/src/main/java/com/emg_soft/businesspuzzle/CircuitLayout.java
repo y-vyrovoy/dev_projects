@@ -87,8 +87,6 @@ public class CircuitLayout extends ViewGroup {
         deviceHeight = deviceDisplay.y;
     }
 
-
-
     private void layoutInputs(int childLeft, int childTop, int childRight, int childBottom){
 
         int curWidth, curHeight, curLeft, curTop, maxHeight;
@@ -237,8 +235,6 @@ public class CircuitLayout extends ViewGroup {
 
         List<CircuitTrackView> lstTracksView = new ArrayList<>(mapTracks.values());
 
-        Log.i(TAG, "layoutTracks(): Ntracks = " + lstTracksView.size());
-
         for(CircuitTrackView trackView : lstTracksView){
 
             View viewStart = (View) trackView.getmViewStart();
@@ -312,6 +308,11 @@ public class CircuitLayout extends ViewGroup {
                                 nTop,
                                 Math.max(nLeft, nRight),
                                 nBottom);
+
+            trackView.xL = Math.min(nLeft, nRight);
+            trackView.xR = Math.max(nLeft, nRight);
+            trackView.yT = nTop;
+            trackView.yB = nBottom;
 
         }
     }
@@ -458,8 +459,92 @@ public class CircuitLayout extends ViewGroup {
         }
 
 
-        // !!!! counting level from RESULT TO INPUT
+        arrangeInputsSublevels();
 
+        // take inputs, result and operators to the top
+        for(CircuitViewItem viewItem : lstViewsOperators){
+            bringChildToFront((View)viewItem);
+        }
+
+        for(CircuitViewItem viewItem : lstViewsInputs){
+            bringChildToFront((View)viewItem);
+        }
+
+        for(CircuitViewItem viewItem : lstViewsResults){
+            bringChildToFront((View)viewItem);
+        }
+
+    }
+
+    private void arrangeInputsSublevels(){
+
+        // !!!! counting level from RESULT TO INPUT
+/*
+        int NLevels = mCircuit.getLevelNumber() + 1;
+
+        // prepare list of every level list of track view
+        List<List<CircuitTrackView>> lstTracksLevels = new ArrayList<>();
+        for(int iLevel = 0; iLevel < NLevels; iLevel++){
+            lstTracksLevels.add(new ArrayList<CircuitTrackView>());
+        }
+
+        // create tracks list
+        List<CircuitTrackView> lstTracksViews = new ArrayList<>(mapTracks.values());
+
+        // disperse tracks by levels
+        for(CircuitTrackView viewTrack : lstTracksViews){
+            int nL = viewTrack.getLevel();
+
+            // if this track is linked to result
+            if(nL == -1){
+                nL = NLevels - 1;
+            }
+
+            lstTracksLevels.get(nL).add(viewTrack);
+        }
+
+
+
+        // process each list separately
+        for(List<CircuitTrackView> lstLevel : lstTracksLevels){
+
+            List<CircuitTrackView> lstTmp = new ArrayList<>(lstLevel);
+
+            int subLevel = 0;
+
+            // run through all tracks
+            for(CircuitTrackView trackView1 : lstTmp) {
+
+                int left1 = trackView1.xL;
+                int right1 = trackView1.xR;
+
+
+                trackView1.setSubLevel(subLevel);
+
+                // compare each track with each other
+                for (CircuitTrackView trackView2 : lstTracksViews) {
+
+                    int left2 = trackView2.getLeft();
+                    int right2 = trackView2.getRight();
+
+                    // if they do NOT cross
+                    if ((left2 > right1) || (right2 < left1)) {
+
+                        trackView2.setSubLevel(subLevel);
+                        lstTmp.remove(trackView2);
+                    }
+                }
+
+                lstTmp.remove(trackView1);
+                subLevel++;
+
+            }
+
+        }
+*/
+
+
+        // !!!! counting level from RESULT TO INPUT
         Map<Integer, Integer> mapSublevels = new HashMap<>();
 
         List<CircuitTrackView> lstTracksViews = new ArrayList<>(mapTracks.values());
@@ -478,19 +563,9 @@ public class CircuitLayout extends ViewGroup {
             trackView.setSubLevel(val);
         }
 
-        for(CircuitViewItem viewItem : lstViewsOperators){
-            bringChildToFront((View)viewItem);
-        }
-
-        for(CircuitViewItem viewItem : lstViewsInputs){
-            bringChildToFront((View)viewItem);
-        }
-
-        for(CircuitViewItem viewItem : lstViewsResults){
-            bringChildToFront((View)viewItem);
-        }
 
     }
+
 
     @Nullable
     private CircuitViewItem getView(CircuitItem item){

@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.AsyncTask;
+import android.support.annotation.IntegerRes;
 import android.view.View;
 
 import com.emg_soft.businesspuzzle.CircuitLayout;
@@ -27,8 +29,8 @@ public class CircuitTrackView extends View {
     private int subLevel;
 
     private Rect rectVerticalOut;
-    private  Rect rectVerticalIn;
-    private  Rect rectHorizontal;
+    private Rect rectVerticalIn;
+    private Rect rectHorizontal;
 
 
     private Paint mPaintTracksBorder;
@@ -40,6 +42,8 @@ public class CircuitTrackView extends View {
     private int mAnimationProgress;
 
     private boolean mState;
+
+    public int xL, xR, yT, yB;
 
     // constructors
     public CircuitTrackView(CircuitViewItem start, CircuitViewItem end, Context context){
@@ -84,6 +88,7 @@ public class CircuitTrackView extends View {
         int width = getWidth();
         int height = getHeight();
 
+/*
         // TMP drawing borders
         Paint p = new Paint();
         p.setColor(Color.RED);
@@ -92,7 +97,7 @@ public class CircuitTrackView extends View {
 
         Rect r = new Rect(0,0,width, height);
         canvas.drawRect(r,p);
-
+*/
 
         // check how in and out relates (left - right) and set start of the track
         int outX = inputLeft ?
@@ -139,11 +144,29 @@ public class CircuitTrackView extends View {
         canvas.drawRect(rectVerticalIn, mPaintTracksBorder);
         canvas.drawRect(rectHorizontal, mPaintTracksBorder);
 
+        Paint paint = new Paint();
+        paint.setColor(Color.TRANSPARENT);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawPaint(paint);
 
-        Paint pFill = getmViewStart().getCircuitItem().getValue() ?
-                ((mAnimationProgress == 0) ? mPaintTracksBodyTrue : mPaintTracksBodyTrue1) :
-                mPaintTracksBodyFalse;
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(60);
+        canvas.drawText(Integer.toString(subLevel), rectVerticalIn.right, rectVerticalIn.bottom, paint);
 
+        Paint pFill;
+
+        if(getmViewStart().getCircuitItem().getValue() == false){
+            pFill = mPaintTracksBodyFalse;
+        }
+        else {
+            if( (mAnimationProgress % 2) == 0)
+            {
+                pFill = mPaintTracksBodyTrue;
+            }
+            else {
+                pFill = mPaintTracksBodyTrue;
+            }
+        }
 
         canvas.drawRect(rectVerticalOut, pFill);
         canvas.drawRect(rectVerticalIn, pFill);
@@ -156,6 +179,7 @@ public class CircuitTrackView extends View {
     public void updateState(){
 
         mState = getmViewStart().getCircuitItem().getValue();
+
         if (mState == true){
             //startTrackAnimation();
         }
@@ -169,14 +193,17 @@ public class CircuitTrackView extends View {
 
     private void  startTrackAnimation(){
 
-        mAnimation = ValueAnimator.ofFloat(0, 1);
-        mAnimation.setDuration(1000l); //one second
+        mAnimation = ValueAnimator.ofInt(0, 100);
+        mAnimation.setDuration(10000l); //one second
+
 
         mAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator updatedAnimation) {
-                mAnimationProgress = (int)updatedAnimation.getAnimatedValue();
-                invalidate();
+            mAnimationProgress = (int)updatedAnimation.getAnimatedValue();
+
+            invalidate();
+
             }
         });
 
@@ -188,6 +215,7 @@ public class CircuitTrackView extends View {
     private void  stopTrackAnimation(){
 
     }
+
 
     // setters and getters
 
@@ -204,6 +232,7 @@ public class CircuitTrackView extends View {
     }
 
     public void setmViewEnd(CircuitViewItem mViewEnd) {
+
         this.mViewEnd = mViewEnd;
 
         CircuitViewItemOperator opView = null;

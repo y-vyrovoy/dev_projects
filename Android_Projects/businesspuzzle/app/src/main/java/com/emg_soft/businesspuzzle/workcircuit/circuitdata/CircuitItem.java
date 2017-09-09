@@ -32,6 +32,8 @@ public  class CircuitItem {
     private String name;
     private String caption;
 
+    private int mLevel;
+
     private CircuitContainer mCircuit;
 
     public CircuitItem(){
@@ -125,6 +127,19 @@ public  class CircuitItem {
 
     public void setCurcuit(CircuitContainer mCurcuit) {
         this.mCircuit = mCurcuit;
+    }
+
+
+    public int getLevel() {
+        return mLevel;
+    }
+
+    public void setLevel(int mLevel) {
+        this.mLevel = mLevel;
+    }
+
+    public int getIndexInLevel(){
+        return mCircuit.getLstOperatorLevels().indexOf(mLevel);
     }
 
 }
