@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BusinessPuzzle</string>
+    <string name="strLoadXML">Load XML</string>
+    <string name="strCalcResult">Calculte</string>
+    <string name="title_activity_circuit">CircuitActivity</string>
+    <string name="strShow">show</string>
+</resources>

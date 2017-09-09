@@ -4,6 +4,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -19,23 +20,30 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         editDelay = (EditText)findViewById(R.id.editText);
+        startService(new Intent(this, MyIntentService.class));
     }
 
-    public void onBtn(View v) {
+    public void onBtnSchedule(View v) {
 
         int nDelay = Integer.parseInt (editDelay.getText().toString());
+        JService.scheduleService(this, nDelay);
 
-        JobInfo.Builder builder =
-                new JobInfo.Builder(2018,
-                        new ComponentName(getPackageName(),
-                                JService.class.getName()))
-                                            //.setMinimumLatency(nDelay)
-                                            .setPeriodic(nDelay)
-                                            .setPersisted(true);
+    }
 
-        JobScheduler tm = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        tm.schedule(builder.build());
+    public void onBtnUnchedule(View v) {
+        JService.unscheduleService(this);
+    }
 
+    public void onBtnKillActivity(View v) {
+        die();
+    }
 
+    public void onBtnKillThread(View v) {
+        startService(new Intent(this, MyIntentService.class)
+                        .setAction("action_die"));
+    }
+
+    private void die(){
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 }

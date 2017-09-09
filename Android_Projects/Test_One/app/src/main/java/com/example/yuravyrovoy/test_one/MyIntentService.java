@@ -1,8 +1,11 @@
 package com.example.yuravyrovoy.test_one;
 
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Intent;
-import android.widget.Toast;
+import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,6 +23,8 @@ import java.util.Calendar;
  */
 public class MyIntentService extends IntentService {
 
+    private static final String TAG = MyIntentService.class.getSimpleName();
+    boolean bDie = false;
 
     public MyIntentService() {
         super("MyIntentService");
@@ -28,10 +33,74 @@ public class MyIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        saveMessageToLog("onHandleIntent() #" + Integer.toString(nCounter++));
+        Intent notificationIntent = new Intent(this, MyIntentService.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+        builder.setContentTitle("setContentTitle")
+                .setContentText("let's dance")
+                .setSmallIcon(android.R.drawable.stat_sys_download)
+                .setContentIntent(pendingIntent)
+                .setTicker("setTicker");
+
+        startForeground(2208, builder.build());
+
+        if(intent.getAction() == "action_die"){
+            bDie = true;
+        }
     }
 
     private static int nCounter = 0;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "OnCreate");
+
+        bDie = false;
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+
+                while (true){
+
+                    if(bDie == true){
+                        die();
+                    }
+
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    String sMessage = "thread loop #" + nCounter++;
+                    //saveMessageToLog(sMessage);
+                    Log.i(TAG, sMessage);
+                }
+
+            }
+        }).start();
+
+        //JService.scheduleService(this, 5000);
+
+    }
+
+
+    @Override
+    public void onDestroy() {
+        Log.i(TAG, "onDestroy()");
+
+        super.onDestroy();
+    }
+
+    private void die(){
+        throw new RuntimeException("Testing unhandled exception processing.");
+    }
+
 
     public void saveMessageToLog(String sMessage){
 
@@ -57,8 +126,6 @@ public class MyIntentService extends IntentService {
                     BufferedWriter bw = new BufferedWriter(new FileWriter(myFile, true));
                     bw.append(sToWrite);
                     bw.close();
-
-                    Toast.makeText(MyIntentService.this, sToWrite, Toast.LENGTH_SHORT).show();
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();

@@ -12,3 +12,4 @@ build/
 
 #ignoring android compiled files
 *.apk
+/java_projects/CircuitProcessing/nbproject/private/
