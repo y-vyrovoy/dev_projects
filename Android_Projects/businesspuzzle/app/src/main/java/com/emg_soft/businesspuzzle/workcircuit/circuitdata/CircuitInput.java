@@ -11,8 +11,7 @@ public class CircuitInput extends CircuitItem {
     public void setValue(boolean param){
         value = param;
 
-        for (CircuitItemChangeListener listener:
-             lstListeners) {
+        for (CircuitItemChangeListener listener : lstListeners) {
             listener.onChange(param);
         }
     }

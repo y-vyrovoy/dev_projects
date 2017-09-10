@@ -1,5 +1,7 @@
 package com.emg_soft.businesspuzzle.workcircuit.circuitdata;
 
+import android.support.annotation.Nullable;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -24,28 +26,33 @@ public class CircuitContainer {
 
     private static final String TAG = CircuitContainer.class.getSimpleName();
 
-    private static final String TAG_ROOT = "business_circiut";
-    private static final String TAG_INPUT_GROUP = "input_group";
-    private static final String TAG_INPUT = "input";
-    private static final String TAG_OPS_GROUP = "operators_group";
-    private static final String TAG_OPERATOR = "operator";
-    private static final String TAG_RES_GROUP = "result_group";
-    private static final String TAG_RESULT = "result";
+    public static final String TAG_ROOT = "business_circiut";
+    public static final String TAG_INPUT_GROUP = "input_group";
+    public static final String TAG_INPUT = "input";
+    public static final String TAG_OPS_GROUP = "operators_group";
+    public static final String TAG_OPERATOR = "operator";
+    public static final String TAG_RES_GROUP = "result_group";
+    public static final String TAG_RESULT = "result";
 
-    private static final String TAG_NAME = "name";
-    private static final String TAG_CAPTION = "caption";
-    private static final String TAG_HEADER = "header";
-    private static final String TAG_SUBHEADER = "subheader";
+    public static final String TAG_NAME = "name";
+    public static final String TAG_CAPTION = "caption";
+    public static final String TAG_HEADER = "header";
+    public static final String TAG_SUBHEADER = "subheader";
 
-    private static final String TAG_TYPE = "type";
-    private static final String TAG_IN_ONE = "in_one";
-    private static final String TAG_IN_TWO = "in_two";
-    private static final String TAG_IN = "in";
+    public static final String TAG_TYPE = "type";
+    public static final String TAG_IN_ONE = "in_one";
+    public static final String TAG_IN_TWO = "in_two";
+    public static final String TAG_IN = "in";
 
-    private static final String TAG_TYPE_AND = "and";
-    private static final String TAG_TYPE_OR = "or";
-    private static final String TAG_TYPE_XOR = "xor";
-    private static final String TAG_TYPE_NOT = "not";
+    public static final String TAG_TYPE_AND = "and";
+    public static final String TAG_TYPE_OR = "or";
+    public static final String TAG_TYPE_XOR = "xor";
+    public static final String TAG_TYPE_NOT = "not";
+
+    public static final String TAG_TEXT_SUCCESS = "text_success";
+    public static final String TAG_TEXT_FAIL = "text_fail";
+
+
 
 
     private String mName;
@@ -64,29 +71,7 @@ public class CircuitContainer {
 
 
 
-
-
-    // static list and tools to use it
-    private static final List<CircuitContainer> lstCircuits = new ArrayList<>();
-
-    public static void addCircuit(CircuitContainer circuit){
-        lstCircuits.add(circuit);
-    }
-
-    public static CircuitContainer getCircuit(int item){
-        return lstCircuits.get(item);
-    }
-
-    public static int getCircuitsCount(){
-        return lstCircuits.size();
-    }
-
-    public static void removeAllCircuits(){
-        lstCircuits.clear();
-    }
-
-
-
+    @Nullable
     public static CircuitContainer createCurcuitFromXML(InputStream inStream) {
 
         CircuitContainer containerResult = new CircuitContainer();
@@ -214,6 +199,8 @@ public class CircuitContainer {
                 Element ele = (Element) rootResultsItems.item(iNode);
                 itemResult.setName(ele.getAttribute(TAG_NAME));
                 itemResult.setCaption(ele.getAttribute(TAG_CAPTION));
+                itemResult.setmTextSuccess(ele.getAttribute(TAG_TEXT_SUCCESS));
+                itemResult.setmTextFail(ele.getAttribute(TAG_TEXT_FAIL));
 
                 containerResult.lstItems.add(itemResult);
                 containerResult.lstResults.add(itemResult);

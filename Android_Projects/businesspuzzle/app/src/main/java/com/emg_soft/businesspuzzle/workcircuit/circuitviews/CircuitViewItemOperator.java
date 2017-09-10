@@ -1,12 +1,16 @@
 package com.emg_soft.businesspuzzle.workcircuit.circuitviews;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.Gravity;
 
+import com.emg_soft.businesspuzzle.CircuitLayout;
 import com.emg_soft.businesspuzzle.R;
 import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitItem;
 import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitOperator;
@@ -43,13 +47,16 @@ public class CircuitViewItemOperator
     public void setCircuitItem(CircuitItem circuitItem) {
 
         this.circuitItem = circuitItem;
-        setText( ((CircuitOperator) this.circuitItem).getOperatorType().toString());
-        //setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        //setText( ((CircuitOperator) this.circuitItem).getOperatorType().toString());
         setGravity(Gravity.CENTER);
 
-        setBackground(ContextCompat.getDrawable(this.getContext(), getOperatorImageId()));
 
+        Bitmap bitmapSource = BitmapFactory.decodeResource(getResources(), getOperatorImageId());
+        Bitmap bitmapScaled = CircuitLayout.scaleDown(bitmapSource, CircuitLayout.OPERATOR_MAX_SIZE, true);
+        setBackground(new BitmapDrawable(getResources(), bitmapScaled) );
     }
+
+
 
     private int getOperatorImageId(){
 

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<business_circiut
+	name="circuit_2"
+	header="Real Project"
+	subheader="Choose any two">
+
+	<input_group>
+
+		<input
+			name="quality"
+			caption="Good Qulity"/>
+
+		<input
+			name="cheap"
+			caption="Cheap"/>
+
+		<input
+			name="fast"
+			caption="Fast"/>
+
+	</input_group>
+
+
+
+	<operators_group>
+
+		<operator
+			name="or1"
+			type="or"
+			in_one="quality"
+			in_two="cheap"/>
+
+		<operator
+			name="or2"
+			type="or"
+			in_one="cheap"
+			in_two="fast"/>			
+
+		<operator
+			name="and1"
+			type="and"
+			in_one="quality"
+			in_two="fast"/>		
+
+
+
+		<operator
+			name="and2"
+			type="and"
+			in_one="or1"
+			in_two="or2"/>			
+
+		<operator
+			name="xor1"
+			type="xor"
+			in_one="and1"
+			in_two="and2"/>			
+
+	</operators_group>
+
+
+
+	<result_group>
+
+		<result
+			name="res1"
+			caption="Result"
+			in="xor1"
+			text_success="Succes!"
+			text_fail="fail :("/>
+			
+	</result_group>
+
+
+</business_circiut>

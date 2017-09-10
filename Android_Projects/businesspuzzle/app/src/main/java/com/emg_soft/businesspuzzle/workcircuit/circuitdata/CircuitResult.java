@@ -6,7 +6,11 @@ package com.emg_soft.businesspuzzle.workcircuit.circuitdata;
 
 // circuit operators class
 public class CircuitResult extends CircuitItem {
-    CircuitItem in;
+
+    private CircuitItem in;
+    private String mTextSuccess;
+    private String mTextFail;
+
 
     public CircuitItem getIn() {
         return in;
@@ -42,7 +46,22 @@ public class CircuitResult extends CircuitItem {
         else {
             return super.getItemInputNumber(item);
         }
+    }
 
+    public String getmTextSuccess() {
+        return mTextSuccess;
+    }
+
+    public void setmTextSuccess(String mTextSuccess) {
+        this.mTextSuccess = mTextSuccess;
+    }
+
+    public String getmTextFail() {
+        return mTextFail;
+    }
+
+    public void setmTextFail(String mTextFail) {
+        this.mTextFail = mTextFail;
     }
 
 }

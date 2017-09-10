@@ -1,7 +1,10 @@
 package com.emg_soft.businesspuzzle;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -39,6 +42,10 @@ public class CircuitLayout extends ViewGroup {
     public static final int TRACK_WIDTH = 5;
 
     public static final int INPUT_SHIFT = 80;
+
+    public static final int OPERATOR_MAX_SIZE = 320;
+    public static final int INPUT_MAX_SIZE = 480;
+    public static final int RESULT_MAX_SIZE = 1000;
 
 
     private int deviceWidth;
@@ -80,6 +87,11 @@ public class CircuitLayout extends ViewGroup {
 
         deviceWidth = deviceDisplay.x;
         deviceHeight = deviceDisplay.y;
+/*
+        Bitmap bitmapSource = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+        Bitmap bitmapScaled = Bitmap.createScaledBitmap(bitmapSource, deviceWidth, deviceHeight, true);
+        setBackground(new BitmapDrawable(getResources(), bitmapScaled) );
+*/
     }
 
     private void layoutInputs(int childLeft, int childTop, int childRight, int childBottom){
@@ -265,7 +277,7 @@ public class CircuitLayout extends ViewGroup {
             int inX;
 
             int inCenter = (endRight + endLeft)/2;
-            int inDistance = INPUT_SHIFT;//(int)((endRight - endLeft) * 0.2);
+            int inDistance = INPUT_SHIFT;
 
             if( inputType == CircuitItem.InputType.INPUT_ONE ){
                 inX = inCenter - inDistance;
@@ -284,7 +296,7 @@ public class CircuitLayout extends ViewGroup {
             int nRight;
 
             // check how in and out relates
-            // who's on the left and who's on the rigth
+            // who's on the left and who's on the right
 
             if(outX >= inX){
                 nLeft = inX - STANDARD_BORDER;
@@ -560,7 +572,18 @@ public class CircuitLayout extends ViewGroup {
         return null;
     }
 
+    public static Bitmap scaleDown(Bitmap realImage, float maxImageSize, boolean filter) {
 
+        float ratio = Math.min(
+                (float) maxImageSize / realImage.getWidth(),
+                (float) maxImageSize / realImage.getHeight());
+
+        int width = Math.round(ratio * realImage.getWidth());
+        int height = Math.round(ratio * realImage.getHeight());
+
+        Bitmap newBitmap = Bitmap.createScaledBitmap(realImage, width, height, filter);
+        return newBitmap;
+    }
 
 
     // setters and getters
