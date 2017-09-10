@@ -1,26 +1,17 @@
 package com.emg_soft.businesspuzzle;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.CompoundButton;
 
 import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitContainer;
-import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitInput;
 import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitItem;
-import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitOperator;
 import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitTrack;
 import com.emg_soft.businesspuzzle.workcircuit.circuitviews.CircuitTrackView;
 import com.emg_soft.businesspuzzle.workcircuit.circuitviews.CircuitViewItem;
@@ -29,6 +20,8 @@ import com.emg_soft.businesspuzzle.workcircuit.circuitviews.CircuitViewItemOpera
 import com.emg_soft.businesspuzzle.workcircuit.circuitviews.CircuitViewItemResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +37,8 @@ public class CircuitLayout extends ViewGroup {
     public static final int STANDARD_BORDER = 50;
     public static final int INPUT_HEIGHT_QUANTUM = 20;
     public static final int TRACK_WIDTH = 5;
+
+    public static final int INPUT_SHIFT = 80;
 
 
     private int deviceWidth;
@@ -237,13 +232,13 @@ public class CircuitLayout extends ViewGroup {
 
         for(CircuitTrackView trackView : lstTracksView){
 
-            View viewStart = (View) trackView.getmViewStart();
+            View viewStart = (View) trackView.getViewStart();
             int startTop = viewStart.getTop();
             int startLeft = viewStart.getLeft();
             int startBottom = viewStart.getBottom();
             int startRight = viewStart.getRight();
 
-            View viewEnd = (View) trackView.getmViewEnd();
+            View viewEnd = (View) trackView.getViewEnd();
             int endTop = viewEnd.getTop();
             int endLeft = viewEnd.getLeft();
             int endBottom = viewEnd.getBottom();
@@ -270,7 +265,7 @@ public class CircuitLayout extends ViewGroup {
             int inX;
 
             int inCenter = (endRight + endLeft)/2;
-            int inDistance = (int)((endRight - endLeft) * 0.2);
+            int inDistance = INPUT_SHIFT;//(int)((endRight - endLeft) * 0.2);
 
             if( inputType == CircuitItem.InputType.INPUT_ONE ){
                 inX = inCenter - inDistance;
@@ -309,12 +304,9 @@ public class CircuitLayout extends ViewGroup {
                                 Math.max(nLeft, nRight),
                                 nBottom);
 
-            trackView.xL = Math.min(nLeft, nRight);
-            trackView.xR = Math.max(nLeft, nRight);
-            trackView.yT = nTop;
-            trackView.yB = nBottom;
-
         }
+
+        arrangeInputsSublevels();
     }
 
     @Override
@@ -454,12 +446,9 @@ public class CircuitLayout extends ViewGroup {
             CircuitTrackView trackView = new CircuitTrackView(viewStart, viewEnd, context);
 
 
-            mapTracks.put(track,trackView);
+            mapTracks.put(track, trackView);
             super.addView(trackView);
         }
-
-
-        arrangeInputsSublevels();
 
         // take inputs, result and operators to the top
         for(CircuitViewItem viewItem : lstViewsOperators){
@@ -479,7 +468,7 @@ public class CircuitLayout extends ViewGroup {
     private void arrangeInputsSublevels(){
 
         // !!!! counting level from RESULT TO INPUT
-/*
+
         int NLevels = mCircuit.getLevelNumber() + 1;
 
         // prepare list of every level list of track view
@@ -504,68 +493,51 @@ public class CircuitLayout extends ViewGroup {
         }
 
 
-
         // process each list separately
         for(List<CircuitTrackView> lstLevel : lstTracksLevels){
+            arrangeTracksOneLevel(lstLevel);
+        }
 
-            List<CircuitTrackView> lstTmp = new ArrayList<>(lstLevel);
+    }
 
-            int subLevel = 0;
+    private void arrangeTracksOneLevel(List<CircuitTrackView> lstLevel){
 
-            // run through all tracks
-            for(CircuitTrackView trackView1 : lstTmp) {
+        // sorting track views by width. acceding
 
-                int left1 = trackView1.xL;
-                int right1 = trackView1.xR;
+        Collections.sort(lstLevel, new Comparator<CircuitTrackView>() {
+
+            @Override
+            public int compare(CircuitTrackView circuitTrackView, CircuitTrackView t1) {
+
+            return circuitTrackView.getWidth()- t1.getWidth();
+            }
+        });
+
+        List<CircuitTrackView> lstTmp = new ArrayList<>(lstLevel);
+
+        Log.i(TAG, "Sort:");
+        for(CircuitTrackView t : lstTmp){
+            Log.i(TAG, "w = " + t.getWidth());
+        }
 
 
-                trackView1.setSubLevel(subLevel);
 
-                // compare each track with each other
-                for (CircuitTrackView trackView2 : lstTracksViews) {
+        for(int iCurrent = 0; iCurrent < lstLevel.size(); iCurrent++){
 
-                    int left2 = trackView2.getLeft();
-                    int right2 = trackView2.getRight();
+            int subLevel = lstLevel.get(iCurrent).getSubLevel();
 
-                    // if they do NOT cross
-                    if ((left2 > right1) || (right2 < left1)) {
+            for(int iNext = iCurrent+1; iNext < lstLevel.size(); iNext++){
 
-                        trackView2.setSubLevel(subLevel);
-                        lstTmp.remove(trackView2);
-                    }
+                if(lstLevel.get(iCurrent).isViewCrossed(lstLevel.get(iNext)) == true)
+                {
+                    lstLevel.get(iNext).setSubLevel(subLevel + 1);
                 }
 
-                lstTmp.remove(trackView1);
-                subLevel++;
-
             }
-
-        }
-*/
-
-
-        // !!!! counting level from RESULT TO INPUT
-        Map<Integer, Integer> mapSublevels = new HashMap<>();
-
-        List<CircuitTrackView> lstTracksViews = new ArrayList<>(mapTracks.values());
-
-        for(CircuitTrackView trackView : lstTracksViews){
-
-            int curLevel = trackView.getLevel();
-
-            int val = 0;
-
-            if(mapSublevels.containsKey(curLevel) == true){
-                val = mapSublevels.get(curLevel) + 1;
-            }
-
-            mapSublevels.put(curLevel, val);
-            trackView.setSubLevel(val);
         }
 
 
     }
-
 
     @Nullable
     private CircuitViewItem getView(CircuitItem item){
@@ -617,7 +589,7 @@ public class CircuitLayout extends ViewGroup {
     }
 
     public List<CircuitTrackView> getTracksViewsList(){
-        return new ArrayList<CircuitTrackView>(mapTracks.values());
+        return new ArrayList<>(mapTracks.values());
     }
 
 

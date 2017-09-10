@@ -30,4 +30,5 @@ public class CircuitTrack {
     public void setItemEnd(CircuitItem itemEnd) {
         this.itemEnd = itemEnd;
     }
+
 }

@@ -85,6 +85,7 @@ public class CircuitOperator extends CircuitItem {
     }
 
     public int getOperatorLevel(){
+
         if(getCurcuit() == null){
             return -1;
         }

@@ -6,8 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.os.AsyncTask;
-import android.support.annotation.IntegerRes;
 import android.view.View;
 
 import com.emg_soft.businesspuzzle.CircuitLayout;
@@ -32,7 +30,6 @@ public class CircuitTrackView extends View {
     private Rect rectVerticalIn;
     private Rect rectHorizontal;
 
-
     private Paint mPaintTracksBorder;
     private Paint mPaintTracksBodyFalse;
     private Paint mPaintTracksBodyTrue;
@@ -43,7 +40,7 @@ public class CircuitTrackView extends View {
 
     private boolean mState;
 
-    public int xL, xR, yT, yB;
+    private String mDescription;
 
     // constructors
     public CircuitTrackView(CircuitViewItem start, CircuitViewItem end, Context context){
@@ -51,8 +48,8 @@ public class CircuitTrackView extends View {
         super(context);
 
         input = -1;
-        setmViewStart(start);
-        setmViewEnd(end);
+        setViewStart(start);
+        setViewEnd(end);
 
         mState = false;
 
@@ -80,6 +77,8 @@ public class CircuitTrackView extends View {
         mPaintTracksBodyTrue1.setStyle(Paint.Style.FILL);
         mPaintTracksBodyTrue1.setStrokeWidth(4);
         mPaintTracksBodyTrue1.setColor(Color.MAGENTA);
+
+        mDescription = start.getCircuitItem().getName() + " -> " + end.getCircuitItem().getName();
     }
 
     @Override
@@ -139,23 +138,14 @@ public class CircuitTrackView extends View {
                     outYend + CircuitLayout.TRACK_WIDTH);
         }
 
-
         canvas.drawRect(rectVerticalOut, mPaintTracksBorder);
         canvas.drawRect(rectVerticalIn, mPaintTracksBorder);
         canvas.drawRect(rectHorizontal, mPaintTracksBorder);
 
-        Paint paint = new Paint();
-        paint.setColor(Color.TRANSPARENT);
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawPaint(paint);
-
-        paint.setColor(Color.BLACK);
-        paint.setTextSize(60);
-        canvas.drawText(Integer.toString(subLevel), rectVerticalIn.right, rectVerticalIn.bottom, paint);
 
         Paint pFill;
 
-        if(getmViewStart().getCircuitItem().getValue() == false){
+        if(getViewStart().getCircuitItem().getValue() == false){
             pFill = mPaintTracksBodyFalse;
         }
         else {
@@ -178,7 +168,7 @@ public class CircuitTrackView extends View {
 
     public void updateState(){
 
-        mState = getmViewStart().getCircuitItem().getValue();
+        mState = getViewStart().getCircuitItem().getValue();
 
         if (mState == true){
             //startTrackAnimation();
@@ -189,7 +179,6 @@ public class CircuitTrackView extends View {
 
         invalidate();
     }
-
 
     private void  startTrackAnimation(){
 
@@ -216,22 +205,33 @@ public class CircuitTrackView extends View {
 
     }
 
+    public boolean isViewCrossed(CircuitTrackView trackView){
+
+        boolean leftInside = (trackView.getLeft() >= this.getLeft() - CircuitLayout.INPUT_SHIFT ) &&
+                                (trackView.getLeft() <= this.getRight() + CircuitLayout.INPUT_SHIFT);
+
+        boolean rightInside = (trackView.getRight() >= this.getLeft() - CircuitLayout.INPUT_SHIFT) &&
+                                (trackView.getRight() <= this.getRight() + CircuitLayout.INPUT_SHIFT);
+
+        return (leftInside || rightInside);
+    }
+
 
     // setters and getters
 
-    public CircuitViewItem getmViewStart() {
+    public CircuitViewItem getViewStart() {
         return mViewStart;
     }
 
-    public void setmViewStart(CircuitViewItem mViewStart) {
+    public void setViewStart(CircuitViewItem mViewStart) {
         this.mViewStart = mViewStart;
     }
 
-    public CircuitViewItem getmViewEnd() {
+    public CircuitViewItem getViewEnd() {
         return mViewEnd;
     }
 
-    public void setmViewEnd(CircuitViewItem mViewEnd) {
+    public void setViewEnd(CircuitViewItem mViewEnd) {
 
         this.mViewEnd = mViewEnd;
 
@@ -272,5 +272,9 @@ public class CircuitTrackView extends View {
 
     public void setInputLeft(boolean inLeft) {
         this.inputLeft = inLeft;
+    }
+
+    public int getIndexWithinLevel(){
+        return getViewEnd().getCircuitItem().getIndexInLevel();
     }
 }
