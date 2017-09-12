@@ -256,7 +256,7 @@ public class CircuitContainer {
     public CircuitItem findItem(String name){
 
         for(CircuitItem item : lstItems){
-            if (item.getName() == name){
+            if (item.getName().equals(name)){
                 return item;
             }
         }

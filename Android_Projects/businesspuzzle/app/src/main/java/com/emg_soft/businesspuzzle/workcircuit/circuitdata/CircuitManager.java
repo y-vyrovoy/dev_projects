@@ -62,4 +62,15 @@ public class CircuitManager {
         }
     }
 
+    public static int getIndexFromName(String name){
+
+        for(int iContainer = 0; iContainer < lstContainers.size(); iContainer++){
+
+            if(lstContainers.get(iContainer).getName().equals(name)){
+                return iContainer;
+            }
+        }
+
+        return -1;
+    }
 }

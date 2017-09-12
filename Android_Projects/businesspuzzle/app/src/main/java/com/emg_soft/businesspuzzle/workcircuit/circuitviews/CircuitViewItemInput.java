@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -70,6 +71,7 @@ public class CircuitViewItemInput
         updateBackground();
         setTextColor(Color.LTGRAY);
 
+        setTextSize((int)(getTextSize()*1.3));
     }
 
 
@@ -89,10 +91,13 @@ public class CircuitViewItemInput
 
         if( (getCircuitItem() == null) ||
             (getCircuitItem().getValue() == false) ){
+
             setBackground(drawableOff);
+            setTypeface(null, Typeface.NORMAL);
         }
         else{
             setBackground(drawableOn);
+            setTypeface(getTypeface(), Typeface.BOLD);
         }
 
     }

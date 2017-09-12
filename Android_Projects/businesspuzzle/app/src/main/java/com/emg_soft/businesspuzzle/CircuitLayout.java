@@ -38,14 +38,14 @@ public class CircuitLayout extends ViewGroup {
     private static final String TAG = CircuitLayout.class.getSimpleName();
 
     public static final int STANDARD_BORDER = 50;
-    public static final int INPUT_HEIGHT_QUANTUM = 20;
-    public static final int TRACK_WIDTH = 5;
+    public static final int INPUT_HEIGHT_QUANTUM = 30;
+    public static final int TRACK_WIDTH = 2;
 
-    public static final int INPUT_SHIFT = 80;
+    public static final int INPUT_SHIFT = 30;
 
-    public static final int OPERATOR_MAX_SIZE = 320;
-    public static final int INPUT_MAX_SIZE = 480;
-    public static final int RESULT_MAX_SIZE = 1000;
+    public static final int OPERATOR_MAX_SIZE = 128;
+    public static final int INPUT_MAX_SIZE = 150;
+    public static final int RESULT_MAX_SIZE = 500;
 
 
     private int deviceWidth;

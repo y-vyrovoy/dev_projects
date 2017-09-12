@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<business_circiut
+	name="successful_projects"
+	header="Successful Projects"
+	subheader="">
+
+
+	<input_group>
+
+		<input
+			name="talent"
+			caption="Talented&#10;manager"/>
+
+		<input
+			name="standards"
+			caption="Standardized&#10;process"/>
+
+
+		<input
+			name="responsibility"
+			caption="Personal&#10;responsibility"/>
+
+		<input
+			name="ambitions"
+			caption="Excessive&#10;ambitions"/>
+
+		<input
+			name="requirements"
+			caption="Adequate&#10;requirements"/>
+
+		<input
+			name="terms"
+			caption="Reasonable&#10;terms"/>
+
+		<input
+			name="debugging"
+			caption="Careful&#10;debugging"/>
+
+	</input_group>
+
+
+
+	<operators_group>
+
+		<operator
+			name="or1"
+			type="or"
+			in_one="talent"
+			in_two="standards"/>
+
+
+		<operator
+			name="not1"
+			type="not"
+			in_one="ambitions"
+			in_two=""/>
+
+		<operator
+			name="and1"
+			type="and"
+			in_one="requirements"
+			in_two="terms"/>
+
+		<operator
+			name="and2"
+			type="and"
+			in_one="responsibility"
+			in_two="not1"/>
+
+		<operator
+			name="or2"
+			type="or"
+			in_one="or1"
+			in_two="and2"/>
+
+		<operator
+			name="and3"
+			type="and"
+			in_one="and1"
+			in_two="debugging"/>
+
+		<operator
+			name="and4"
+			type="and"
+			in_one="or2"
+			in_two="and3"/>
+
+
+	</operators_group>
+
+
+
+	<result_group>
+
+		<result
+			name="res1"
+			caption=""
+			in="and4"
+			text_success="Successful Turn-key Projects"
+			text_fail=""/>
+
+	</result_group>
+
+
+</business_circiut>

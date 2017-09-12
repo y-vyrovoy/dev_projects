@@ -6,9 +6,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import com.emg_soft.businesspuzzle.CircuitLayout;
+import com.emg_soft.businesspuzzle.R;
 
 /**
  * Created by Yura Vyrovoy on 9/9/2017.
@@ -71,14 +74,34 @@ public class CircuitTrackView extends View {
         mPaintTracksBodyTrue = new Paint();
         mPaintTracksBodyTrue.setStyle(Paint.Style.FILL);
         mPaintTracksBodyTrue.setStrokeWidth(4);
-        mPaintTracksBodyTrue.setColor(Color.CYAN);
+
+
+        mPaintTracksBodyTrue.setColor(ContextCompat.getColor(context, R.color.colorActiveTrack));
 
         mPaintTracksBodyTrue1 = new Paint();
         mPaintTracksBodyTrue1.setStyle(Paint.Style.FILL);
         mPaintTracksBodyTrue1.setStrokeWidth(4);
         mPaintTracksBodyTrue1.setColor(Color.MAGENTA);
 
-        mDescription = start.getCircuitItem().getName() + " -> " + end.getCircuitItem().getName();
+        if( (start != null) && (start.getCircuitItem() != null) ){
+            mDescription += start.getCircuitItem().getName();
+        }
+        else
+        {
+            mDescription += "null";
+        }
+
+        mDescription += " -> ";
+
+
+        if( (end != null) && (end.getCircuitItem() != null) ){
+            mDescription += end.getCircuitItem().getName();
+        }
+        else
+        {
+            mDescription += "null";
+        }
+
     }
 
     @Override
@@ -138,6 +161,8 @@ public class CircuitTrackView extends View {
                     outYend + CircuitLayout.TRACK_WIDTH);
         }
 
+        normilizeRect(rectHorizontal);
+
         canvas.drawRect(rectVerticalOut, mPaintTracksBorder);
         canvas.drawRect(rectVerticalIn, mPaintTracksBorder);
         canvas.drawRect(rectHorizontal, mPaintTracksBorder);
@@ -166,44 +191,21 @@ public class CircuitTrackView extends View {
 
     }
 
+    private void normilizeRect(Rect rect){
+
+        int l = rect.left;
+        int r = rect.right;
+        int t = rect.top;
+        int b = rect.bottom;
+
+        rect.set( Math.min(l,r), Math.min(t,b), Math.max(l,r), Math.max(t,b));
+    }
+
     public void updateState(){
-
-        mState = getViewStart().getCircuitItem().getValue();
-
-        if (mState == true){
-            //startTrackAnimation();
-        }
-        else{
-            //stopTrackAnimation();
-        }
 
         invalidate();
     }
 
-    private void  startTrackAnimation(){
-
-        mAnimation = ValueAnimator.ofInt(0, 100);
-        mAnimation.setDuration(10000l); //one second
-
-
-        mAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator updatedAnimation) {
-            mAnimationProgress = (int)updatedAnimation.getAnimatedValue();
-
-            invalidate();
-
-            }
-        });
-
-        mAnimation.start();
-
-
-    }
-
-    private void  stopTrackAnimation(){
-
-    }
 
     public boolean isViewCrossed(CircuitTrackView trackView){
 

@@ -51,6 +51,8 @@ public class CircuitViewItemResult
         setBackground(drawableBackground);
         setTextColor(Color.LTGRAY);
         setGravity(Gravity.CENTER);
+
+        setTextSize(getTextSize() * 2);
     }
 
     // getters and setters

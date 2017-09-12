@@ -29,6 +29,7 @@ public class CircuitResult extends CircuitItem {
 
     @Override
     public boolean getValue(){
+
         if(in == null){
             return false;
         }

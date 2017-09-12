@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<business_circiut
+	name="main_board"
+	header="Main Board"
+	subheader="">
+
+
+	<input_group>
+
+		<input
+			name="x86_atom"
+			caption="x86 Atom"/>
+
+		<input
+			name="cortex_a"
+			caption="cortex A"/>
+
+		<input
+			name="win_embd"
+			caption="Windows&#10;Embedded"/>
+
+		<input
+			name="dot_net_app"
+			caption=".Net App"/>
+
+		<input
+			name="linux_embd"
+			caption="Linux&#10;Embedded"/>
+
+		<input
+			name="qt"
+			caption="QT"/>
+
+		<input
+			name="android_app"
+			caption="Android&#10;+ App"/>
+
+	</input_group>
+
+
+
+	<operators_group>
+
+		<operator
+			name="xor1"
+			type="xor"
+			in_one="x86_atom"
+			in_two="cortex_a"/>
+
+		<operator
+			name="and1"
+			type="and"
+			in_one="win_embd"
+			in_two="dot_net_app"/>
+
+		<operator
+			name="and2"
+			type="and"
+			in_one="linux_embd"
+			in_two="qt"/>
+
+		<operator
+			name="xor2"
+			type="xor"
+			in_one="and1"
+			in_two="android_app"/>
+
+		<operator
+			name="xor3"
+			type="xor"
+			in_one="xor2"
+			in_two="and2"/>
+
+		<operator
+			name="and3"
+			type="and"
+			in_one="xor1"
+			in_two="xor3"/>
+
+	</operators_group>
+
+
+
+	<result_group>
+
+		<result
+			name="res1"
+			caption=""
+			in="and3"
+			text_success="Main Board"
+			text_fail=""/>
+
+	</result_group>
+
+
+
+</business_circiut>

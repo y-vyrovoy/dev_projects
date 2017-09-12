@@ -11,19 +11,37 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="reversePortrait"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </activity>
 
         <activity
             android:name=".CircuitActivity"
             android:label="@string/title_activity_circuit"
+            android:screenOrientation="reversePortrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
+            android:name=".workcircuit.circuitviews.BusinessActivity"
+            android:label="@string/title_activity_business"
+            android:screenOrientation="reversePortrait"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+
+
+        <receiver
+            android:name=".StartMyActivityAtBootReceiver"
+            android:label="StartMyServiceAtBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

@@ -47,6 +47,21 @@ public class CircuitOperator extends CircuitItem {
     @Override
     public boolean getValue(){
 
+        if(type  == CircuitOperatorType.OP_NOT){
+
+            if( getIn_one() == null){
+                return false;
+            }
+            else {
+                return !getIn_one().getValue();
+            }
+        }
+
+
+        if( (getIn_one() == null) || (getIn_two() == null) ){
+            return false;
+        }
+
         switch(type){
 
             case OP_AND:
@@ -59,8 +74,6 @@ public class CircuitOperator extends CircuitItem {
                 return (getIn_one().getValue() && !getIn_two().getValue()) ||
                         (!getIn_one().getValue() && getIn_two().getValue());
 
-            case OP_NOT:
-                return !getIn_one().getValue();
 
             default:
                 return false;

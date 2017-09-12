@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<business_circiut
+	name="rt_controller"
+	header="RT Controller"
+	subheader="">
+
+
+	<input_group>
+
+		<input
+			name="cortex_m4"
+			caption="Cortex M4"/>
+
+		<input
+			name="cortex_m7"
+			caption="Cortex M7"/>
+
+		<input
+			name="touch_gfx"
+			caption="Touch GFX"/>
+
+		<input
+			name="embd_wizzard"
+			caption="Embedded&#10;Wizard"/>
+
+		<input
+			name="free_atos"
+			caption="Free Atos"/>
+
+		<input
+			name="mcos"
+			caption="MCOS"/>
+
+	</input_group>
+
+
+
+	<operators_group>
+
+		<operator
+			name="xor1"
+			type="xor"
+			in_one="cortex_m4"
+			in_two="cortex_m7"/>
+
+		<operator
+			name="xor2"
+			type="xor"
+			in_one="touch_gfx"
+			in_two="embd_wizzard"/>
+
+		<operator
+			name="xor3"
+			type="xor"
+			in_one="free_atos"
+			in_two="mcos"/>
+
+		<operator
+			name="and1"
+			type="and"
+			in_one="xor2"
+			in_two="xor3"/>
+
+		<operator
+			name="and2"
+			type="and"
+			in_one="xor1"
+			in_two="and1"/>
+
+
+	</operators_group>
+
+
+
+	<result_group>
+
+		<result
+			name="res1"
+			caption=""
+			in="and2"
+			text_success="RT Controller"
+			text_fail=""/>
+
+	</result_group>
+
+
+
+</business_circiut>
