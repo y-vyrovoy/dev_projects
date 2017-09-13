@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -37,14 +38,14 @@ public class CircuitLayout extends ViewGroup {
 
     private static final String TAG = CircuitLayout.class.getSimpleName();
 
-    public static final int STANDARD_BORDER = 50;
+    public static final int STANDARD_BORDER = 10;                   //50;
     public static final int INPUT_HEIGHT_QUANTUM = 30;
     public static final int TRACK_WIDTH = 2;
 
     public static final int INPUT_SHIFT = 30;
 
-    public static final int OPERATOR_MAX_SIZE = 128;
-    public static final int INPUT_MAX_SIZE = 150;
+    public static final int OPERATOR_MAX_SIZE = 180;               //128;
+    public static final int INPUT_MAX_SIZE = 120;                   //150;
     public static final int RESULT_MAX_SIZE = 500;
 
 
@@ -116,11 +117,17 @@ public class CircuitLayout extends ViewGroup {
 
             //Get the maximum size of the child
             child.measure(MeasureSpec.makeMeasureSpec(childWidth, MeasureSpec.AT_MOST),
-                    MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.AT_MOST));
+                                MeasureSpec.makeMeasureSpec(childHeight, MeasureSpec.AT_MOST));
+
             curWidth = child.getMeasuredWidth();
             curHeight = child.getMeasuredHeight();
 
-            curLeft = itemInputsWidthQuantum/2 + itemInputsWidthQuantum * iInput - curWidth/2;
+            float ratio = Math.max(((float)INPUT_MAX_SIZE )/ curWidth, ((float)INPUT_MAX_SIZE) / curHeight);
+
+            curWidth *= ratio;
+            curHeight *= ratio;
+
+                    curLeft = itemInputsWidthQuantum/2 + itemInputsWidthQuantum * iInput - curWidth/2;
 
             //do the layout
             child.layout(curLeft,
@@ -128,14 +135,13 @@ public class CircuitLayout extends ViewGroup {
                     curLeft + curWidth,
                     curTop + curHeight);
 
+
             //store the max height
             if (maxHeight < curHeight){
                 maxHeight = curHeight;
             }
 
         }
-
-        int inputBottom = curTop + maxHeight;
     }
 
     private void layoutResults(int childLeft, int childTop, int childRight, int childBottom){

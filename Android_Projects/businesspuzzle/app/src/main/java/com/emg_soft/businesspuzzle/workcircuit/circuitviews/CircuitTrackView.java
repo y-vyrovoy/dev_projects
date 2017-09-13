@@ -36,12 +36,7 @@ public class CircuitTrackView extends View {
     private Paint mPaintTracksBorder;
     private Paint mPaintTracksBodyFalse;
     private Paint mPaintTracksBodyTrue;
-    private Paint mPaintTracksBodyTrue1;
 
-    private ValueAnimator mAnimation;
-    private int mAnimationProgress;
-
-    private boolean mState;
 
     private String mDescription;
 
@@ -53,8 +48,6 @@ public class CircuitTrackView extends View {
         input = -1;
         setViewStart(start);
         setViewEnd(end);
-
-        mState = false;
 
         rectVerticalOut = new Rect();
         rectVerticalIn = new Rect();
@@ -77,11 +70,6 @@ public class CircuitTrackView extends View {
 
 
         mPaintTracksBodyTrue.setColor(ContextCompat.getColor(context, R.color.colorActiveTrack));
-
-        mPaintTracksBodyTrue1 = new Paint();
-        mPaintTracksBodyTrue1.setStyle(Paint.Style.FILL);
-        mPaintTracksBodyTrue1.setStrokeWidth(4);
-        mPaintTracksBodyTrue1.setColor(Color.MAGENTA);
 
         if( (start != null) && (start.getCircuitItem() != null) ){
             mDescription += start.getCircuitItem().getName();
@@ -168,26 +156,18 @@ public class CircuitTrackView extends View {
         canvas.drawRect(rectHorizontal, mPaintTracksBorder);
 
 
-        Paint pFill;
+        Paint pFill = mPaintTracksBodyTrue;
 
         if(getViewStart().getCircuitItem().getValue() == false){
             pFill = mPaintTracksBodyFalse;
         }
         else {
-            if( (mAnimationProgress % 2) == 0)
-            {
-                pFill = mPaintTracksBodyTrue;
-            }
-            else {
-                pFill = mPaintTracksBodyTrue;
-            }
+            pFill = mPaintTracksBodyTrue;
         }
 
-        canvas.drawRect(rectVerticalOut, pFill);
-        canvas.drawRect(rectVerticalIn, pFill);
-        canvas.drawRect(rectHorizontal, pFill);
-
-        //invalidate();
+        canvas.drawRect(rectVerticalOut, mPaintTracksBodyTrue);
+        canvas.drawRect(rectVerticalIn, mPaintTracksBodyTrue);
+        canvas.drawRect(rectHorizontal, mPaintTracksBodyTrue);
 
     }
 

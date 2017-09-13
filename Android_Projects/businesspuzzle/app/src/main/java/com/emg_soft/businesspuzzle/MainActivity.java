@@ -1,67 +1,22 @@
 package com.emg_soft.businesspuzzle;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.ContactsContract;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.text.method.ScrollingMovementMethod;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.util.Xml;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitContainer;
 import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitManager;
-import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitTrack;
-import com.emg_soft.businesspuzzle.workcircuit.circuitviews.BusinessActivity;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.SAXException;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import static com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitContainer.TAG_ROOT;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -107,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        createButttons();
+        createButtons();
     }
 
 
@@ -182,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
     private void enableControls(boolean enable){
     }
 
-    private void createButttons(){
+    private void createButtons(){
 
         btnAWS = addButton("AWS", new View.OnClickListener(){
                                                     @Override

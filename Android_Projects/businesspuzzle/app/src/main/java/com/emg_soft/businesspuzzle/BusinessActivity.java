@@ -1,4 +1,4 @@
-package com.emg_soft.businesspuzzle.workcircuit.circuitviews;
+package com.emg_soft.businesspuzzle;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -10,9 +10,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.emg_soft.businesspuzzle.CircuitActivity;
-import com.emg_soft.businesspuzzle.MainActivity;
-import com.emg_soft.businesspuzzle.R;
 import com.emg_soft.businesspuzzle.workcircuit.circuitdata.CircuitManager;
 
 public class BusinessActivity extends AppCompatActivity {

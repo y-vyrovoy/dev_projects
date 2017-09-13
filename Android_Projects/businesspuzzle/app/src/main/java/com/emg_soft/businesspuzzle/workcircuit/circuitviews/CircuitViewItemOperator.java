@@ -48,15 +48,13 @@ public class CircuitViewItemOperator
 
         this.circuitItem = circuitItem;
         //setText( ((CircuitOperator) this.circuitItem).getOperatorType().toString());
-        setGravity(Gravity.CENTER);
+        setGravity(Gravity.CENTER );
 
 
         Bitmap bitmapSource = BitmapFactory.decodeResource(getResources(), getOperatorImageId());
         Bitmap bitmapScaled = CircuitLayout.scaleDown(bitmapSource, CircuitLayout.OPERATOR_MAX_SIZE, true);
         setBackground(new BitmapDrawable(getResources(), bitmapScaled) );
     }
-
-
 
     private int getOperatorImageId(){
 

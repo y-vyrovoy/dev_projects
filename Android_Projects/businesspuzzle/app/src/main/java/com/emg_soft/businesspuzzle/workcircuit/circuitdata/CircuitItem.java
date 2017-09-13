@@ -59,8 +59,6 @@ public  class CircuitItem {
         lstListeners.remove(listener);
     }
 
-
-
     /**
      * This funcion allows to know which input items come to
      * @param item - circuit item that might be input for current item

@@ -44,6 +44,7 @@ public class CircuitViewItemResult
     }
 
     private void init() {
+
         Bitmap bitmapSource = BitmapFactory.decodeResource(getResources(), R.drawable.ic_result);
         Bitmap bitmapScaled = CircuitLayout.scaleDown(bitmapSource, CircuitLayout.RESULT_MAX_SIZE, true);
         drawableBackground = new BitmapDrawable(getResources(), bitmapScaled);

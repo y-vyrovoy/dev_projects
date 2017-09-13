@@ -13,7 +13,7 @@ public class CircuitResult extends CircuitItem {
 
 
     public CircuitItem getIn() {
-        return in;
+        return in = getIn_one();
     }
 
     public void setIn(CircuitItem in) {
@@ -45,7 +45,7 @@ public class CircuitResult extends CircuitItem {
             return InputType.INPUT_ONLY;
         }
         else {
-            return super.getItemInputNumber(item);
+            return InputType.INPUT_NO_INPUT;
         }
     }
 

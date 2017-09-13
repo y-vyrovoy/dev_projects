@@ -3,12 +3,18 @@ package com.emg_soft.businesspuzzle.workcircuit.circuitviews;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.emg_soft.businesspuzzle.CircuitLayout;
@@ -51,27 +57,32 @@ public class CircuitViewItemInput
 
         // setting value on users click
         setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 ((CircuitInput)getCircuitItem()).setValue(isChecked);
                 updateBackground();
             }
+
         });
 
-        Bitmap bitmapSource = BitmapFactory.decodeResource(getResources(), R.drawable.ic_input_on);
-        Bitmap bitmapScaled = CircuitLayout.scaleDown(bitmapSource, CircuitLayout.INPUT_MAX_SIZE, true);
-        drawableOn = new BitmapDrawable(getResources(), bitmapScaled);
 
-        bitmapSource = BitmapFactory.decodeResource(getResources(), R.drawable.ic_input_off);
-        bitmapScaled = CircuitLayout.scaleDown(bitmapSource, CircuitLayout.INPUT_MAX_SIZE, true);
-        drawableOff = new BitmapDrawable(getResources(), bitmapScaled);
+        Bitmap bitmapSourceOn = BitmapFactory.decodeResource(getResources(), R.drawable.ic_input_on);
+        Bitmap bitmapScaledOn = CircuitLayout.scaleDown(bitmapSourceOn, CircuitLayout.INPUT_MAX_SIZE, true);
+        drawableOn = new BitmapDrawable(getResources(), bitmapScaledOn);
+
+        Bitmap bitmapSourceOff = BitmapFactory.decodeResource(getResources(), R.drawable.ic_input_off);
+        Bitmap bitmapScaledOff = CircuitLayout.scaleDown(bitmapSourceOff, CircuitLayout.INPUT_MAX_SIZE, true);
+        drawableOff = new BitmapDrawable(getResources(), bitmapScaledOff);
+
 
         setTextOff(null);
         setTextOn(null);
 
         updateBackground();
-        setTextColor(Color.LTGRAY);
 
-        setTextSize((int)(getTextSize()*1.3));
+        setTextColor(Color.LTGRAY);
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, 8);
+        //setText(null);
     }
 
 
@@ -102,5 +113,22 @@ public class CircuitViewItemInput
 
     }
 
+/*
+    @Override
+    public void onDraw(Canvas canvas){
+        super.onDraw(canvas);
+
+        Paint p = new Paint();
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(4);
+        p.setColor(Color.RED);
+
+        canvas.drawLine(0, 0, getWidth(), 0, p);
+        canvas.drawLine(getWidth(), 0, getWidth(), getHeight(), p);
+        canvas.drawLine(getWidth(), getHeight(), 0, getHeight(), p);
+        canvas.drawLine(0,  getHeight(), 0, 0, p);
+
+    }
+*/
 
 }
