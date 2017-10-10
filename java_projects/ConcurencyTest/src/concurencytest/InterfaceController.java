@@ -13,7 +13,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
+import java.util.prefs.Preferences;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -28,44 +28,95 @@ public class InterfaceController {
 
     @FXML
     private URL location;
-    
+
     @FXML
-    private TextArea textContent;    
-    
+    private TextArea textContent;
+
     @FXML
-    private TextField txtFile;    
+    private TextField txtPeriod1;
+
+    @FXML
+    private Button btnStart1;
+
+    @FXML
+    private TextField txtPeriod2;
+
+    @FXML
+    private Button btnStart2;
+
+    @FXML
+    private TextField txtPeriod3;
+
+    @FXML
+    private Button btnStart3;
+
+    @FXML
+    private TextField txtFile;
 
     @FXML
     private Button btnBrowse;
 
     @FXML
-    private Button btnDo;
+    private Button btnStart;
+
+    @FXML
+    private Button btnStop;
     
     private FolderWatcher _watcher;
-
+    private String _fileName;
+    
+    private static final String PREF_LOCATION = "pref_folder";
+    private static final String PREF_FILE_NAME = "pref_filename";
+    private static final String PREF_PERIOD_1 = "pref_period_1";
+    private static final String PREF_PERIOD_2 = "pref_period_2";
+    private static final String PREF_PERIOD_3 = "pref_period_3";
+    
+    private static final String FILE_NAME = "text.txt";
+    
+    private static final int DEF_PERIOD_1 = 2700;
+    private static final int DEF_PERIOD_2 = 1700;
+    private static final int DEF_PERIOD_3 = 400;
+    
+    
     @FXML
     void initialize() {
         assert textContent != null : "fx:id=\"textFile\" was not injected: check your FXML file 'interface.fxml'.";
         assert txtFile != null : "fx:id=\"txtFile\" was not injected: check your FXML file 'interface.fxml'.";
         assert btnBrowse != null : "fx:id=\"btnBrowse\" was not injected: check your FXML file 'interface.fxml'.";
-        assert btnDo != null : "fx:id=\"btnDo\" was not injected: check your FXML file 'interface.fxml'.";
+        assert btnStart != null : "fx:id=\"btnStart\" was not injected: check your FXML file 'interface.fxml'.";
+        assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'interface.fxml'.";
+        
+        loadParams();
+        
+        LogSaver.init(FileSystems.getDefault().getPath(txtFile.getText(), _fileName));
         
         btnBrowse.setOnAction(event -> selectFile());
-        btnDo.setOnAction(event -> onBtnDo());
+        btnStart.setOnAction(event -> onBtnStart());
+        btnStop.setOnAction(event -> onBtnStop());
     }
     
     @FXML
     public void exitApplication(ActionEvent event) {    }
     
-    private void onBtnDo() {
-        _watcher.stopWatching();
+    private void onBtnStart() {
+        LogSaver.addChannel(1, "Channel #1", Integer.parseInt(txtPeriod1.getText()));
+        LogSaver.runAllChannels();
     }
     
-    public void stopWatcher() {
+    private void onBtnStop() {
+        LogSaver.removeChannel(1);
+    }
+   
+    public void finilize() {
+        LogSaver.removeAllChannels();
+        
         if(_watcher != null) {
             _watcher.stopWatching();
         }  
+        
+        saveParams();
     }
+       
     
     private void selectFile() {
         
@@ -78,9 +129,9 @@ public class InterfaceController {
             try{
                 String folder = selectedFile.getCanonicalPath();
                 txtFile.setText( folder );
-                Path path = FileSystems.getDefault().getPath(folder);
+                LogSaver.init(FileSystems.getDefault().getPath(txtFile.getText(), _fileName));
                 
-                _watcher = new FolderWatcher(path, () -> {
+                _watcher = new FolderWatcher(FileSystems.getDefault().getPath(folder), () -> {
                     refreshFile();
                 });
                 _watcher.startWatching();
@@ -94,7 +145,7 @@ public class InterfaceController {
     private void refreshFile() {
         
         String filePathName = txtFile.getText();
-        Path path = FileSystems.getDefault().getPath(filePathName, "text.txt");
+        Path path = FileSystems.getDefault().getPath(filePathName, _fileName);
         
         try {
             StringBuilder builder = new StringBuilder();
@@ -108,6 +159,26 @@ public class InterfaceController {
             ex.printStackTrace(System.out);
         }
     }
+        
+    private void saveParams() {
+        Preferences prefs = Preferences.userNodeForPackage(InterfaceController.class);
+        
+        prefs.put(PREF_LOCATION, txtFile.getText());
+        prefs.put(PREF_FILE_NAME, _fileName);
+        
+        prefs.putInt(PREF_PERIOD_1, Integer.parseInt(txtPeriod1.getText()));
+        prefs.putInt(PREF_PERIOD_2, Integer.parseInt(txtPeriod2.getText()));
+        prefs.putInt(PREF_PERIOD_3, Integer.parseInt(txtPeriod3.getText()));
+   }
     
- 
+    private void loadParams() {
+        Preferences prefs = Preferences.userNodeForPackage(InterfaceController.class);
+        
+        txtFile.setText(prefs.get(PREF_LOCATION, ""));
+        _fileName = prefs.get(PREF_FILE_NAME, FILE_NAME);
+        
+        txtPeriod1.setText(Integer.toString(prefs.getInt(PREF_PERIOD_1, DEF_PERIOD_1)));
+        txtPeriod2.setText(Integer.toString(prefs.getInt(PREF_PERIOD_2, DEF_PERIOD_2)));
+        txtPeriod3.setText(Integer.toString(prefs.getInt(PREF_PERIOD_3, DEF_PERIOD_3)));
+    }
 }
