@@ -40,7 +40,7 @@ public class ConcurencyTest extends Application {
             
             primaryStage.setOnCloseRequest((event) -> {
                 if( _controller != null) {
-                    _controller.stopWatcher();
+                    _controller.finilize();
                 }
             });
             
