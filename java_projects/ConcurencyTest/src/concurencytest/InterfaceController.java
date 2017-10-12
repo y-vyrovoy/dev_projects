@@ -100,11 +100,15 @@ public class InterfaceController {
     
     private void onBtnStart() {
         LogSaver.addChannel(1, "Channel #1", Integer.parseInt(txtPeriod1.getText()));
+        LogSaver.addChannel(2, "Channel #2", Integer.parseInt(txtPeriod2.getText()));
+        LogSaver.addChannel(3, "Channel #3", Integer.parseInt(txtPeriod3.getText()));
         LogSaver.runAllChannels();
     }
     
     private void onBtnStop() {
         LogSaver.removeChannel(1);
+        LogSaver.removeChannel(2);
+        LogSaver.removeChannel(3);
     }
    
     public void finilize() {
@@ -113,11 +117,9 @@ public class InterfaceController {
         if(_watcher != null) {
             _watcher.stopWatching();
         }  
-        
         saveParams();
     }
-       
-    
+        
     private void selectFile() {
         
         DirectoryChooser dirChooser = new DirectoryChooser();
@@ -131,10 +133,7 @@ public class InterfaceController {
                 txtFile.setText( folder );
                 LogSaver.init(FileSystems.getDefault().getPath(txtFile.getText(), _fileName));
                 
-                _watcher = new FolderWatcher(FileSystems.getDefault().getPath(folder), () -> {
-                    refreshFile();
-                });
-                _watcher.startWatching();
+                initFolderWatcher();
                 
             }catch(IOException ex){
                 System.err.println(ex.getLocalizedMessage());
@@ -154,6 +153,7 @@ public class InterfaceController {
             });
             
             textContent.setText(builder.toString());
+            textContent.setScrollTop(Double.MAX_VALUE);
             
         } catch (IOException ex) {
             ex.printStackTrace(System.out);
@@ -180,5 +180,21 @@ public class InterfaceController {
         txtPeriod1.setText(Integer.toString(prefs.getInt(PREF_PERIOD_1, DEF_PERIOD_1)));
         txtPeriod2.setText(Integer.toString(prefs.getInt(PREF_PERIOD_2, DEF_PERIOD_2)));
         txtPeriod3.setText(Integer.toString(prefs.getInt(PREF_PERIOD_3, DEF_PERIOD_3)));
+        
+        initFolderWatcher();
+    }
+    
+    private void initFolderWatcher() {
+        String folder = txtFile.getText();
+        File f = new File(folder);
+        
+        if(f.exists() == true) {
+            _watcher = new FolderWatcher(FileSystems.getDefault().getPath(folder), () -> {
+                refreshFile();
+            });
+            _watcher.startWatching();        
+        } else {
+            _watcher = null;
+        }
     }
 }

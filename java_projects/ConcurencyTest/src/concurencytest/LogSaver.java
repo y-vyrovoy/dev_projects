@@ -23,12 +23,13 @@ import java.util.Map;
 public final class LogSaver {
     
     public static final long TIME_QUANTUM_MS = 100;
+    public static final long TIME_CHANNEL_DELAY_MS = 2000;
     
     private static LogSaver _instance = null;
     private Path _path = null;
     private final Map<Integer, MessageChannel> _mapChannels = new HashMap<>();
     
-    private static final Object _lock = new Object();
+    private static final Object _lck = new Object();
     
     private LogSaver(Path path) {
         _path = path;
@@ -43,7 +44,6 @@ public final class LogSaver {
     }
     
     private static class SaveMessageThread extends Thread {
-
         
         private final String _msg;
         private final long _length;
@@ -60,7 +60,9 @@ public final class LogSaver {
                 return;
             }
             
-            synchronized(_lock){
+            long idThread = Thread.currentThread().getId();
+            
+            synchronized(_lck){
 
                 FileWriter writer = null;
                 try {
@@ -72,17 +74,24 @@ public final class LogSaver {
 
                     String startTimeString = MsToString(timeStart);
                     writer.write(_msg + ": " + startTimeString + "[");
-
+                    
+                    System.out.print("Thread #" + idThread + " [");
+                    
                     while(timeCurr < timeStart + _length){
                         writer.write(".");
                         writer.flush();
+                        
+                        System.out.print("(" + idThread + ") -> ");
+                        
                         sleep(TIME_QUANTUM_MS);
                         timeCurr = System.currentTimeMillis();
                     }
 
+                    System.out.println("|| ]");
+                    
                     String endTimeString = MsToString(System.currentTimeMillis());
                     writer.write("] " + endTimeString);
-                    writer.write("\n");
+                    writer.write("\r\n");
                     writer.close();
                     sleep(25);
                 } catch (InterruptedException ex) {
@@ -110,11 +119,8 @@ public final class LogSaver {
         if(_instance == null) {
             throw new NullPointerException();
         }
-        
         removeChannel(id);
-        
         _instance._mapChannels.put(id, new MessageChannel(msg, period));
-        
     }
     
     public static void removeChannel(Integer id) {
@@ -146,8 +152,6 @@ public final class LogSaver {
         new ArrayList<>(_instance._mapChannels.values()).forEach((t) -> t.run());
     }
     
-    private static int c = 0;
-    
     private static class MessageChannel {
         
         private final String _msg;
@@ -160,17 +164,22 @@ public final class LogSaver {
         }
         
         public void run() {        
+
+            //System.out.println("MessageChannel -> run()");
             
             _thread = new Thread( () -> {
                 
                 while(Thread.currentThread().isInterrupted() == false) {
                     saveMessage(_msg, _period);   
+                    
+                    //System.out.println("MessageChannel -> saveMessage()");
 
-                    c++;
-                    if(c == 10) {
-                        Thread.currentThread().interrupt();
+                    try {
+                        Thread.currentThread().sleep(TIME_CHANNEL_DELAY_MS);
+                    } catch (InterruptedException exInterrupt) {
+                        //exInterrupt.printStackTrace(System.out);
+                        return;
                     }
-
                 }
             });
             _thread.start();
