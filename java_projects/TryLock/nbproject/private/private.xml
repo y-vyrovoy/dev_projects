@@ -3,8 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/yura/NetBeansProjects/TryLock/src/trylock/TryLock.java</file>
-            <file>file:/home/yura/NetBeansProjects/TryLock/src/trylock/AsyncLog.java</file>
+            <file>file:/D:/dev_projects/java_projects/TryLock/src/trylock/Sender.java</file>
+            <file>file:/D:/dev_projects/java_projects/TryLock/src/trylock/Receiver.java</file>
+            <file>file:/D:/dev_projects/java_projects/TryLock/src/trylock/AsyncLog.java</file>
+            <file>file:/D:/dev_projects/java_projects/TryLock/src/trylock/TryLock.java</file>
         </group>
     </open-files>
 </project-private>
