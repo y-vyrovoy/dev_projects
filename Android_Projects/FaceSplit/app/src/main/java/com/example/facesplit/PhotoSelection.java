@@ -40,7 +40,7 @@ public class PhotoSelection extends AppCompatActivity {
         startActivityForResult(intent, RESULT_CAMERA_IMAGE);
     }
 
-    public void onBtnReady(View v) {
+    public void onBtnEdit(View v) {
         if(MyApp.getBitmapToEdit() != null) {
             startActivity(new Intent(this, EditPhotoActivity.class));
         }

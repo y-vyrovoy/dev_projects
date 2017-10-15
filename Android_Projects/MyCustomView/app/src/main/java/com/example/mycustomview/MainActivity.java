@@ -1,5 +1,7 @@
 package com.example.mycustomview;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +32,9 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void onBtnSplit(View v) {
+
+        MyApp.getInstance().setBitmapLeft(BitmapProcessor.getDoubledBitmap(_viewSplit.getLeftSideBitmap()));
+        startActivity(new Intent(this, ResultActivity.class));
 
     }
 }
