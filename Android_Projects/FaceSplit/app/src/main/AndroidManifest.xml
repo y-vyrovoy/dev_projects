@@ -3,7 +3,6 @@
     package="com.example.facesplit">
 
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -30,6 +29,10 @@
 
         <activity
             android:name=".EditPhotoActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
+            android:name=".ResultActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
     </application>

@@ -38,6 +38,8 @@ public class SplitImageView extends View {
     private Rect _rectPointer;
     private int _pointerHalfWidth;
     private int _scaledBmpTop;
+    private int _scaledBmpLeft;
+
 
     private boolean _isPointerDragged;
 
@@ -89,10 +91,10 @@ public class SplitImageView extends View {
         _splitterPosition = x;
 
         _rectPointer.set(_splitterPosition - _pointerHalfWidth,
-                            SPLITTER_TOP,
-                            _splitterPosition    + _pointerHalfWidth,
-                            SPLITTER_TOP + _bmpPointer.getHeight());
-                }
+                SPLITTER_TOP,
+                _splitterPosition    + _pointerHalfWidth,
+                SPLITTER_TOP + _bmpPointer.getHeight());
+    }
 
     private void setupNewSize(int w, int h) {
 
@@ -107,6 +109,7 @@ public class SplitImageView extends View {
                 false);
 
         _scaledBmpTop = _rectPointer.top + (int)(_bmpPointer.getHeight()*0.6);
+        _scaledBmpLeft = (w - _bmpScaled.getWidth())/2;
 
         setPointerX(w/2);
 
@@ -137,11 +140,12 @@ public class SplitImageView extends View {
 
 
         canvas.drawBitmap(_bmpScaled,
-                            (width - _bmpScaled.getWidth())/2,
+                _scaledBmpLeft,
                 _scaledBmpTop,
-                            null);
+                null);
 
         canvas.drawBitmap(_bmpPointer, _rectPointer.left, _rectPointer.top, null);
+
 
         canvas.drawRect(_splitterPosition - SPLITTER_HALF_WIDTH,
                 _bmpPointer.getHeight() + 2,
@@ -150,10 +154,10 @@ public class SplitImageView extends View {
                 _paintFill);
 
         canvas.drawRect(_splitterPosition - SPLITTER_HALF_WIDTH,
-                        _bmpPointer.getHeight() + 2,
-                        _splitterPosition + SPLITTER_HALF_WIDTH,
+                _bmpPointer.getHeight() + 2,
+                _splitterPosition + SPLITTER_HALF_WIDTH,
                 _scaledBmpTop + _bmpScaled.getHeight(),
-                        _paintBorder);
+                _paintBorder);
 
 
     }
@@ -171,9 +175,9 @@ public class SplitImageView extends View {
 
                 //_isPointerDragged = _rectPointer.contains((int)x, (int)y);
                 _isPointerDragged = ( (y >= _scaledBmpTop) &&
-                                        (y <= _scaledBmpTop + _bmpScaled.getHeight()) &&
-                                        (x >= _splitterPosition - _pointerHalfWidth * 2) &&
-                                        (x <= _splitterPosition + _pointerHalfWidth * 2));
+                        (y <= _scaledBmpTop + _bmpScaled.getHeight()) &&
+                        (x >= _splitterPosition - _pointerHalfWidth * 2) &&
+                        (x <= _splitterPosition + _pointerHalfWidth * 2));
 
 
                 Log.i(TAG, "onTouchEvent().ACTION_DOWN. In pointer = " + _isPointerDragged);
@@ -205,6 +209,24 @@ public class SplitImageView extends View {
         }
 
         return true;
+    }
+
+    public Bitmap getLeftSideBitmap() {
+
+        return Bitmap.createBitmap(_bmpScaled,
+                                    0, 0,
+                                    _splitterPosition - _scaledBmpLeft,
+                                    _bmpScaled.getHeight());
+
+    }
+
+    public Bitmap getRightSideBitmap() {
+
+        return Bitmap.createBitmap(_bmpScaled,
+                                    _splitterPosition - _scaledBmpLeft, 0,
+                                    _scaledBmpLeft + _bmpScaled.getWidth() - _splitterPosition,
+                                    _bmpScaled.getHeight());
+
     }
 
 }

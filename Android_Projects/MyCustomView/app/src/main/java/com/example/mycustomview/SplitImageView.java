@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
@@ -38,6 +39,8 @@ public class SplitImageView extends View {
     private Rect _rectPointer;
     private int _pointerHalfWidth;
     private int _scaledBmpTop;
+    private int _scaledBmpLeft;
+
 
     private boolean _isPointerDragged;
 
@@ -107,6 +110,7 @@ public class SplitImageView extends View {
                 false);
 
         _scaledBmpTop = _rectPointer.top + (int)(_bmpPointer.getHeight()*0.6);
+        _scaledBmpLeft = (w - _bmpScaled.getWidth())/2;
 
         setPointerX(w/2);
 
@@ -137,22 +141,23 @@ public class SplitImageView extends View {
 
 
         canvas.drawBitmap(_bmpScaled,
-                            (width - _bmpScaled.getWidth())/2,
-                _scaledBmpTop,
+                            _scaledBmpLeft,
+                            _scaledBmpTop,
                             null);
 
         canvas.drawBitmap(_bmpPointer, _rectPointer.left, _rectPointer.top, null);
 
-        canvas.drawRect(_splitterPosition - SPLITTER_HALF_WIDTH,
-                _bmpPointer.getHeight() + 2,
-                _splitterPosition + SPLITTER_HALF_WIDTH,
-                _scaledBmpTop + _bmpScaled.getHeight(),
-                _paintFill);
 
         canvas.drawRect(_splitterPosition - SPLITTER_HALF_WIDTH,
                         _bmpPointer.getHeight() + 2,
                         _splitterPosition + SPLITTER_HALF_WIDTH,
-                _scaledBmpTop + _bmpScaled.getHeight(),
+                        _scaledBmpTop + _bmpScaled.getHeight(),
+                        _paintFill);
+
+        canvas.drawRect(_splitterPosition - SPLITTER_HALF_WIDTH,
+                        _bmpPointer.getHeight() + 2,
+                        _splitterPosition + SPLITTER_HALF_WIDTH,
+                         _scaledBmpTop + _bmpScaled.getHeight(),
                         _paintBorder);
 
 
@@ -206,5 +211,14 @@ public class SplitImageView extends View {
 
         return true;
     }
+
+    public Bitmap getLeftSideBitmap() {
+
+        return Bitmap.createBitmap(_bmpScaled, 0, 0,
+                                    _splitterPosition - _scaledBmpLeft,
+                                    _bmpScaled.getHeight());
+
+    }
+
 
 }

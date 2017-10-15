@@ -9,16 +9,22 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class WelcomeActivity extends AppCompatActivity {
 
-    private static final int PERMISSIONS_REQUEST_STORAGE = 1;
-    private static final int PERMISSIONS_REQUEST_CAMERA = 2;
+    private static final int PERMISSIONS_REQUEST = 1;
+    private static final int PERMISSIONS_REQUEST_STORAGE = 2;
+    private static final int PERMISSIONS_REQUEST_CAMERA = 3;
 
-    private boolean waitForPermissionCamera;
-    private boolean waitForPermissionStorage;
+    private boolean waitForPermissions;
 
-    private boolean isPermissionGrantedStorage;
-    private boolean isPermissionGrantedCamera;
+    private boolean isPermissionsGranted;
+
+    private List<String> _lstPermissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,70 +36,55 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        waitForPermissionStorage = false;
-        waitForPermissionCamera = false;
+        waitForPermissions = false;
+
+
+        _lstPermissions = new ArrayList<>();
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                                                                 PackageManager.PERMISSION_DENIED) {
-            requestPermisson(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                                                    PERMISSIONS_REQUEST_STORAGE);
 
-            waitForPermissionStorage = true;
-            isPermissionGrantedStorage = false;
-        } else {
-            isPermissionGrantedStorage = true;
+            _lstPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+            waitForPermissions = true;
+          } else {
+            isPermissionsGranted = true;
         }
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
                                                                 PackageManager.PERMISSION_DENIED) {
-            requestPermisson(Manifest.permission.CAMERA, PERMISSIONS_REQUEST_CAMERA);
-            waitForPermissionCamera = true;
-            isPermissionGrantedCamera = false;
+
+            _lstPermissions.add(Manifest.permission.CAMERA);
+
+            waitForPermissions = true;
         } else {
-            isPermissionGrantedCamera = true;
+            isPermissionsGranted = true;
         }
 
+        if(waitForPermissions == true) {
+            String[] permissionsArray = _lstPermissions.toArray(new String[_lstPermissions.size()]);
+            ActivityCompat.requestPermissions(this, permissionsArray, PERMISSIONS_REQUEST);
+        }
         waitForPermissions();
-    }
-
-    private void requestPermisson(String permission, int id) {
-        // Should we show an explanation?
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{permission}, id);
-        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PERMISSIONS_REQUEST_STORAGE: {
+            case PERMISSIONS_REQUEST: {
 
-                waitForPermissionStorage = false;
+                List lstGranted = new ArrayList<>();
 
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    isPermissionGrantedStorage = true;
-                } else {
-                    isPermissionGrantedStorage = false;
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                        lstGranted.add(_lstPermissions.get(i));
+                    }
                 }
-                return;
-            }
+                _lstPermissions.removeAll(lstGranted);
 
-            case PERMISSIONS_REQUEST_CAMERA: {
-
-                waitForPermissionCamera = false;
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    isPermissionGrantedCamera = true;
-                } else {
-                    isPermissionGrantedCamera = false;
-                }
-                return;
+                isPermissionsGranted = (_lstPermissions.isEmpty() == true);
+                waitForPermissions = false;
             }
         }
     }
@@ -105,13 +96,12 @@ public class WelcomeActivity extends AppCompatActivity {
             protected String doInBackground(String... params) {
 
                 try {
-                    Thread.currentThread().sleep(2000);
+                    Thread.currentThread().sleep(1000);
                 } catch(InterruptedException ex) {}
 
-                while( (waitForPermissionStorage == true) &&
-                        (waitForPermissionCamera == true)) { }
+                while( waitForPermissions == true ) { }
 
-                if(isPermissionGrantedStorage || isPermissionGrantedCamera) {
+                if( isPermissionsGranted == true ) {
                     startActivity(new Intent(WelcomeActivity.this, PhotoSelection.class));
                     finish();
                 }
