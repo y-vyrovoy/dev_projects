@@ -67,4 +67,32 @@ public class MyApp extends Application {
         return _instance._bitmapRight;
     }
 
+    public static void setBitmapLeft(Bitmap bitmapToEdit) {
+        if (_instance != null) {
+            _instance._bitmapLeft = bitmapToEdit;
+        }
+    }
+
+    public static Bitmap getBitmapLeft() {
+        if (_instance != null) {
+            return _instance._bitmapLeft;
+        } else {
+            return null;
+        }
+    }
+
+    public static void setBitmapRight(Bitmap bitmapToEdit) {
+        if (_instance != null) {
+            _instance._bitmapRight = bitmapToEdit;
+        }
+    }
+
+    public static Bitmap getBitmapRight() {
+        if (_instance != null) {
+            return _instance._bitmapRight;
+        } else {
+            return null;
+        }
+    }
+
 }
