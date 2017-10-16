@@ -67,4 +67,6 @@ public class MyApp extends Application {
         return _instance._bitmapRight;
     }
 
+
+
 }
