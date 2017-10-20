@@ -17,51 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/layoutValues" />
-
-    <LinearLayout
-        android:id="@+id/layoutValues"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/layoutButtons">
-
-        <EditText
-            android:id="@+id/editScale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ems="4"
-            android:inputType="numberDecimal"
-            android:text="0.7" />
-
-        <EditText
-            android:id="@+id/editVOffset"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ems="4"
-            android:inputType="number"
-            android:text="0" />
-
-        <EditText
-            android:id="@+id/editHOffset"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ems="4"
-            android:inputType="number"
-            android:text="0" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Apply"
-            android:onClick="onBtnApply"/>
-
-    </LinearLayout>
-
+        app:layout_constraintBottom_toTopOf="@+id/layoutButtons" />
 
 
     <LinearLayout

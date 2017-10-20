@@ -26,9 +26,6 @@ public class PhotoEdit extends AppCompatActivity {
 
     private ScalableImageView imageMain = null;
 
-    private EditText _editScale;
-    private EditText _editVOffset;
-    private EditText _editHOffset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +33,13 @@ public class PhotoEdit extends AppCompatActivity {
         setContentView(R.layout.activity_photo_edit);
 
         imageMain = (ScalableImageView) findViewById(R.id.imageMain);
-        _editScale = (EditText) findViewById(R.id.editScale);
-        _editVOffset = (EditText) findViewById(R.id.editVOffset);
-        _editHOffset = (EditText) findViewById(R.id.editHOffset);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
 
     public void onBtnLoad(View v ) {
 /*
@@ -50,7 +50,6 @@ public class PhotoEdit extends AppCompatActivity {
         Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.grid_tall);
         MyApp.setSourceBitmap(bmp);
         imageMain.setImageBitmap(bmp);
-
     }
 
     public void onBtnShoot(View v ) {
@@ -61,24 +60,12 @@ public class PhotoEdit extends AppCompatActivity {
         Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.grid_wide);
         MyApp.setSourceBitmap(bmp);
         imageMain.setImageBitmap(bmp);
-
     }
 
     public void onBtnGrid(View v ) {
         Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.grid);
         MyApp.setSourceBitmap(bmp);
         imageMain.setImageBitmap(bmp);
-    }
-
-    public void onBtnApply(View v ) {
-
-        float scale = Float.parseFloat(_editScale.getText().toString());
-        int offsetV = Integer.parseInt(_editVOffset.getText().toString());
-        int offsetH = Integer.parseInt(_editHOffset.getText().toString());
-
-        imageMain.setScale(scale, false);
-        imageMain.setOffsetV(offsetV, false);
-        imageMain.setOffsetH(offsetH, true);
     }
 
     @Override
