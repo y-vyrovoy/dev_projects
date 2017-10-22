@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -34,14 +35,16 @@ public class ScalableImageView extends View {
     private int _width = 0;
     private int _height = 0;
 
-    private int _offsetV = 0;
-    private int _offsetH = 0;
     private float _scaleCurrent = 1;
     private float _scaleMinimum = 1;
+    private float _unscaledOffsetX = 0;
+    private float _unscaledOffsetY = 0;
+
+    private float _transitionX = 0;
+    private float _transitionY = 0;
 
     // items that should be instantiated once, not in every onDraw
     private Bitmap _btimapSource;
-    private Bitmap _btimapToDraw = null;
     private Paint _paintBackground;
     private Paint _paintTransparent;
     private Paint _paintText;
@@ -82,7 +85,7 @@ public class ScalableImageView extends View {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.ScalableImageView);
             Drawable drawableSrc = a.getDrawable(R.styleable.ScalableImageView_src);
             if (drawableSrc != null) {
-                _btimapSource = ((BitmapDrawable) drawableSrc).getBitmap();
+                setImageBitmap(((BitmapDrawable) drawableSrc).getBitmap());
             }
 
             //Don't forget this
@@ -113,7 +116,7 @@ public class ScalableImageView extends View {
         _btimapSource = bitmap;
 
         initScaleOffset();
-        initBitmapToDraw();
+        calcTransition();
 
         invalidate();
     }
@@ -121,19 +124,16 @@ public class ScalableImageView extends View {
     @Override
     public void onDraw(Canvas canvas) {
 
+        // Scaled bitmap sizes
         canvas.drawRect(_rectVisible, _paintBackground);
         canvas.drawRect(_rectView, _paintTransparent);
 
-        if(_btimapToDraw != null) {
-            canvas.drawBitmap(_btimapToDraw,
-                                _rectVisible.left + (_rectVisible.width() - _btimapToDraw.getWidth())/2,
-                                _rectVisible.top, null);
-        }
+        Matrix matrix = new Matrix();
+        matrix.preScale(_scaleCurrent, _scaleCurrent);
+        matrix.postTranslate( _transitionX, _rectVisible.top + _transitionY);
 
-        canvas.drawText("Scale: " + _scaleCurrent, 0, 30, _paintText);
-        canvas.drawText("Min Scale: " + _scaleMinimum, 0, 70, _paintText);
-        canvas.drawText("offsetV: " + _offsetV, 0, 110, _paintText);
-        canvas.drawText("offsetH: " + _offsetH, 0, 150, _paintText);
+        canvas.clipRect(_rectVisible);
+        canvas.drawBitmap(_btimapSource, matrix, null);
     }
 
     @Override
@@ -159,12 +159,16 @@ public class ScalableImageView extends View {
      * Offsets are negative if bitmap size is less than view's size.
      */
     private void initScaleOffset() {
+
+        _unscaledOffsetX = 0;
+        _unscaledOffsetY = 0;
+
+
         if(_btimapSource == null) {
             _scaleCurrent = 1;
-            _offsetV = 0;
-            _offsetH = 0;
             return;
         }
+
 
         int visibleHeight = _rectVisible.height();
         int visibleWidth = _rectVisible.width();
@@ -174,65 +178,62 @@ public class ScalableImageView extends View {
 
         // This is minimal allowed scale
         _scaleMinimum = _scaleCurrent;
-
-        // Initial vertical offset = 0
-        _offsetV = 0;
-
-        float bitmapRatio = (float)_btimapSource.getHeight() / _btimapSource.getWidth();
-        int proportionalWidth = (int)((float)visibleHeight / bitmapRatio);
-
-        // if bitmap width is less than visible width offset is negative.
-        // This means that bitmap should be drawn in the middle of visible area
-        if (proportionalWidth > visibleWidth) {
-            _offsetH = (proportionalWidth - visibleWidth) / 2;
-        } else {
-            _offsetH = -1;
-        }
     }
 
     /**
      * Prepares _btimapToDraw basing on source bitmap, current scale and offset
      */
-    private void initBitmapToDraw() {
+    private void calcTransition() {
 
         // Scaled bitmap sizes
-        int scaledBitmapWidth = (int)(_btimapSource.getWidth()*_scaleCurrent);
-        int scaledBitmapHeight = (int)(_btimapSource.getHeight()*_scaleCurrent);
+        float scaledBitmapWidth = _btimapSource.getWidth() * _scaleCurrent;
+        float scaledBitmapHeight = _btimapSource.getHeight() * _scaleCurrent;
+
+        float scaledOffsetX = _unscaledOffsetX * _scaleCurrent;
+        float scaledOffsetY = _unscaledOffsetY * _scaleCurrent;
 
         // View's visible area sizes
-        int visibleHeight = _rectVisible.height();
         int visibleWidth = _rectVisible.width();
+        int visibleHeight = _rectVisible.height();
 
         // calculating left and width of source bitmap to cut
-        int cutLeft;
-        int cutWidth;
-        if(_offsetH >= 0) {
-            cutLeft = _offsetH;
-            cutWidth = Math.min(visibleWidth, scaledBitmapWidth);
+
+        if( _width > scaledBitmapWidth ) {
+            // scaled bitmap width is less than view width
+            _transitionX = (visibleWidth - scaledBitmapWidth)/2;
+            _unscaledOffsetX = 0;
+        } else if(scaledOffsetX < visibleWidth/2 - scaledBitmapWidth/2) {
+            // SCALED bitmap left is greater than view's left -> move bitmap left to view's left
+            scaledOffsetX = visibleWidth/2 - scaledBitmapWidth/2;
+            _unscaledOffsetX = scaledOffsetX / _scaleCurrent;
+            _transitionX = 0;
+        } else if(scaledOffsetX > (scaledBitmapWidth - visibleWidth) / 2) {
+            // SCALED bitmap right is less than view's right -> move bitmap right to view's right
+            scaledOffsetX = (scaledBitmapWidth - visibleWidth) / 2;
+            _unscaledOffsetX = scaledOffsetX / _scaleCurrent;
+            _transitionX = visibleWidth/2 - scaledBitmapWidth/2 - scaledOffsetX;
         } else {
-            cutLeft = 0;
-            cutWidth = scaledBitmapWidth;
+            _transitionX = visibleWidth/2 - scaledBitmapWidth/2 - scaledOffsetX;
         }
 
-        // calculating top and height of source bitmap to cut
-        int cutTop;
-        int cutHeight;
-        if(_offsetV >= 0) {
-            cutTop = _offsetV;
-            cutHeight = Math.min(visibleHeight, scaledBitmapHeight);
+        if( _height > scaledBitmapHeight ) {
+            // scaled bitmap heigth is less than view height
+            _transitionY = (visibleHeight - scaledBitmapHeight)/2;
+            _unscaledOffsetY = 0;
+        } else if(scaledOffsetY < visibleHeight/2 - scaledBitmapHeight/2) {
+            // SCALED bitmap top is greater than view's top -> move bitmap top to view's top
+            scaledOffsetY = visibleHeight/2 - scaledBitmapHeight/2;
+            _unscaledOffsetY = scaledOffsetY / _scaleCurrent;
+            _transitionY = 0;
+        } else if(scaledOffsetY > (scaledBitmapHeight - visibleHeight) / 2) {
+            // SCALED bitmap bottom is less than view's bottom -> move bitmap bottom to view's bottom
+            scaledOffsetY = (scaledBitmapHeight - visibleHeight) / 2;
+            _unscaledOffsetY = scaledOffsetY / _scaleCurrent;
+            _transitionY = visibleHeight/2 - scaledBitmapHeight/2 - scaledOffsetY;
         } else {
-            cutTop = 0;
-            cutHeight = scaledBitmapHeight;
+            _transitionY = visibleHeight/2 - scaledBitmapHeight/2 - scaledOffsetY;
         }
 
-
-
-        Bitmap bmpScaled = Bitmap.createScaledBitmap(_btimapSource,
-                                                        scaledBitmapWidth, scaledBitmapHeight,
-                                                        false);
-
-        // scaling and cutting bitmap
-        _btimapToDraw = Bitmap.createBitmap(bmpScaled, cutLeft, cutTop, cutWidth, cutHeight);
     }
 
     @Override
@@ -248,16 +249,11 @@ public class ScalableImageView extends View {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void setScale(float scale , boolean invalidate) {
-        if((_btimapSource == null) || (_btimapToDraw == null)) {return;}
+    public void setScale(float scale) {
+        if(_btimapSource == null) {return;}
 
         if(scale >= _scaleMinimum) {
             _scaleCurrent = scale;
-            initBitmapToDraw();
-        }
-
-        if(invalidate == true) {
-            invalidate();
         }
     }
 
@@ -269,56 +265,6 @@ public class ScalableImageView extends View {
         return _scaleMinimum;
     }
 
-    public void setOffsetV(int offsetV, boolean invalidate) {
-
-        if((_btimapSource == null) || (_btimapToDraw == null)) {return;}
-
-        // visible area should always be within the bitmap
-        if(offsetV < 0 )
-        {
-            offsetV = 0;
-        } else {
-            if ( offsetV + _rectVisible.height() > _btimapSource.getHeight() * _scaleCurrent ){
-                offsetV  = (int)(_btimapSource.getHeight() * _scaleCurrent - _rectVisible.height());
-            }
-        }
-
-        _offsetV = offsetV;
-        initBitmapToDraw();
-
-        if (invalidate == true) {
-            invalidate();
-        }
-    }
-
-    public int getOffsetV() {
-        return _offsetV;
-    }
-
-    public void setOffsetH(int offsetH, boolean invalidate) {
-        if((_btimapSource == null) || (_btimapToDraw == null)) {return;}
-
-        // visible area should always be within the bitmap
-        if(offsetH < 0 )
-        {
-            offsetH = 0;
-        } else {
-            if ( offsetH + _rectVisible.width() > _btimapSource.getWidth() * _scaleCurrent ){
-                offsetH  = (int)(_btimapSource.getWidth() * _scaleCurrent - _rectVisible.width());
-            }
-        }
-
-        _offsetH = offsetH;
-
-        if (invalidate == true) {
-            invalidate();
-        }
-
-    }
-
-    public int getOffsetH() {
-        return _offsetH;
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -331,9 +277,10 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            setOffsetH((int) (_offsetH + distanceX), false);
-            setOffsetV((int) (_offsetV + distanceY), false);
-            initBitmapToDraw();
+            _unscaledOffsetX += distanceX / _scaleCurrent;
+            _unscaledOffsetY += distanceY / _scaleCurrent;
+            calcTransition();
+
             ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);
             return true;
         }
@@ -364,17 +311,8 @@ public class ScalableImageView extends View {
             float spanY = scaleGestureDetector.getCurrentSpanY();
             double currentSpan = Math.sqrt(Math.pow(spanX, 2) + Math.pow(spanY, 2));
 
-            float focusX = scaleGestureDetector.getFocusX();
-            float focusY = scaleGestureDetector.getFocusY();
-
-            float absX = (_offsetH + focusX) / _scaleCurrent;
-            float absY = (_offsetV + focusY) / _scaleCurrent;
-
-            _scaleCurrent = (float)Math.max( (double) (_scaleMinimum), _scaleCurrent * currentSpan / lastSpan);
-
-            setOffsetH((int)(absX * _scaleCurrent - focusX), false) ;
-            setOffsetV((int)(absY * _scaleCurrent - focusY), false) ;
-            initBitmapToDraw();
+            setScale((float)Math.max( (double) (_scaleMinimum), _scaleCurrent * currentSpan / lastSpan));
+            calcTransition();
 
             ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);
 
