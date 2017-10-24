@@ -1,7 +1,10 @@
 package com.example.facesplit;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -19,14 +22,14 @@ public class PhotoSelection extends AppCompatActivity {
     private static int RESULT_LOAD_IMAGE = 1;
     private static int RESULT_CAMERA_IMAGE = 2;
 
-    private ImageView imageMain = null;
+    private ScalableImageView imageMain = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_selection);
 
-        imageMain = (ImageView) findViewById(R.id.imageSelection);
+        imageMain = (ScalableImageView) findViewById(R.id.imageSelection);
     }
 
     public void onBtlLoadPhoto(View v) {
@@ -35,16 +38,20 @@ public class PhotoSelection extends AppCompatActivity {
         startActivityForResult(gallery, RESULT_LOAD_IMAGE);
     }
 
+    private Uri _imageUri;
     public void onBtnShootPhoto(View v) {
+
+        ContentValues values = new ContentValues();
+        //values.put(MediaStore.Images.Media.TITLE, "New Picture");
+        //values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera");
+        _imageUri = getContentResolver().insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, _imageUri);
         startActivityForResult(intent, RESULT_CAMERA_IMAGE);
     }
 
-    public void onBtnEdit(View v) {
-        if(MyApp.getBitmapToEdit() != null) {
-            startActivity(new Intent(this, EditPhotoActivity.class));
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -56,21 +63,48 @@ public class PhotoSelection extends AppCompatActivity {
                 Uri selectedImage = data.getData();
                 Log.i(TAG, selectedImage.toString());
 
-                imageMain.setImageURI(selectedImage);
-
                 Bitmap bmp = null;
                 try {
                     bmp = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-                MyApp.setBitmapToEdit(bmp);
 
+                if(bmp != null) {
+                    MyApp.setBitmapToEdit(bmp);
+                    imageMain.setImageBitmap(bmp);
+                }
             } else if(requestCode == RESULT_CAMERA_IMAGE) {
-                Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-                imageMain.setImageBitmap(thumbnail);
-                MyApp.setBitmapToEdit(thumbnail);
+                Bitmap bmp = null;
+                try {
+                    bmp = MediaStore.Images.Media.getBitmap(
+                                                    getContentResolver(), _imageUri);
+
+                } catch (Exception e) {e.printStackTrace();}
+
+                imageMain.setImageBitmap(bmp);
+                MyApp.setBitmapToEdit(bmp);
             }
         }
     }
+
+    public String getRealPathFromURI(Uri contentUri) {
+        String[] proj = { MediaStore.Images.Media.DATA };
+        Cursor cursor = managedQuery(contentUri, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
+
+    public void onBtnReady(View v) {
+
+        Bitmap bmpResult = imageMain.getResultBitmap();
+
+        MyApp.setBitmapLeft(BitmapUtils.getDoubledLeftPart(bmpResult));
+        MyApp.setBitmapRight(BitmapUtils.getDoubledRightPart(bmpResult));
+
+        startActivity(new Intent(this, ResultActivity.class));
+    }
+
+
 }

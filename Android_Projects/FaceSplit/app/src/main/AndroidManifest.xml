@@ -28,10 +28,6 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
-            android:name=".EditPhotoActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <activity
             android:name=".ResultActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
