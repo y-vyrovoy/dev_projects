@@ -91,9 +91,9 @@ public class SplitImageView extends View {
         _splitterPosition = x;
 
         _rectPointer.set(_splitterPosition - _pointerHalfWidth,
-                SPLITTER_TOP,
-                _splitterPosition    + _pointerHalfWidth,
-                SPLITTER_TOP + _bmpPointer.getHeight());
+                            SPLITTER_TOP,
+                            _splitterPosition    + _pointerHalfWidth,
+                            SPLITTER_TOP + _bmpPointer.getHeight());
     }
 
     private void setupNewSize(int w, int h) {
@@ -104,9 +104,9 @@ public class SplitImageView extends View {
         float ratio = (wRatio < hRatio) ? wRatio : hRatio;
 
         _bmpScaled = Bitmap.createScaledBitmap(_bmpSource,
-                (int)(_bmpSource.getWidth() * ratio),
-                (int)(_bmpSource.getHeight() * ratio),
-                false);
+                                                (int)(_bmpSource.getWidth() * ratio),
+                                                (int)(_bmpSource.getHeight() * ratio),
+                                                false);
 
         _scaledBmpTop = _rectPointer.top + (int)(_bmpPointer.getHeight()*0.6);
         _scaledBmpLeft = (w - _bmpScaled.getWidth())/2;
