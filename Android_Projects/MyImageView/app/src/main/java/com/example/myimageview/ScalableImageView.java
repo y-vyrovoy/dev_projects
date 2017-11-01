@@ -144,7 +144,7 @@ public class ScalableImageView extends View {
         _paintDividerFill.setStyle(Paint.Style.FILL);
 
         _paintTransformed = new Paint();
-        _paintTransformed.setColor(ContextCompat.getColor(this.getContext(), ));
+        //_paintTransformed.setColor(ContextCompat.getColor(this.getContext(), ));
         _paintTransformed.setStyle(Paint.Style.FILL);
     }
 
@@ -536,6 +536,7 @@ public class ScalableImageView extends View {
             setRotationAngle(_rotationAngle + Vector2D.
                                 getSignedAngleBetween(new Vector2D(_lastFingerOne, _lastFingerTwo),
                                                         new Vector2D(_fingerOne, _fingerTwo)));
+
 
             _lastFingerOne = _fingerOne;
             _lastFingerTwo = _fingerTwo;
