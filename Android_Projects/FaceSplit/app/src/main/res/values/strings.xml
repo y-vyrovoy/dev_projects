@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FaceSplit</string>
+    <string name="photos_saved">Pictures were successfully saved</string>
 </resources>

@@ -40,26 +40,15 @@ public class PhotoEdit extends AppCompatActivity {
         super.onStart();
     }
 
-
     public void onBtnLoad(View v ) {
-/*
         Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
         gallery.setType("image/*");
         startActivityForResult(gallery, RESULT_LOAD_IMAGE);
-*/
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.grid_tall);
-        MyApp.setSourceBitmap(bmp);
-        imageMain.setImageBitmap(bmp);
     }
 
     public void onBtnShoot(View v ) {
-/*
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, RESULT_CAMERA_IMAGE);
-*/
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.grid_wide);
-        MyApp.setSourceBitmap(bmp);
-        imageMain.setImageBitmap(bmp);
     }
 
     public void onBtnGrid(View v ) {
@@ -78,7 +67,12 @@ public class PhotoEdit extends AppCompatActivity {
                 Uri selectedImage = data.getData();
                 Log.i(TAG, selectedImage.toString());
 
-                //imageMain.setImageURI(selectedImage);
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inScaled = false;
+                options.inDither = false;
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                Bitmap bitmap = BitmapFactory.decodeFile(selectedImage.getEncodedPath(), options);
+                imageMain.setImageBitmap(bitmap);
 
                 Bitmap bmp = null;
                 try {
