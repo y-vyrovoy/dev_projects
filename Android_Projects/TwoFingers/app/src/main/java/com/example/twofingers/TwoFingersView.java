@@ -40,7 +40,7 @@ public class TwoFingersView extends View {
     private Paint _paintTextTitle;
     private Paint _paintTextTech;
     private Paint _paintBounds;
-    private Paint _paintFinger;
+    private Paint _paintCenterLine;
 
     private Rect _textBounds = new Rect();
     private String _text;
@@ -113,9 +113,9 @@ public class TwoFingersView extends View {
         _paintBounds.setStrokeWidth(1);
         _paintBounds.setColor(colorLightGrey);
 
-        _paintFinger = new Paint();
-        _paintFinger.setStrokeWidth(1);
-        _paintFinger.setColor(Color.RED);
+        _paintCenterLine = new Paint();
+        _paintCenterLine.setStrokeWidth(1);
+        _paintCenterLine.setColor(Color.RED);
 
         _bitmapArrow = BitmapFactory.decodeResource(getResources(), R.drawable.ic_arrow);
 
@@ -132,27 +132,21 @@ public class TwoFingersView extends View {
                 (_height - _textBounds.height()) / 2,
                 _paintTextTitle);
 
-        if (_isScaled) {
-            canvas.drawRect(_fingerOne.x - 10,
-                    _fingerOne.y - 10,
-                    _fingerOne.x + 10,
-                    _fingerOne.y + 10,
-                    _paintFinger);
-
-            canvas.drawRect(_fingerTwo.x - 10,
-                    _fingerTwo.y - 10,
-                    _fingerTwo.x + 10,
-                    _fingerTwo.y + 10,
-                    _paintFinger);
-        }
-
         RectF rectBitmapBound = getMappedRect(_bitmapCenter.x, _bitmapCenter.y, _scale, _rotationAngle, _bitmapArrow);
+        rectBitmapBound.offset(-1 * _bitmapArrow.getWidth()/2 * _scale,
+                                -1 * _bitmapArrow.getHeight()/2 * _scale);
+
         canvas.drawRect(rectBitmapBound, _paintBounds);
 
-        drawBitmapRotated(canvas, _bitmapCenter.x, _bitmapCenter.y, _scale, _rotationAngle, _bitmapArrow);
+        drawBitmapRotated(canvas,
+                            _bitmapCenter.x, _bitmapCenter.y,
+                            _scale, _rotationAngle, _bitmapArrow);
 
         canvas.drawText("scale: " + _scale, 10, 50, _paintTextTech);
         canvas.drawText("angle: " + _rotationAngle, 10, 100, _paintTextTech);
+
+        canvas.drawLine(_bitmapCenter.x, 0, _bitmapCenter.x, _height, _paintCenterLine);
+        canvas.drawLine(0, _bitmapCenter.y, _width, _bitmapCenter.y, _paintCenterLine);
     }
 
     @Override
@@ -227,7 +221,7 @@ public class TwoFingersView extends View {
         RectF rectBitmapTransformed = new RectF();
 
         rectBitmapTransformed.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        matrixCalc.preRotate(rotationAngleDegrees, bitmap.getWidth()/2, bitmap.getHeight()/2);
+        matrixCalc.preRotate(rotationAngleDegrees, bitmap.getWidth()/2 * scale, bitmap.getHeight()/2 * scale);
         matrixCalc.preScale(scale, scale);
         matrixCalc.postTranslate(centerX, centerY);
         matrixCalc.mapRect(rectBitmapTransformed);
@@ -236,11 +230,11 @@ public class TwoFingersView extends View {
     }
 
     private static void drawBitmapRotated(Canvas canvas, float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
-
         Matrix matrix = new Matrix();
-        matrix.preRotate(rotationAngleDegrees, bitmap.getWidth()/2, bitmap.getHeight()/2);
+        matrix.preRotate(rotationAngleDegrees, bitmap.getWidth()/2 * scale, bitmap.getHeight()/2 * scale);
         matrix.preScale(scale, scale);
-        matrix.postTranslate(centerX, centerY);
+        matrix.postTranslate(centerX - bitmap.getWidth()/2 * scale,
+                                centerY - bitmap.getHeight()/2 * scale);
 
         canvas.drawBitmap(bitmap, matrix, null);
     }
@@ -305,6 +299,7 @@ public class TwoFingersView extends View {
             _rotationAngle += Vector2D.
                     getSignedAngleBetween(new Vector2D(_lastFingerOne, _lastFingerTwo),
                                             new Vector2D(_fingerOne, _fingerTwo));
+            _rotationAngle %= 360;
 
             _lastFingerOne = _fingerOne;
             _lastFingerTwo = _fingerTwo;
