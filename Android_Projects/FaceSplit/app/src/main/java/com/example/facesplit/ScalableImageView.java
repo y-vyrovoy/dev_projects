@@ -76,6 +76,7 @@ public class ScalableImageView extends View {
     private Paint _paintTransformed;
     private Paint _paintBounds;
 
+
     private RectF _rectBitmapTransformed = new RectF();
 
     // Sets up interactions
@@ -152,10 +153,10 @@ public class ScalableImageView extends View {
         int colorDarkGrey = Color.argb(100, 30, 30, 30);
         int colorLightGrey = Color.argb(100, 220, 220, 220);
 
-
         _paintBounds = new Paint();
         _paintBounds.setColor(colorLightGrey);
         _paintBounds.setStyle(Paint.Style.FILL);
+
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -370,7 +371,7 @@ public class ScalableImageView extends View {
         matrixCalc.preScale(scale, scale);
         matrixCalc.postTranslate(centerX - bitmap.getWidth()/2 * scale,
                 centerY - bitmap.getHeight()/2 * scale);
-        matrixCalc.mapRect(rectBitmapTransformed);
+
 
         return rectBitmapTransformed;
     }
@@ -405,11 +406,13 @@ public class ScalableImageView extends View {
                     (int)Math.min(_rectVisible.right, rectTransformed.right) -  (int)Math.max(_rectVisible.left, rectTransformed.left),
                     (int)Math.min(_rectVisible.bottom, rectTransformed.bottom) - (int)Math.max(_rectVisible.top, rectTransformed.top));
 
+
         Bitmap bmpReturn = Bitmap.createBitmap(bmpTransformed,
                             (int)Math.max(_rectVisible.left, rectTransformed.left),
                             (int)Math.max(_rectVisible.top, rectTransformed.top),
                             (int)Math.min(_rectVisible.right, rectTransformed.right) -  (int)Math.max(_rectVisible.left, rectTransformed.left),
                             (int)Math.min(_rectVisible.bottom, rectTransformed.bottom) - (int)Math.max(_rectVisible.top, rectTransformed.top));
+
 
         return bmpReturn;
     }
