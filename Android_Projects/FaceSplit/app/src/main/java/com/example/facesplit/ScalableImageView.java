@@ -1,4 +1,4 @@
-package com.example.myimageview;
+package com.example.facesplit;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -194,9 +194,9 @@ public class ScalableImageView extends View {
             canvas.drawRect(_rectBitmapTransformed, _paintTransformed);
 
             drawBitmapRotated(canvas,
-                            _rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
-                            _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
-                            _scaleCurrent, _rotationAngle, _bitmapSource);
+                    _rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
+                    _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
+                    _scaleCurrent, _rotationAngle, _bitmapSource);
         }
 
         // divider that shows where picture will be divided
@@ -276,7 +276,7 @@ public class ScalableImageView extends View {
         }
 
         RectF rectBounds = getMappedRect(0, 0,
-                                            _scaleCurrent, _rotationAngle, _bitmapSource);
+                _scaleCurrent, _rotationAngle, _bitmapSource);
 
         float scaledBitmapWidth = rectBounds.width();
         float scaledBitmapHeight = rectBounds.height();
@@ -341,7 +341,7 @@ public class ScalableImageView extends View {
 
             case ACTION_POINTER_UP:
                 if (pointerCount <= 1) {
-                     onRotationEnds();
+                    onRotationEnds();
                 }
                 break;
 
@@ -353,6 +353,16 @@ public class ScalableImageView extends View {
         boolean retVal = _scaleGestureDetector.onTouchEvent(event);
         retVal = _gestureDetector.onTouchEvent(event) || retVal;
         return retVal || super.onTouchEvent(event);
+    }
+
+    private static Matrix getMatrix(float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
+        Matrix matrix = new Matrix();
+        matrix.preRotate(rotationAngleDegrees, bitmap.getWidth()/2 * scale, bitmap.getHeight()/2 * scale);
+        matrix.preScale(scale, scale);
+        matrix.postTranslate(centerX - bitmap.getWidth()/2 * scale,
+                centerY - bitmap.getHeight()/2 * scale);
+
+        return matrix;
     }
 
     private static RectF getMappedRect(float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
@@ -379,14 +389,28 @@ public class ScalableImageView extends View {
     }
 
     public Bitmap getResultBitmap() {
+        Matrix matrix = getMatrix(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
+                                    _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
+                                    _scaleCurrent, _rotationAngle, _bitmapSource);
 
-        Rect rcResult = new Rect(0, 0,
-                (int)(_rectVisible.width() / _scaleCurrent),
-                (int)(_rectVisible.height() / _scaleCurrent));
+        Bitmap bmpTransformed = Bitmap.createBitmap(_bitmapSource,
+                0, 0,
+                _bitmapSource.getWidth(),
+                _bitmapSource.getHeight(),
+                matrix, true);
 
-        rcResult.offset((int)(-1 * _transitionX / _scaleCurrent), (int)(-1 * _transitionY / _scaleCurrent));
+        RectF rectTransformed = getMappedRect(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
+                _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
+                _scaleCurrent, _rotationAngle, _bitmapSource);
 
-        Bitmap bmpReturn = Bitmap.createBitmap(_bitmapSource, rcResult.left, rcResult.top, rcResult.width(), rcResult.height());
+        Bitmap bmpReturn = Bitmap.createBitmap(bmpTransformed,
+                            (int)Math.max(_rectVisible.left, rectTransformed.left),
+                            (int)Math.max(_rectVisible.top, rectTransformed.top),
+                            (int)Math.min(_rectVisible.right, rectTransformed.right),
+                            (int)Math.min(_rectVisible.bottom, rectTransformed.bottom));
+
+
+
 
         return bmpReturn;
     }
