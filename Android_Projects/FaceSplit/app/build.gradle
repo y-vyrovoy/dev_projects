@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
     defaultConfig {
-        applicationId "com.itamarmedical.ble.facesplit"
+        applicationId "com.example.facesplit"
         minSdkVersion 22
         targetSdkVersion 26
         versionCode 1

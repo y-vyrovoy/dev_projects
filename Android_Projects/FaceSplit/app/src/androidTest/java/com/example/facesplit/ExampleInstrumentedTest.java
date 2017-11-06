@@ -1,4 +1,4 @@
-package com.itamarmedical.ble.facesplit;
+package com.example.facesplit;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
