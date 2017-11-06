@@ -240,9 +240,6 @@ public class TwoFingersView extends View {
     }
 
 
-
-
-
     private final ScaleGestureDetector.OnScaleGestureListener _scaleGestureListener
             = new ScaleGestureDetector.SimpleOnScaleGestureListener() {
         private double _lastSpan;

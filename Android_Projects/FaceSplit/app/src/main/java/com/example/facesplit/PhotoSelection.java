@@ -103,6 +103,7 @@ public class PhotoSelection extends AppCompatActivity {
         MyApp.setBitmapLeft(BitmapUtils.getDoubledLeftPart(bmpResult));
         MyApp.setBitmapRight(BitmapUtils.getDoubledRightPart(bmpResult));
 
+
         startActivity(new Intent(this, ResultActivity.class));
     }
 
