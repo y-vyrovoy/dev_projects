@@ -9,29 +9,34 @@
     <ImageView
         android:id="@+id/viewImageSource"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:src="@drawable/nobody"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:padding="8dp"/>
 
     <LinearLayout
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/viewImageLeft"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/nobody"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:adjustViewBounds="false"
+            android:padding="4dp"
+            android:src="@drawable/nobody" />
 
         <ImageView
             android:id="@+id/viewImageRight"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/nobody"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:padding="4dp"
+            android:src="@drawable/nobody" />
 
     </LinearLayout>
 

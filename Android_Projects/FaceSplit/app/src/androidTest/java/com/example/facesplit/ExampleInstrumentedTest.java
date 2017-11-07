@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.itamarmedical.ble.facesplit", appContext.getPackageName());
+        assertEquals("com.example.facesplit", appContext.getPackageName());
     }
 }
