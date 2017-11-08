@@ -272,8 +272,9 @@ public class ScalableImageView extends View {
             return;
         }
 
-        RectF rectBounds = getMappedRect(0, 0,
-                _scaleCurrent, _rotationAngle, _bitmapSource);
+        RectF rectBounds = getMappedRect(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
+                                            _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
+                                             _scaleCurrent, _rotationAngle, _bitmapSource);
 
         float scaledBitmapWidth = rectBounds.width();
         float scaledBitmapHeight = rectBounds.height();
@@ -372,6 +373,7 @@ public class ScalableImageView extends View {
         matrixCalc.postTranslate(centerX - bitmap.getWidth()/2 * scale,
                 centerY - bitmap.getHeight()/2 * scale);
 
+        matrixCalc.mapRect(rectBitmapTransformed);
 
         return rectBitmapTransformed;
     }
@@ -387,32 +389,43 @@ public class ScalableImageView extends View {
     }
 
     public Bitmap getResultBitmap() {
-        Matrix matrix = getMatrix(_rectVisible.centerX() / _scaleCurrent + _unscaledOffsetX,
-                                _rectVisible.centerY() / _scaleCurrent + _unscaledOffsetY,
-                                _scaleCurrent, _rotationAngle, _bitmapSource);
+        Matrix matrix = getMatrix(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
+                                    _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
+                                    _scaleCurrent, _rotationAngle, _bitmapSource);
 
         Bitmap bmpTransformed = Bitmap.createBitmap(_bitmapSource,
-                                                    0, 0,
-                                                    _bitmapSource.getWidth(),
-                                                    _bitmapSource.getHeight(),
-                                                    matrix, true);
+                0, 0,
+                _bitmapSource.getWidth(),
+                _bitmapSource.getHeight(),
+                matrix, true);
 
-        RectF rectTransformed = getMappedRect(_rectVisible.centerX() / _scaleCurrent + _unscaledOffsetX,
-                                                _rectVisible.centerY() / _scaleCurrent + _unscaledOffsetY,
+        RectF rectTransformed = getMappedRect(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
+                                                _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
                                                 _scaleCurrent, _rotationAngle, _bitmapSource);
 
-        RectF rectNew = new RectF((int)Math.max(_rectVisible.left, rectTransformed.left),
-                    (int)Math.max(_rectVisible.top, rectTransformed.top),
-                    (int)Math.min(_rectVisible.right, rectTransformed.right) -  (int)Math.max(_rectVisible.left, rectTransformed.left),
-                    (int)Math.min(_rectVisible.bottom, rectTransformed.bottom) - (int)Math.max(_rectVisible.top, rectTransformed.top));
+        float leftBorder = Math.max(0, _rectVisible.left - rectTransformed.left);
+        float topBorder = Math.max(0, _rectVisible.top - rectTransformed.top);
+        float rightBorder = Math.min(rectTransformed.right - rectTransformed.left, _rectVisible.right - rectTransformed.left);
+        float bottomBorder = Math.min(rectTransformed.bottom - rectTransformed.top, _rectVisible.bottom - rectTransformed.top);
 
+        if(rightBorder - leftBorder > rectTransformed.width()) {
+            leftBorder = 0;
+            rightBorder = rectTransformed.width();
+        }
+
+        if(bottomBorder - topBorder > rectTransformed.height()) {
+            topBorder = 0;
+            bottomBorder = rectTransformed.height();
+        }
+
+        RectF rectResult = new RectF();
+        rectResult.set(leftBorder, topBorder, rightBorder, bottomBorder);
 
         Bitmap bmpReturn = Bitmap.createBitmap(bmpTransformed,
-                            (int)Math.max(_rectVisible.left, rectTransformed.left),
-                            (int)Math.max(_rectVisible.top, rectTransformed.top),
-                            (int)Math.min(_rectVisible.right, rectTransformed.right) -  (int)Math.max(_rectVisible.left, rectTransformed.left),
-                            (int)Math.min(_rectVisible.bottom, rectTransformed.bottom) - (int)Math.max(_rectVisible.top, rectTransformed.top));
-
+                                            (int)leftBorder,
+                                            (int)topBorder,
+                                            (int)(rightBorder - leftBorder),
+                                            (int)(bottomBorder - topBorder));
 
         return bmpReturn;
     }
@@ -593,4 +606,3 @@ public class ScalableImageView extends View {
     }
 
 }
-

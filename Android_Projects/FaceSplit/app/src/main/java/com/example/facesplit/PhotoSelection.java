@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +32,8 @@ public class PhotoSelection extends AppCompatActivity {
         setContentView(R.layout.activity_photo_selection);
 
         imageMain = (ScalableImageView) findViewById(R.id.imageSelection);
+
+        MyApp.setBitmapToEdit(((BitmapDrawable) ContextCompat.getDrawable(this, R.drawable.nobody)).getBitmap());
     }
 
     public void onBtlLoadPhoto(View v) {
@@ -100,6 +104,7 @@ public class PhotoSelection extends AppCompatActivity {
 
         Bitmap bmpResult = imageMain.getResultBitmap();
 
+        //MyApp.setBitmapToEdit(bmpResult);
         MyApp.setBitmapLeft(BitmapUtils.getDoubledLeftPart(bmpResult));
         MyApp.setBitmapRight(BitmapUtils.getDoubledRightPart(bmpResult));
 
