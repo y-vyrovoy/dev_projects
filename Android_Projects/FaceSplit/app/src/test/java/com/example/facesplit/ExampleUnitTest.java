@@ -1,4 +1,4 @@
-package com.itamarmedical.ble.facesplit;
+package com.example.facesplit;
 
 import org.junit.Test;
 

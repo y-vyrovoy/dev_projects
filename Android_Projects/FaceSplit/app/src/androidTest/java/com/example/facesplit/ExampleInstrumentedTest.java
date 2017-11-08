@@ -1,4 +1,4 @@
-package com.itamarmedical.ble.facesplit;
+package com.example.facesplit;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.itamarmedical.ble.facesplit", appContext.getPackageName());
+        assertEquals("com.example.facesplit", appContext.getPackageName());
     }
 }
