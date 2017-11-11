@@ -46,8 +46,7 @@ public class PhotoSelection extends AppCompatActivity {
     public void onBtnShootPhoto(View v) {
 
         ContentValues values = new ContentValues();
-        //values.put(MediaStore.Images.Media.TITLE, "New Picture");
-        //values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera");
+
         _imageUri = getContentResolver().insert(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
