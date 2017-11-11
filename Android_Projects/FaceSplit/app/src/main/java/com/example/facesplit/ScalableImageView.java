@@ -5,8 +5,10 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -50,13 +52,6 @@ public class ScalableImageView extends View {
     private float _unscaledOffsetX = 0;
     private float _unscaledOffsetY = 0;
 
-    private float _transitionX = 0;
-    private float _transitionY = 0;
-
-    private float _bitmapCenterX = 0;
-    private float _bitmapCenterY = 0;
-
-
     private boolean _isScaled;
 
     private Point _fingerOne;
@@ -70,11 +65,10 @@ public class ScalableImageView extends View {
     private Bitmap _bitmapSource;
     private Paint _paintBackground;
     private Paint _paintTransparent;
-    private Paint _paintText;
-    private Paint _paintDividerFill;
-    private Paint _paintDividerBorder;
     private Paint _paintTransformed;
-    private Paint _paintBounds;
+    private Paint _paintDashed;
+
+    private Path _pathSeparator;
 
 
     private RectF _rectBitmapTransformed = new RectF();
@@ -124,39 +118,23 @@ public class ScalableImageView extends View {
 
         _paintBackground = new Paint();
         _paintBackground.setStyle(Paint.Style.FILL);
-        _paintBackground.setColor(Color.GRAY);
+        _paintBackground.setColor(Color.BLACK);
 
         _paintTransparent = new Paint();
         _paintTransparent.setStyle(Paint.Style.STROKE);
         _paintTransparent.setColor(Color.GREEN);
         _paintTransparent.setStrokeWidth(1);
 
-        _paintText = new Paint();
-        _paintText.setColor(Color.RED);
-        _paintText.setTextSize(40);
+        _paintDashed = new Paint();
+        _paintDashed.setColor(getResources().getColor(R.color.colorPink));
+        _paintDashed.setStyle(Paint.Style.STROKE);
+        _paintDashed.setStrokeWidth(3);
+        _paintDashed.setPathEffect(new DashPathEffect(new float[]{30, 20}, 0));
 
-
-        _paintDividerBorder = new Paint();
-        _paintDividerBorder.setColor(ContextCompat.getColor(this.getContext(), R.color.colorSplitterBorder));
-        _paintDividerBorder.setStyle(Paint.Style.STROKE);
-        _paintDividerBorder.setStrokeWidth(1);
-
-        _paintDividerFill = new Paint();
-        _paintDividerFill.setColor(ContextCompat.getColor(this.getContext(), R.color.colorSplitterFill));
-        _paintDividerFill.setStyle(Paint.Style.FILL);
+        _pathSeparator = new Path();
 
         _paintTransformed = new Paint();
-        //_paintTransformed.setColor(ContextCompat.getColor(this.getContext(), ));
         _paintTransformed.setStyle(Paint.Style.FILL);
-
-
-        int colorDarkGrey = Color.argb(100, 30, 30, 30);
-        int colorLightGrey = Color.argb(100, 220, 220, 220);
-
-        _paintBounds = new Paint();
-        _paintBounds.setColor(colorLightGrey);
-        _paintBounds.setStyle(Paint.Style.FILL);
-
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,7 +162,6 @@ public class ScalableImageView extends View {
 
         // Scaled bitmap sizes
         canvas.drawRect(_rectVisible, _paintBackground);
-        canvas.drawRect(_rectView, _paintTransparent);
 
         if(_bitmapSource != null) {
 
@@ -197,6 +174,7 @@ public class ScalableImageView extends View {
         }
 
         // divider that shows where picture will be divided
+/*
         canvas.drawRect(_rectVisible.centerX() - SPLITTER_HALF_WIDTH,
                 _rectVisible.top,
                 _rectVisible.centerX() + SPLITTER_HALF_WIDTH,
@@ -208,7 +186,8 @@ public class ScalableImageView extends View {
                 _rectVisible.centerX() + SPLITTER_HALF_WIDTH,
                 _rectVisible.bottom - 2,
                 _paintDividerBorder);
-
+*/
+        canvas.drawPath(_pathSeparator, _paintDashed);
     }
 
     @Override
@@ -228,6 +207,10 @@ public class ScalableImageView extends View {
         _rectView.set(0, 0, w - 1, h - 1);
 
         calcTransition();
+
+        _pathSeparator.moveTo(_width/2, 0);
+        _pathSeparator.quadTo(_width/2 - 3, 0, _width/2 + 3, _height);
+
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -267,8 +250,6 @@ public class ScalableImageView extends View {
 
         if(_bitmapSource == null) {
             Log.e(TAG, "calcTransition(): _bitmapSource == null");
-            _bitmapCenterX = 0;
-            _bitmapCenterY = 0;
             return;
         }
 

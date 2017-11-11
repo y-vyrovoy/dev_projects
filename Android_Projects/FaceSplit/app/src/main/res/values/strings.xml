@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">FaceSplit</string>
+    <string name="app_name">Soul face</string>
     <string name="photos_saved">Pictures were successfully saved</string>
+    <string name="app_logo_description">app logo</string>
 </resources>
