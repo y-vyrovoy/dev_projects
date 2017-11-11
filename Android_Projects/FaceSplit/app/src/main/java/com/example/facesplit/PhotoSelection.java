@@ -111,5 +111,8 @@ public class PhotoSelection extends AppCompatActivity {
         startActivity(new Intent(this, ResultActivity.class));
     }
 
+    public void onBackPressed() {
+
+    }
 
 }
