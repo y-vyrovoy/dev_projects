@@ -1,62 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.constraint.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:orientation="vertical">
+    android:background="@android:color/black">
 
     <com.example.facesplit.ScalableImageView
         android:id="@+id/imageSelection"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        custom:src="@drawable/nobody"
-
-        app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        custom:src="@drawable/nobody" />
 
     <LinearLayout
         android:id="@+id/layoutButtons"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginBottom="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="horizontal"
-        android:padding="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteX="50dp">
+        android:layout_alignParentBottom="true"
+        android:padding="30dp">
 
-        <Button
+        <ImageButton
             android:id="@+id/btnLoadImage"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:onClick="onBtlLoadPhoto"
-            android:text="load"
-            android:drawableLeft="@drawable/ic_add_to_photos"/>
+            android:src="@drawable/ic_load"
+            android:background="@android:color/transparent"
+            android:onClick="onBtlLoadPhoto"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/btnTakePhoto"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:onClick="onBtnShootPhoto"
-            android:text="shoot"
-            android:drawableLeft="@drawable/ic_add_a_photo"/>
+            android:src="@drawable/ic_camera"
+            android:background="@android:color/transparent"
+            android:onClick="onBtnShootPhoto"/>
 
-        <Button
+        <ImageButton
             android:id="@+id/btnReady"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:onClick="onBtnReady"
-            android:text="ready"
-            android:drawableLeft="@drawable/ic_done_black"/>
+            android:src="@drawable/ic_ok"
+            android:background="@android:color/transparent"
+            android:onClick="onBtnReady"/>
 
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

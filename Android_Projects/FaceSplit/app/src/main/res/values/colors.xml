@@ -6,4 +6,5 @@
 
     <color name="colorSplitterBorder">#ff4040</color>
     <color name="colorSplitterFill">#fffc40</color>
+    <color name="colorPink">#e71682</color>
 </resources>
