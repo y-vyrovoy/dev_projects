@@ -13,10 +13,9 @@ cBallGame::cBallGame(int nFieldColumns, int nFieldRows)
 
 
 cBallGame::~cBallGame()
-{
-	OutputDebugString(_T(">>> cBallGame()\r\n"));
-	
-	for (int i = 0; i < sizeof(m_pbField); i++) {
+{	
+	for (int i = 0; i < sizeof(m_pbField); i++) 
+	{
 		delete [] m_pbField[i];
 	}
 
@@ -24,17 +23,19 @@ cBallGame::~cBallGame()
 }
 
 bool cBallGame::IsCellFree(int x, int y) {
-	for (auto p = m_lstBalls.begin(); p != m_lstBalls.end(); p++) {
-		if ((p->nX == x) && (p->nY == y)) {
+	for (auto p = m_lstBalls.begin(); p != m_lstBalls.end(); ++p) {
+		if (p->EqualCell(x, y))
+		{
 			return false;
 		}
 	}
 	return true;
 }
 
-bool cBallGame::AddBall(int x, int y) {
+bool cBallGame::AddBall(int x, int y) 
+{
 	if (IsCellFree(x, y)) {
-		BallItem pItem(x, y);
+		cBallItem pItem(x, y);
 		m_lstBalls.push_back(pItem);
 		return true;
 	}
@@ -43,14 +44,22 @@ bool cBallGame::AddBall(int x, int y) {
 	}
 }
 
-void cBallGame::RemoveBall(int x, int y) {
+void cBallGame::RemoveBall(int x, int y) 
+{
+	for (auto p = m_lstBalls.begin(); p != m_lstBalls.end(); ++p) {
+		if (p->EqualCell(x, y))
+		{
+			m_lstBalls.remove(*p);
+		}
+	}
+}
+
+void cBallGame::RemoveBall(cBallItem item) 
+{
 
 }
 
-void cBallGame::RemoveBall(BallItem item) {
-
-}
-
-void cBallGame::RemoveBall(int index) {
+void cBallGame::RemoveBall(int index) 
+{
 
 }

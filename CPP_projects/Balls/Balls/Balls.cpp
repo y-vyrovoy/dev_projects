@@ -5,13 +5,11 @@
 #include "cBallGame.h"
 #include "windows.h"
 
-#define STD_FIELD_SIZE	10
-
 int main()
 {
 	OutputDebugString(_T(">>> main()\r\n"));
 
-	cBallGame game(8);
+	cBallGame game(8, 8);
 	
 	return 0;
 }

@@ -1,23 +1,15 @@
 #pragma once
 #include <list>
+#include "cBallItem.h"
 
 class cBallGame
 {
 private:
-	struct BallItem
-	{
-		BallItem(int x, int y) {
-			nX = x;
-			nY = y;
-		}
 
-		int nX;
-		int nY;
-	};
 
 private:
 	bool ** m_pbField;
-	std::list<BallItem> m_lstBalls;
+	std::list<cBallItem> m_lstBalls;
 
 public:
 	cBallGame(int nFieldColumns, int nFieldRows);
@@ -27,7 +19,7 @@ public:
 
 	bool AddBall(int x, int y);
 	void RemoveBall(int x, int y);
-	void RemoveBall(BallItem item);
+	void RemoveBall(cBallItem item);
 	void RemoveBall(int index);
 
 
