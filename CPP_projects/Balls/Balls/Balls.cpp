@@ -4,12 +4,23 @@
 #include "stdafx.h"
 #include "cBallGame.h"
 #include "windows.h"
+#include <iostream>
 
-int main()
+using namespace std;
+
+
+int main(int argc, char *argv[])
 {
-	OutputDebugString(_T(">>> main()\r\n"));
+	
+	for (int i = 0; i < argc; i++)
+	{
+		cout << argv[i] << endl;
+	}
 
-	cBallGame game(8, 8);
+	cBallGame game;
+	game.InitislizeFromCmdLine(argc, argv);
+
+	cin.get();
 	
 	return 0;
 }

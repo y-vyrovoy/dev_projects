@@ -2,18 +2,22 @@
 #include <list>
 #include "cBallItem.h"
 
+#define FIELD_PREFIX	"field"
+#define	BALL_PREFIX		"ball"
+
 class cBallGame
 {
 private:
-
-
-private:
-	bool ** m_pbField;
 	std::list<cBallItem> m_lstBalls;
+	int m_nColumns;
+	int m_nRows;
 
 public:
-	cBallGame(int nFieldColumns, int nFieldRows);
+	cBallGame();
+	cBallGame(int nColumns, int nRows);
 	~cBallGame();
+
+	cBallGame InitislizeFromCmdLine(int argc, char *argv[]);
 
 	bool IsCellFree(int x, int y);
 
@@ -21,7 +25,5 @@ public:
 	void RemoveBall(int x, int y);
 	void RemoveBall(cBallItem item);
 	void RemoveBall(int index);
-
-
 };
 

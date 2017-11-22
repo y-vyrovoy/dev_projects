@@ -1,26 +1,58 @@
 #include "stdafx.h"
 #include "cBallGame.h"
 #include "windows.h"
+#include <algorithm>
 
+using namespace std;
 
-cBallGame::cBallGame(int nFieldColumns, int nFieldRows)
+cBallGame::cBallGame()
+	:m_nColumns{-1}, m_nRows{-1}
+{}
+
+cBallGame::cBallGame(int nColumns, int nRows)
+	:m_nColumns{nColumns}, m_nRows{nRows}
+{}
+
+cBallGame  cBallGame::InitislizeFromCmdLine(int argc, char *argv[])
 {
-	m_pbField = new bool*[nFieldColumns];
-	for (int i = 0; i < nFieldRows; i++) {
-		m_pbField[i] = new bool[nFieldColumns];
+	cBallGame gameNew;
+
+	for (int i = 0; i < argc; i++)
+	{
+		string sNext(argv[i]);
+		int nPrefixPos = sNext.find(FIELD_PREFIX, 0);
+
+		if (nPrefixPos != string::npos)
+		{
+			try {
+				sNext.erase(std::remove(sNext.begin(), sNext.end(), ' '), sNext.end());
+				int nStart = sNext.find("[") + 1;
+				int nEnd = sNext.find("]") - 1;
+				int nComma = sNext.find(",");
+
+				string sColumns = sNext.substr(nStart, nComma - nStart );
+				gameNew.m_nColumns = atoi(sColumns.c_str());
+
+				string sRows = sNext.substr(nComma + 1, nEnd - nComma);
+				gameNew.m_nRows = atoi(sRows.c_str());
+			}
+			catch (...) {
+				gameNew.m_nColumns = -1;
+				gameNew.m_nRows = -1;
+				return gameNew;
+			}
+		}
+
+		
 	}
+
+	return gameNew;
 }
+
 
 
 cBallGame::~cBallGame()
-{	
-	for (int i = 0; i < sizeof(m_pbField); i++) 
-	{
-		delete [] m_pbField[i];
-	}
-
-	delete[] m_pbField;
-}
+{}
 
 bool cBallGame::IsCellFree(int x, int y) {
 	for (auto p = m_lstBalls.begin(); p != m_lstBalls.end(); ++p) {
