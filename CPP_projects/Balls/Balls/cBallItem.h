@@ -14,6 +14,7 @@ public:
 
 		bool EqualCell(int x, int y);
 		bool operator==(cBallItem);
+		bool operator!=(cBallItem);
 
 	private:
 		int m_nX;

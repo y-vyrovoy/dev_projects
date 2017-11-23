@@ -22,3 +22,8 @@ bool cBallItem::operator==(cBallItem item)
 	return EqualCell(item.m_nX, item.m_nY);
 }
 
+bool cBallItem::operator!=(cBallItem item) 
+{ 
+	return !operator==(item); 
+}
+
