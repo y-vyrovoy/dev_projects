@@ -1,12 +1,40 @@
 #include "stdafx.h"
-#include "cPathProcessor.h"
 #include <vector>
 #include <iostream>
 #include "boost/format.hpp"
-#include "Algorithms.h"
-
+#include "cPath.h"
+#include "cBallGame.h"
+#include "cBallItem.h"
 
 using namespace std;
+
+cPath FloydAlgorithm(const cBallGame &game, cPath ** pDistanceMatrix, const cBallItem & startBall, cPath::PathItem dest)
+{
+	int NGraphNodes = game.NColumns() * game.NRows();
+
+	for (int iTmp = 0; iTmp < NGraphNodes; iTmp++)
+	{
+		for (int iFrom = 0; iFrom < NGraphNodes; iFrom++)
+		{
+			for (int iTo = 0; iTo < NGraphNodes; iTo++)
+			{
+				if (iFrom == iTo || iTmp == iFrom || iTmp == iTo)
+				{
+					continue;
+				}
+
+				if ((pDistanceMatrix[iFrom][iTmp].GetPathLength() != INF_DISTANCE) &&
+					(pDistanceMatrix[iTmp][iTo].GetPathLength() != INF_DISTANCE) &&
+					(pDistanceMatrix[iFrom][iTmp].GetPathLength() + pDistanceMatrix[iTmp][iTo].GetPathLength() < pDistanceMatrix[iFrom][iTo].GetPathLength()))
+				{
+					pDistanceMatrix[iFrom][iTo].UpdatePath(pDistanceMatrix[iFrom][iTmp], pDistanceMatrix[iTmp][iTo]);
+				}
+			}
+		}
+	}
+
+	return pDistanceMatrix[startBall.getY() * game.NColumns() + startBall.getX()][dest.yStart * game.NColumns() + dest.xStart];
+}
 
 void InitMatrix(const cBallGame &game, cPath ** pDistanceMatrix,const cBallItem & startBall)
 {
@@ -96,7 +124,7 @@ cPath FindShortestPath(const cBallGame &game, cPath::PathItem itemStart, int xTo
 	cin.get();
 #endif
 	
-	cPath pathReturn = FloydShortesWay(game, pDistanceMatrix, *game.GetBall(itemStart.xStart, itemStart.yStart), {xTo, yTo});
+	cPath pathReturn = FloydAlgorithm(game, pDistanceMatrix, *game.GetBall(itemStart.xStart, itemStart.yStart), {xTo, yTo});
 
 #ifdef PRINT_MATRIX
 	cout << endl << " ----- ===== RESULT MATRIX ==== -----" << endl;

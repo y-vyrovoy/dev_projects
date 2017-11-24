@@ -19,7 +19,5 @@ public:
 	private:
 		int m_nX;
 		int m_nY;
-
-	
 };
 

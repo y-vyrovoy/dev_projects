@@ -162,9 +162,6 @@ void cBallGame::RemoveBall(cBallItem item)
 
 }
 
-void cBallGame::RemoveBall(int index) 
-{
-}
 
 void cBallGame::DrawTable()
 {

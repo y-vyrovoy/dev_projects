@@ -8,6 +8,7 @@
 
 class cBallGame
 {
+
 private:
 	std::list<cBallItem> m_lstBalls;
 	int m_nColumns;
@@ -30,11 +31,13 @@ public:
 
 	void RemoveBall(int x, int y);
 	void RemoveBall(cBallItem item);
-	void RemoveBall(int index);
 
 	void DrawTable();
 
 	int NColumns() const { return m_nColumns; } 
 	int NRows() const { return m_nRows; }
+
+
+
 };
 
