@@ -12,7 +12,7 @@ cBallItem::cBallItem(int x, int y)
 {
 }
 
-bool cBallItem::EqualCell(int x, int y) 
+bool cBallItem::EqualCell(int x, int y) const 
 {
 	return (m_nX == x && m_nY == y);
 }
