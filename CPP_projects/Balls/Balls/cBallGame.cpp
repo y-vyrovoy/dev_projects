@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include "boost/format.hpp"
+#include <iterator>
 
 using namespace std;
 
@@ -91,7 +92,7 @@ cBallGame * cBallGame::GetNewInstanceFromCmdLine(int argc, char *argv[])
 cBallGame::~cBallGame()
 {}
 
-bool cBallGame::IsCellFree(int x, int y) {
+bool cBallGame::IsCellFree(int x, int y) const {
 	for (auto p = m_lstBalls.begin(); p != m_lstBalls.end(); ++p) {
 		if (p->EqualCell(x, y))
 		{
@@ -118,6 +119,34 @@ bool cBallGame::AddBall(int x, int y)
 	}
 }
 
+const cBallItem * cBallGame::GetBall(int index) const
+{
+	std::list<cBallItem>::const_iterator pItem = m_lstBalls.begin();
+	for (int i = 0; i < m_lstBalls.size(); i++)
+	{
+		if (i == index)
+		{
+			return &(*pItem);
+		}
+		pItem++;
+	}
+	return nullptr;
+}
+
+const cBallItem * cBallGame::GetBall(int x, int y) const
+{
+	std::list<cBallItem>::const_iterator pItem = m_lstBalls.begin();
+	for (int i = 0; i < m_lstBalls.size(); i++)
+	{
+		if (pItem->EqualCell(x, y) )
+		{
+			return &(*pItem);
+		}
+		pItem++;
+	}
+	return nullptr;
+}
+
 void cBallGame::RemoveBall(int x, int y) 
 {
 	for (auto p = m_lstBalls.begin(); p != m_lstBalls.end(); ++p) {
@@ -141,8 +170,8 @@ void cBallGame::DrawTable()
 {
 	// print header - field size + balls list
 	cout << endl << " ----- ===== Actual game state ===== ----- " << endl;
-	cout << endl << "Fields: cols=" << m_nColumns << ", rows=" << m_nRows << endl;
-	cout << "Balls: ";
+	cout << endl << "Fields: cols=" << m_nColumns << ", rows=" << m_nRows ;
+	cout << endl << "Balls: ";
 
 	for (auto p : m_lstBalls)
 	{
@@ -207,3 +236,5 @@ void cBallGame::DrawTable()
 
 
 }
+
+

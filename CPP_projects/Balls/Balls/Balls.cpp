@@ -6,6 +6,7 @@
 #include "windows.h"
 #include <iostream>
 #include "boost/format.hpp"
+#include "cPathProcessor.h"
 
 using namespace std;
 
@@ -29,6 +30,9 @@ int main(int argc, char *argv[])
 	pGame->DrawTable();
 	cin.get();
 	
+	FindShortestPath(*pGame, { 0, 0 }, 4, 0);
+
+	cin.get();
 	delete pGame;
 	return 0;
 }
