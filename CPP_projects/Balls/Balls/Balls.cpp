@@ -30,7 +30,9 @@ int main(int argc, char *argv[])
 	pGame->DrawTable();
 	cin.get();
 	
+
 	FindShortestPath(*pGame, { 0, 0 }, 4, 0);
+
 
 	cin.get();
 	delete pGame;
