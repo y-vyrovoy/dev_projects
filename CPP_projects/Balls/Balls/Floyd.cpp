@@ -5,6 +5,7 @@
 #include "cPath.h"
 #include "cBallGame.h"
 #include "cBallItem.h"
+#include "Algorithms.h"
 
 using namespace std;
 
@@ -36,7 +37,7 @@ cPath FloydAlgorithm(const cBallGame &game, cPath ** pDistanceMatrix, const cBal
 	return pDistanceMatrix[startBall.getY() * game.NColumns() + startBall.getX()][dest.yStart * game.NColumns() + dest.xStart];
 }
 
-void InitMatrix(const cBallGame &game, cPath ** pDistanceMatrix,const cBallItem & startBall)
+void InitMatrixFloyd(const cBallGame &game, cPath ** pDistanceMatrix,const cBallItem & startBall)
 {
 	int NGraphNodes = game.NColumns() * game.NRows();
 
@@ -52,21 +53,21 @@ void InitMatrix(const cBallGame &game, cPath ** pDistanceMatrix,const cBallItem 
 
 			if ( (iX + 1 < game.NColumns()) && (startBall.EqualCell(iX + 1, iY) || game.IsCellFree(iX + 1, iY)) )
 			{
-				pDistanceMatrix[iY * game.NColumns() + iX][iY * game.NColumns() + iX + 1].AddStep(iX, iY, iX + 1, iY);
-				pDistanceMatrix[iY * game.NColumns() + iX + 1][iY * game.NColumns() + iX].AddStep(iX + 1, iY, iX, iY);
+				pDistanceMatrix[iY * game.NColumns() + iX][iY * game.NColumns() + iX + 1].Init(iX, iY, iX + 1, iY);
+				pDistanceMatrix[iY * game.NColumns() + iX + 1][iY * game.NColumns() + iX].Init(iX + 1, iY, iX, iY);
 			}
 
 			if ( (iY + 1 < game.NRows()) && (startBall.EqualCell(iX, iY + 1) || game.IsCellFree(iX, iY + 1)) )
 			{
-				pDistanceMatrix[iY * game.NColumns() + iX][(iY + 1) * game.NColumns() + iX].AddStep(iX, iY, iX, iY + 1);
-				pDistanceMatrix[(iY + 1) * game.NColumns() + iX][iY * game.NColumns() + iX].AddStep(iX, iY + 1, iX, iY);
+				pDistanceMatrix[iY * game.NColumns() + iX][(iY + 1) * game.NColumns() + iX].Init(iX, iY, iX, iY + 1);
+				pDistanceMatrix[(iY + 1) * game.NColumns() + iX][iY * game.NColumns() + iX].Init(iX, iY + 1, iX, iY);
 			}
 		}
 	}
 }
 
 
-cPath FindShortestPath(const cBallGame &game, cPath::PathItem itemStart, int xTo, int yTo)
+cPath FloydFindShortestPath(const cBallGame &game, cPath::PathItem itemStart, int xTo, int yTo)
 {
 	if( (itemStart.xStart < 0) || (itemStart.xStart >= game.NColumns()) || (itemStart.yStart < 0) || (itemStart.yStart >= game.NRows()) ||
 		(xTo < 0) || (xTo >= game.NColumns()) || (yTo < 0) || (yTo >= game.NRows()) )
@@ -81,7 +82,7 @@ cPath FindShortestPath(const cBallGame &game, cPath::PathItem itemStart, int xTo
 
 	if (game.GetBall(itemStart.xStart, itemStart.yStart) == nullptr)
 	{
-		cout << ">>> FindShortestPath : There is no ball at [" << itemStart.xStart << ":" << itemStart.yStart << "]" << endl;
+		cout << ">>> FloydFindShortestPath : There is no ball at [" << itemStart.xStart << ":" << itemStart.yStart << "]" << endl;
 		return cPath();
 	}
 
@@ -93,7 +94,7 @@ cPath FindShortestPath(const cBallGame &game, cPath::PathItem itemStart, int xTo
 		pDistanceMatrix[i] = new cPath[NGraphNodes];
 	}
 
-	InitMatrix(game, pDistanceMatrix, *game.GetBall(itemStart.xStart, itemStart.yStart));
+	InitMatrixFloyd(game, pDistanceMatrix, *game.GetBall(itemStart.xStart, itemStart.yStart));
 	cout << endl;
 
 	

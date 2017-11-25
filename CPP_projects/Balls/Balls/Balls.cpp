@@ -6,7 +6,7 @@
 #include "windows.h"
 #include <iostream>
 #include "boost/format.hpp"
-#include "cPathProcessor.h"
+#include "Algorithms.h"
 
 using namespace std;
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	cin.get();
 	
 
-	FindShortestPath(*pGame, { 0, 0 }, 4, 0);
+	DijkstraFindShortestPath(*pGame, { 0, 0 }, 2, 2);
 
 
 	cin.get();
