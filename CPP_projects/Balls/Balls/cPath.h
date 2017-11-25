@@ -32,5 +32,6 @@ public:
 	void print();
 
 	cPath & operator=(const cPath & path);
+	std::string GetNextStep(int x, int y);
 };
 

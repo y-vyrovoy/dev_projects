@@ -2,6 +2,7 @@
 #include <list>
 #include "cBallItem.h"
 #include <memory>
+#include "cPath.h"
 
 #define FIELD_PREFIX	"field"
 #define	BALL_PREFIX		"ball"
@@ -20,6 +21,7 @@ public:
 	~cBallGame();
 
 	static cBallGame * GetNewInstanceFromCmdLine(int argc, char *argv[]);
+	static cBallGame * GetInstanceFromFile(std::string sFileName);
 
 	int BallsCount() { return m_lstBalls.size();  };
 
@@ -30,9 +32,8 @@ public:
 	const cBallItem * GetBall(int x, int y)const;
 
 	void RemoveBall(int x, int y);
-	void RemoveBall(cBallItem item);
 
-	void DrawTable();
+	void DrawTable(cPath * pPath = nullptr);
 
 	int NColumns() const { return m_nColumns; } 
 	int NRows() const { return m_nRows; }

@@ -50,8 +50,6 @@ cPath DijkstraAlgorithm(const cBallGame &game, bool ** pAdjacencyMatrix, const c
 		{
 			int nMatrixIndex = GetMatrixIndex(game, p->xStart, p->yStart);
 
-			std::cout << "Node: [" << p->xStart << ":" << p->yStart << "]. " << endl;
-
 			// run along current node connections (column in adjacency matrix)
 			for (int j = 0; j < NGraphNodes; j++)
 			{
@@ -61,8 +59,6 @@ cPath DijkstraAlgorithm(const cBallGame &game, bool ** pAdjacencyMatrix, const c
 				// is node connected?
 				if (pAdjacencyMatrix[nMatrixIndex][j])
 				{
-					std::cout << "\ttmp: [" << xTmp << ":" << yTmp << "]. ";
-
 					// if node was not visited
 					if (!pPathMatrix[xTmp][yTmp].bVisited)
 					{
@@ -71,8 +67,6 @@ cPath DijkstraAlgorithm(const cBallGame &game, bool ** pAdjacencyMatrix, const c
 						{
 							pPathMatrix[xTmp][yTmp].path = pPathMatrix[p->xStart][p->yStart].path;
 							pPathMatrix[xTmp][yTmp].path.AddStep(xTmp, yTmp);
-
-							std::cout << "reassign: [" << p->xStart << ":" << p->yStart << " -> " << xTmp << ":" << yTmp << "]. ";
 						}
 
 						list<cPath::PathItem>::iterator it;
@@ -150,19 +144,19 @@ cPath DijkstraFindShortestPath(const cBallGame &game, cPath::PathItem itemStart,
 	if ((itemStart.xStart < 0) || (itemStart.xStart >= game.NColumns()) || (itemStart.yStart < 0) || (itemStart.yStart >= game.NRows()) ||
 		(xTo < 0) || (xTo >= game.NColumns()) || (yTo < 0) || (yTo >= game.NRows()))
 	{
-		cout << "Start or finish coordinates is out of field" << endl;
+		//cout << "Start or finish coordinates is out of field" << endl;
 		return cPath();
 	}
 
 	if (!game.IsCellFree(xTo, yTo))
 	{
-		cout << "Destination is occupied" << endl;
+		// cout << "Destination is occupied" << endl;
 		return cPath();
 	}
 
 	if (game.GetBall(itemStart.xStart, itemStart.yStart) == nullptr)
 	{
-		cout << ">>> DijkstraFindShortestPath : There is no ball at [" << itemStart.xStart << ":" << itemStart.yStart << "]" << endl;
+		//cout << ">>> DijkstraFindShortestPath : There is no ball at [" << itemStart.xStart << ":" << itemStart.yStart << "]" << endl;
 		return cPath();
 	}
 
@@ -182,7 +176,7 @@ cPath DijkstraFindShortestPath(const cBallGame &game, cPath::PathItem itemStart,
 	
 
 	cPath pathReturn = DijkstraAlgorithm(game, pDistanceMatrix, *game.GetBall(itemStart.xStart, itemStart.yStart), { xTo, yTo });
-	pathReturn.print();
+	//pathReturn.print();
 
 	for (int i = 0; i < NGraphNodes; i++)
 	{
@@ -190,5 +184,5 @@ cPath DijkstraFindShortestPath(const cBallGame &game, cPath::PathItem itemStart,
 	}
 	delete[] pDistanceMatrix;
 
-	return cPath();
+	return pathReturn;
 }

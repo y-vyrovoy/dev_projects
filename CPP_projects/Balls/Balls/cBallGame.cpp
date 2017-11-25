@@ -5,6 +5,8 @@
 #include <iostream>
 #include "boost/format.hpp"
 #include <iterator>
+#include <fstream>
+
 
 using namespace std;
 
@@ -16,6 +18,40 @@ cBallGame::cBallGame(int nColumns, int nRows)
 	:m_nColumns{nColumns}, m_nRows{nRows}
 {}
 
+// istantiates cBallGame reading file
+cBallGame * cBallGame::GetInstanceFromFile(string sFileName)
+{
+	vector<string> lstReturn;
+
+	ifstream file;
+	try {
+		file.open(sFileName);
+		string str;
+		while (getline(file, str))
+		{
+			lstReturn.push_back(str);
+		}
+		file.close();
+	}
+	catch (ifstream::failure e)
+	{
+		std::cout << "Cannot read parameters file" << endl;
+		file.close();
+		return nullptr;
+	}
+
+	int i = 0;
+	char **argv = new char*[lstReturn.size()];
+	for (auto p : lstReturn)
+	{
+		argv[i] = new char[p.length() + 1];
+		strcpy_s(argv[i], p.length()+1, p.c_str());
+		i++;
+	}
+	return GetNewInstanceFromCmdLine(lstReturn.size(), argv);
+}
+
+// istantiates cBallGame from string array (command line)
 cBallGame * cBallGame::GetNewInstanceFromCmdLine(int argc, char *argv[])
 {
 	cBallGame * pReturn = nullptr;
@@ -92,6 +128,7 @@ cBallGame * cBallGame::GetNewInstanceFromCmdLine(int argc, char *argv[])
 cBallGame::~cBallGame()
 {}
 
+// checks is cell free or not
 bool cBallGame::IsCellFree(int x, int y) const {
 	for (auto p = m_lstBalls.begin(); p != m_lstBalls.end(); ++p) {
 		if (p->EqualCell(x, y))
@@ -102,6 +139,7 @@ bool cBallGame::IsCellFree(int x, int y) const {
 	return true;
 }
 
+// add new ball to game
 bool cBallGame::AddBall(int x, int y) 
 {
 	if (x >= m_nColumns || y >= m_nRows)
@@ -157,16 +195,27 @@ void cBallGame::RemoveBall(int x, int y)
 	}
 }
 
-void cBallGame::RemoveBall(cBallItem item) 
+
+// prints field, balls and path
+void cBallGame::DrawTable(cPath * pPath)
 {
+	cout << endl;
 
-}
-
-
-void cBallGame::DrawTable()
-{
 	// print header - field size + balls list
-	cout << endl << " ----- ===== Actual game state ===== ----- " << endl;
+	if (pPath == nullptr)
+	{
+		cout << endl << " ----- ===== Actual game state ===== ----- " << endl;
+	}
+	else
+	{
+		cout << endl << " ----- ===== Path from [" 
+					<< pPath->GetStart().xStart << ":" 
+					<< pPath->GetStart().yStart << "] -> [" 
+					<< pPath->GetStart().xStart << ":"
+					<< pPath->GetStart().yStart << "] "
+					<<" ===== ----- " << endl;
+	}
+
 	cout << endl << "Fields: cols=" << m_nColumns << ", rows=" << m_nRows ;
 	cout << endl << "Balls: ";
 
@@ -181,6 +230,7 @@ void cBallGame::DrawTable()
 		}
 	}
 	cout << endl;
+
 
 	// print the table
 	
@@ -204,7 +254,14 @@ void cBallGame::DrawTable()
 		{
 			if (IsCellFree(iX, iY))
 			{
-				cout << "     |";
+				if (pPath == nullptr)
+				{
+					cout << "     |";
+				}
+				else
+				{
+					cout << "  " << pPath->GetNextStep(iX, iY) << "  |";
+				}
 			} 
 			else
 			{

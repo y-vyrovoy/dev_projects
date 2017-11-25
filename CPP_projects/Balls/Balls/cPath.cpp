@@ -91,3 +91,37 @@ cPath & cPath::operator=(const cPath & path)
 	m_lstPath.insert(m_lstPath.end(), path.m_lstPath.begin(), path.m_lstPath.end());
 	return *this;
 }
+
+std::string cPath::GetNextStep(int x, int y)
+{
+	if (GetEnd().xStart == x && GetEnd().yStart == y)
+	{
+		return "X";
+	}
+
+	for (auto it = m_lstPath.begin(); it != m_lstPath.end(); ++it)
+	{
+		if (it->xStart == x && it->yStart == y)
+		{
+			auto itNext = next(it, 1);
+
+			if (itNext != m_lstPath.end())
+			{
+				if ((itNext->xStart == it->xStart - 1) && (itNext->yStart == it->yStart)) {
+					return "L";
+				}
+				else if ((itNext->xStart == it->xStart + 1) && (itNext->yStart == it->yStart)) {
+					return "R";
+				}
+				else if ((itNext->yStart == it->yStart - 1) && (itNext->xStart == it->xStart)) {
+					return "D";
+				}
+				else if ((itNext->yStart == it->yStart + 1) && (itNext->xStart == it->xStart)) {
+					return "U";
+				}
+			}
+		}
+	}
+
+	return " ";
+}
