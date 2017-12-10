@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 		{
 			cout << ">>> There is no ball at [" << xStart << ":" << yStart << "]" << endl;
 		}
-		else if (pGame->IsCellFree(xEnd, yEnd))
+		else if (!pGame->IsCellFree(xEnd, yEnd))
 		{
 			cout << "Destination is occupied" << endl;
 		}
@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
 		{
 			// looks like input is ok
 			cPath path = DijkstraFindShortestPath(*pGame, { xStart, yStart }, xEnd, yEnd);
+			//cPath path = FloydFindShortestPath(*pGame, { xStart, yStart }, xEnd, yEnd);
 			pGame->DrawTable(&path);
 		}
 

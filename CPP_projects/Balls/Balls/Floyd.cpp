@@ -150,7 +150,7 @@ cPath FloydFindShortestPath(const cBallGame &game, cPath::PathItem itemStart, in
 	cout << endl;
 #endif
 
-	pathReturn.print();
+	//pathReturn.print();
 
 	for (int i = 0; i < NGraphNodes; i++)
 	{
@@ -158,5 +158,5 @@ cPath FloydFindShortestPath(const cBallGame &game, cPath::PathItem itemStart, in
 	}
 	delete[] pDistanceMatrix;
 
-	return cPath();
+	return pathReturn;
 }
