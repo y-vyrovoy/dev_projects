@@ -7,11 +7,11 @@
     android:layout_width="match_parent"
     android:background="@android:color/black">
 
-    <com.example.facesplit.ScalableImageView
-        android:id="@+id/imageSelection"
+    <ImageView
+        android:id="@+id/imageTemplate"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        custom:src="@drawable/nobody" />
+        android:src="@drawable/nobody" />
 
     <LinearLayout
         android:id="@+id/layoutButtons"
@@ -39,15 +39,6 @@
             android:src="@drawable/ic_camera"
             android:background="@android:color/transparent"
             android:onClick="onBtnShootPhoto"/>
-
-        <ImageButton
-            android:id="@+id/btnReady"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_ok"
-            android:background="@android:color/transparent"
-            android:onClick="onBtnReady"/>
 
     </LinearLayout>
 
