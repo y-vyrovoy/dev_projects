@@ -1,9 +1,11 @@
 package com.example.soulface;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -104,4 +106,17 @@ public class BitmapUtils {
         Toast.makeText(context, context.getResources().getString(R.string.photos_saved), Toast.LENGTH_SHORT).show();
     }
 
+    public static void shareImage(Bitmap bmp) {
+/*
+        saveBitmap
+
+        Uri bitmapUri = Uri.parse(bmp);
+
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uriToImage);
+        shareIntent.setType("image/jpeg");
+        startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+*/
+    }
 }

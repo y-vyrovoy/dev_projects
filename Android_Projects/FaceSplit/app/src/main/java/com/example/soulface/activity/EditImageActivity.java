@@ -25,7 +25,6 @@ public class EditImageActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_image);
-
         mImageMain = findViewById(R.id.imageSelection);
     }
 
