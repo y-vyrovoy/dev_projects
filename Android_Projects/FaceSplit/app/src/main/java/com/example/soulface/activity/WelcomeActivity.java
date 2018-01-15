@@ -3,7 +3,7 @@ package com.example.soulface.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,12 +17,12 @@ import java.util.List;
 public class WelcomeActivity extends AppCompatActivity {
 
     private static final int PERMISSIONS_REQUEST = 1;
-    private static final int PERMISSIONS_REQUEST_STORAGE = 2;
-    private static final int PERMISSIONS_REQUEST_CAMERA = 3;
 
     private boolean waitForPermissions;
     private boolean isPermissionsGranted;
-    private List<String> _lstPermissions;
+    private List<String> mLstPermissions;
+
+    private final Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,22 +35,32 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onStart();
 
         waitForPermissions = false;
-        _lstPermissions = new ArrayList<>();
+        mLstPermissions = new ArrayList<>();
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                                                                 PackageManager.PERMISSION_DENIED) {
 
-            _lstPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            mLstPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
             waitForPermissions = true;
           } else {
             isPermissionsGranted = true;
         }
 
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_DENIED) {
+
+            mLstPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+
+            waitForPermissions = true;
+        } else {
+            isPermissionsGranted = true;
+        }
+
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
                                                                 PackageManager.PERMISSION_DENIED) {
 
-            _lstPermissions.add(Manifest.permission.CAMERA);
+            mLstPermissions.add(Manifest.permission.CAMERA);
 
             waitForPermissions = true;
         } else {
@@ -58,7 +68,7 @@ public class WelcomeActivity extends AppCompatActivity {
         }
 
         if(waitForPermissions == true) {
-            String[] permissionsArray = _lstPermissions.toArray(new String[_lstPermissions.size()]);
+            String[] permissionsArray = mLstPermissions.toArray(new String[mLstPermissions.size()]);
             ActivityCompat.requestPermissions(this, permissionsArray, PERMISSIONS_REQUEST);
         }
         waitForPermissions();
@@ -74,12 +84,12 @@ public class WelcomeActivity extends AppCompatActivity {
 
                 for (int i = 0; i < grantResults.length; i++) {
                     if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                        lstGranted.add(_lstPermissions.get(i));
+                        lstGranted.add(mLstPermissions.get(i));
                     }
                 }
-                _lstPermissions.removeAll(lstGranted);
+                mLstPermissions.removeAll(lstGranted);
 
-                isPermissionsGranted = (_lstPermissions.isEmpty() == true);
+                isPermissionsGranted = (mLstPermissions.isEmpty() == true);
                 waitForPermissions = false;
             }
         }
@@ -87,6 +97,16 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void waitForPermissions() {
 
+        mHandler.postDelayed( () -> {
+            while( waitForPermissions == true ) { }
+
+            if( isPermissionsGranted == true ) {
+                startActivity(new Intent(WelcomeActivity.this, PhotoSelectionActivity.class));
+                finish();
+            }
+        }, 1000);
+
+/*
         new AsyncTask<String, Void, String> (){
             @Override
             protected String doInBackground(String... params) {
@@ -113,6 +133,6 @@ public class WelcomeActivity extends AppCompatActivity {
             @Override
             protected void onProgressUpdate(Void... values) { }
         }.execute();
+*/
     }
-
 }

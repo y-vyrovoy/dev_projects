@@ -70,7 +70,10 @@ public class PhotoSelectionActivity extends AppCompatActivity {
 
             if(requestCode == RESULT_LOAD_IMAGE) {
                 Uri selectedImage = data.getData();
-                Log.d(TAG, selectedImage.toString());
+                if (selectedImage == null) {
+                    Log.e(TAG, "URI selectedImage == null");
+                    return;
+                }
 
                 Bitmap bmp = null;
                 try {
@@ -95,8 +98,6 @@ public class PhotoSelectionActivity extends AppCompatActivity {
 
                 mImageMain.setImageBitmap(bmp);
                 MyApp.setBitmapToEdit(bmp);
-
-                Log.d(TAG, "Save bitmap to load: w: " + bmp.getWidth() + ", h: " + bmp.getHeight());
             }
 
             startActivity(new Intent(this, EditImageActivity.class));

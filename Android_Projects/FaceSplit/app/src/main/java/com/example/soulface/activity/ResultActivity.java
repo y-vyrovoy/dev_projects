@@ -84,31 +84,34 @@ public class ResultActivity extends AppCompatActivity {
         ImageView imageView = view.findViewById(R.id.photo);
 
         if (imageView != null) {
-            double desiredWidth = mScreenWidth * RESULT_VIEW_PHOTO_RATIO;
-            int bmpWidth = MyApp.getBitmapLeft().getWidth();
-            double ratio = desiredWidth / bmpWidth;
+            try {
+                double desiredWidth = mScreenWidth * RESULT_VIEW_PHOTO_RATIO;
+                int bmpWidth = MyApp.getBitmapLeft().getWidth();
+                double ratio = desiredWidth / bmpWidth;
 
-            int imageWidth = (int) (bitmapSrc.getWidth() * ratio);
-            int imageHeight = (int) (bitmapSrc.getHeight() * ratio);
+                int imageWidth = (int) (bitmapSrc.getWidth() * ratio);
+                int imageHeight = (int) (bitmapSrc.getHeight() * ratio);
 
-            Bitmap bitmapDest = Bitmap.createScaledBitmap(bitmapSrc, imageWidth, imageHeight, false);
-            imageView.setImageBitmap(bitmapDest);
+                Bitmap bitmapDest = Bitmap.createScaledBitmap(bitmapSrc, imageWidth, imageHeight, false);
+                imageView.setImageBitmap(bitmapDest);
+            } catch (Exception ex) {}
+
         }
     }
 
     public void onBtnSave(View v) {
-        if (v == mLeftViewBottom.findViewById(R.id.btn_save_left)) {
-            BitmapUtils.saveBitmap(MyApp.getBitmapLeft(), "l", this);
-        } else if (v == mRightViewBottom.findViewById(R.id.btn_save_right)) {
-            BitmapUtils.saveBitmap(MyApp.getBitmapRight(), "r", this);
+        if (v == mLeftViewTop.findViewById(R.id.btn_save_left)) {
+            BitmapUtils.saveBitmapGallery(MyApp.getBitmapLeft(), this);
+        } else if (v == mRightViewTop.findViewById(R.id.btn_save_right)) {
+            BitmapUtils.saveBitmapGallery(MyApp.getBitmapRight(), this);
         }
     }
 
     public void onBtnShare(View v) {
-        if (v == mLeftViewBottom.findViewById(R.id.btn_share_left)) {
-            BitmapUtils.shareImage(MyApp.getBitmapLeft());
-        } else if (v == mRightViewBottom.findViewById(R.id.btn_share_right)) {
-            BitmapUtils.shareImage(MyApp.getBitmapRight());
+        if (v == mLeftViewTop.findViewById(R.id.btn_share_left)) {
+            BitmapUtils.shareImage(MyApp.getBitmapLeft(), this);
+        } else if (v == mRightViewTop.findViewById(R.id.btn_share_right)) {
+            BitmapUtils.shareImage(MyApp.getBitmapRight(), this);
         }
     }
 

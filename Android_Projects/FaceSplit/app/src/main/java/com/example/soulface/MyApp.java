@@ -3,12 +3,8 @@ package com.example.soulface;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by Yura Vyrovoy on 10/13/2017.
@@ -17,82 +13,74 @@ import java.util.Date;
 public class MyApp extends Application {
     private final static String TAG = MyApp.class.getSimpleName();
 
-    private static MyApp _instance = null;
+    private static MyApp mInstance = null;
 
-    private Bitmap _bitmapToEdit = null;
-    private Bitmap _bitmapLeft = null;
-    private Bitmap _bitmapRight = null;
+    private Bitmap mBitmapToEdit = null;
+    private Bitmap mBitmapLeft = null;
+    private Bitmap mBitmapRight = null;
 
-    private String _pathPhotos;
+    private String mPathPhotos;
 
     @Override
     public void onCreate() {
         super.onCreate();
         createFolder();
 
-        _instance = this;
+        mInstance = this;
     }
 
     public static MyApp getInstance() {
-        return _instance;
+        return mInstance;
     }
 
     public static void setBitmapToEdit(Bitmap bitmapToEdit) {
-        if (_instance == null) {
+        if (mInstance == null) {
             return;
         }
-        _instance._bitmapToEdit = bitmapToEdit;
+        mInstance.mBitmapToEdit = bitmapToEdit;
     }
     public static Bitmap getBitmapToEdit() {
-        if (_instance == null) {
+        if (mInstance == null) {
             return null;
         }
-        return _instance._bitmapToEdit;
+        return mInstance.mBitmapToEdit;
     }
 
     public static void setBitmapLeft(Bitmap bitmapToEdit) {
-        if (_instance == null) {
+        if (mInstance == null) {
             return;
         }
-        _instance._bitmapLeft = bitmapToEdit;
+        mInstance.mBitmapLeft = bitmapToEdit;
     }
 
     public static Bitmap getBitmapLeft() {
-        if (_instance == null) {
+        if (mInstance == null) {
             return null;
         }
-        return _instance._bitmapLeft;
+        return mInstance.mBitmapLeft;
     }
 
     public static void setBitmapRight(Bitmap bitmapToEdit) {
-        if (_instance == null) {
+        if (mInstance == null) {
             return;
         }
-        _instance._bitmapRight = bitmapToEdit;
+        mInstance.mBitmapRight = bitmapToEdit;
     }
 
     public static Bitmap getBitmapRight() {
-        if (_instance == null) {
+        if (mInstance == null) {
             return null;
         }
-        return _instance._bitmapRight;
+        return mInstance.mBitmapRight;
     }
 
     private void createFolder() {
 
-        String path = String.valueOf(Environment.getExternalStorageDirectory());
+        mPathPhotos = "";
         try {
-            File root_sd = new File(path);
-            File folder = new File(root_sd .getAbsolutePath(), "FaceSplit");
-
-            boolean success = true;
-            if (!folder.exists()) {
-                success = folder.mkdir();
-            }
-
-            if(success) {
-                _pathPhotos = folder.getAbsolutePath();
-            }
+            File folder = new File(Environment.getExternalStorageDirectory(), getApplicationContext().getString(R.string.app_name));
+            folder.mkdir();
+            mPathPhotos = folder.getAbsolutePath();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -100,6 +88,6 @@ public class MyApp extends Application {
     }
 
     public String getPhotosPath() {
-        return _pathPhotos;
+        return mPathPhotos;
     }
 }

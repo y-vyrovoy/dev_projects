@@ -14,7 +14,6 @@
         android:src="@drawable/nobody" />
 
     <LinearLayout
-        android:id="@+id/layoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
@@ -23,7 +22,6 @@
         android:padding="30dp">
 
         <ImageButton
-            android:id="@+id/btnLoadImage"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -32,7 +30,6 @@
             android:onClick="onBtlLoadPhoto"/>
 
         <ImageButton
-            android:id="@+id/btnTakePhoto"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"

@@ -9,7 +9,6 @@
     android:background="@android:color/black">
 
     <ImageView
-        android:id="@+id/imageLogo"
         android:contentDescription="@string/app_logo_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -17,7 +16,6 @@
         app:srcCompat="@drawable/ic_logo" />
 
     <ProgressBar
-        android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
