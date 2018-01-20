@@ -35,32 +35,16 @@
         android:background="@android:color/transparent"
         android:onClick="onBtnVrMode"/>
 
-    <LinearLayout
+
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:src="@drawable/ic_back"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true">
-
-        <ImageButton
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_back"
-            android:background="@android:color/transparent"
-            android:onClick="onBtnBack"
-            android:layout_margin="4dp"/>
-
-        <ImageButton
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_cancel"
-            android:background="@android:color/transparent"
-            android:onClick="onBtnCancel"
-            android:layout_margin="4dp"/>
-    </LinearLayout>
-
-
+        android:background="@android:color/transparent"
+        android:onClick="onBtnBack"
+        android:layout_margin="4dp"/>
 
 </RelativeLayout>
 

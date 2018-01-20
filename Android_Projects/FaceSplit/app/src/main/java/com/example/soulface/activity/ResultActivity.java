@@ -2,7 +2,6 @@ package com.example.soulface.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -116,7 +115,8 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     public void onBtnVrMode(View v) {
-
+        Intent intent = new Intent(this, VrModeActivity.class);
+        startActivity(intent);
     }
 
     public void onBtnBack(View v) {

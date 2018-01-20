@@ -105,34 +105,5 @@ public class WelcomeActivity extends AppCompatActivity {
                 finish();
             }
         }, 1000);
-
-/*
-        new AsyncTask<String, Void, String> (){
-            @Override
-            protected String doInBackground(String... params) {
-
-                try {
-                    Thread.currentThread().sleep(1000);
-                } catch(InterruptedException ex) {}
-
-                while( waitForPermissions == true ) { }
-
-                if( isPermissionsGranted == true ) {
-                    startActivity(new Intent(WelcomeActivity.this, PhotoSelectionActivity.class));
-                    finish();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(String result) {}
-
-            @Override
-            protected void onPreExecute() { }
-
-            @Override
-            protected void onProgressUpdate(Void... values) { }
-        }.execute();
-*/
     }
 }
