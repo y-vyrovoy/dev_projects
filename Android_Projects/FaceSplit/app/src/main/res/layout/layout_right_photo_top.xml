@@ -13,7 +13,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"/>
 
-
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,7 +25,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@+id/photo"
-        android:layout_alignBottom="@+id/photo">
+        android:layout_alignBottom="@+id/photo"
+        android:layout_marginEnd="8dp">
+
 
         <ImageButton
             android:id="@+id/btn_save_right"

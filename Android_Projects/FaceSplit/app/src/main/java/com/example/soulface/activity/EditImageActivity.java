@@ -2,9 +2,7 @@ package com.example.soulface.activity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -35,7 +33,6 @@ public class EditImageActivity extends AppCompatActivity {
     }
 
     public void onBtnBack(View v) {
-        //finish();
         onBackPressed();
     }
 
@@ -43,10 +40,8 @@ public class EditImageActivity extends AppCompatActivity {
 
         Bitmap bmpResult = mImageMain.getResultBitmap();
 
-        //MyApp.setBitmapToEdit(bmpResult);
         MyApp.setBitmapLeft(BitmapUtils.getDoubledLeftPart(bmpResult));
         MyApp.setBitmapRight(BitmapUtils.getDoubledRightPart(bmpResult));
-
 
         startActivity(new Intent(this, ResultActivity.class));
     }

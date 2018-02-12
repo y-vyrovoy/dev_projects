@@ -28,6 +28,7 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+        //setContentView(R.layout.layout_test);
     }
 
     @Override
@@ -105,5 +106,6 @@ public class WelcomeActivity extends AppCompatActivity {
                 finish();
             }
         }, 1000);
+
     }
 }

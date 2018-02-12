@@ -9,7 +9,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.MyApp;
@@ -18,12 +20,15 @@ import com.example.soulface.R;
 public class ResultActivity extends AppCompatActivity {
     private static final String TAG = ResultActivity.class.getSimpleName();
     private static final double RESULT_VIEW_PHOTO_RATIO = 0.75;
+    private static final int ROUND_RADIUS = 40;
 
     private View mLeftViewTop;
     private View mLeftViewBottom;
     private View mRightViewTop;
     private View mRightViewBottom;
-    int mScreenWidth;
+    private ProgressBar mProgressBar;
+
+    private int mScreenWidth;
     private boolean mLeftOnTop;
 
     @Override
@@ -38,21 +43,24 @@ public class ResultActivity extends AppCompatActivity {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
 
         mLeftViewTop = layoutInflater.inflate(R.layout.layout_left_photo_top, null);
-        setSizedDrawable (mLeftViewTop, MyApp.getBitmapLeft());
+        setSizedDrawable (mLeftViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS ));
 
         mLeftViewBottom = layoutInflater.inflate(R.layout.layout_left_photo_bottom, null);
-        setSizedDrawable (mLeftViewBottom, MyApp.getBitmapLeft());
+        setSizedDrawable (mLeftViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS ));
 
         mRightViewTop = layoutInflater.inflate(R.layout.layout_right_photo_top, null);
-        setSizedDrawable (mRightViewTop, MyApp.getBitmapRight());
+        setSizedDrawable (mRightViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS ));
 
         mRightViewBottom = layoutInflater.inflate(R.layout.layout_right_photo_bottom, null);
-        setSizedDrawable (mRightViewBottom, MyApp.getBitmapRight());
+        setSizedDrawable (mRightViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS ));
+
+        mProgressBar = findViewById(R.id.progressBar);
     }
 
     public void onStart() {
         super.onStart();
         doLayout(true);
+        mProgressBar.setVisibility(View.INVISIBLE);
     }
 
     private void doLayout(boolean leftOnTop){
@@ -99,18 +107,39 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     public void onBtnSave(View v) {
+        Bitmap bmpToSave = null;
         if (v == mLeftViewTop.findViewById(R.id.btn_save_left)) {
-            BitmapUtils.saveBitmapGallery(MyApp.getBitmapLeft(), this);
+            bmpToSave = MyApp.getBitmapLeft();
         } else if (v == mRightViewTop.findViewById(R.id.btn_save_right)) {
-            BitmapUtils.saveBitmapGallery(MyApp.getBitmapRight(), this);
+            bmpToSave = MyApp.getBitmapRight();
+        }
+
+        if (bmpToSave != null) {
+            mProgressBar.setVisibility(View.VISIBLE);
+            BitmapUtils.saveBitmapGallery(bmpToSave, this);
+            mProgressBar.setVisibility(View.INVISIBLE);
+            v.setVisibility(View.INVISIBLE);
+            Toast.makeText(this, R.string.image_saved, Toast.LENGTH_SHORT).show();
         }
     }
 
     public void onBtnShare(View v) {
+        mProgressBar.setVisibility(View.VISIBLE);
+        Bitmap bmpToShare = null;
         if (v == mLeftViewTop.findViewById(R.id.btn_share_left)) {
-            BitmapUtils.shareImage(MyApp.getBitmapLeft(), this);
+            bmpToShare = MyApp.getBitmapLeft();
         } else if (v == mRightViewTop.findViewById(R.id.btn_share_right)) {
-            BitmapUtils.shareImage(MyApp.getBitmapRight(), this);
+            bmpToShare = MyApp.getBitmapRight();
+        }
+
+        if (bmpToShare != null) {
+            BitmapUtils.shareImage(bmpToShare,
+                                    this,
+                                    ()-> {
+                                        mProgressBar.setVisibility(View.INVISIBLE);
+                                        Toast.makeText(this, R.string.image_saved, Toast.LENGTH_SHORT).show();
+                                    },
+                                    null);
         }
     }
 
@@ -123,9 +152,6 @@ public class ResultActivity extends AppCompatActivity {
         onBackPressed();
     }
 
-    public void onBtnCancel(View v) {
-
-    }
 
     public void onImageClick(View v) {
         if (v == mLeftViewBottom.findViewById(R.id.photo)) {

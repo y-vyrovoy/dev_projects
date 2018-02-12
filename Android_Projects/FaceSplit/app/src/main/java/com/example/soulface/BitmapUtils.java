@@ -6,8 +6,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -129,10 +134,15 @@ public class BitmapUtils {
         return sPath;
     }
 
-    public static void shareImage(Bitmap bmp, Context context) {
+    public static void shareImage(Bitmap bmp, Context context,
+                                    OnActionDoneCallback callbackOnSave,
+                                    OnActionDoneCallback callbackOnShare) {
 
         String sImageUrl = MediaStore.Images.Media.insertImage(context.getContentResolver(), bmp, "title" , "description");
         Uri savedImageURI = Uri.parse(sImageUrl);
+        if (callbackOnSave != null) {
+            callbackOnSave.doAction();
+        }
 
         if (savedImageURI != null) {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -142,5 +152,23 @@ public class BitmapUtils {
             context.startActivity(Intent.createChooser(shareIntent, "Share"));
         }
 
+        if (callbackOnShare != null) {
+            callbackOnShare.doAction();
+        }
+    }
+
+    public interface OnActionDoneCallback{
+        void doAction();
+    }
+
+    public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int radius) {
+        Bitmap imageRounded = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
+        Canvas canvas = new Canvas(imageRounded);
+        Paint mpaint = new Paint();
+        mpaint.setAntiAlias(true);
+        mpaint.setShader(new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+        canvas.drawRoundRect((new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight())), radius, radius, mpaint);// Round Image Corner 100 100 100 100
+
+        return imageRounded;
     }
 }

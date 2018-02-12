@@ -15,7 +15,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -41,41 +40,41 @@ public class ScalableImageView extends View {
     public static float RATIO = (float)4/3;
     private static final int SPLITTER_HALF_WIDTH = 3;
 
-    private Rect _rectVisible = new Rect();
-    private Rect _rectView = new Rect();
+    private Rect mRectVisible = new Rect();
+    private Rect mRectView = new Rect();
 
-    private int _width = 0;
-    private int _height = 0;
+    private int mBitmapWidth = 0;
+    private int mBitmapHeight = 0;
 
-    private float _scaleCurrent = 1;
-    private float _scaleMinimum = 1;
-    private float _unscaledOffsetX = 0;
-    private float _unscaledOffsetY = 0;
+    private float mScaleCurrent = 1;
+    private float mScaleMinimum = 1;
+    private float mUnscaledOffsetX = 0;
+    private float mUnscaledOffsetY = 0;
 
-    private boolean _isScaled;
+    private boolean mIsScaled;
 
-    private Point _fingerOne;
-    private Point _fingerTwo;
-    private Point _lastFingerOne;
-    private Point _lastFingerTwo;
+    private Point mPointFingerOne;
+    private Point mPointFingerTwo;
+    private Point mLastPointFingerOne;
+    private Point mLastPointFingerTwo;
 
-    private float _rotationAngle;
+    private float mRotationAngle;
 
     // items that should be instantiated once, not in every onDraw
-    private Bitmap _bitmapSource;
-    private Paint _paintBackground;
-    private Paint _paintTransparent;
-    private Paint _paintTransformed;
-    private Paint _paintDashed;
+    private Bitmap mBitmapSource;
+    private Paint mPaintBackground;
+    private Paint mPaintTransparent;
+    private Paint mPaintTransformed;
+    private Paint mPaintDashed;
 
-    private Path _pathSeparator;
+    private Path mPathSeparator;
 
 
-    private RectF _rectBitmapTransformed = new RectF();
+    private RectF mRectBitmapTransformed = new RectF();
 
     // Sets up interactions
-    private ScaleGestureDetector _scaleGestureDetector;
-    private GestureDetectorCompat _gestureDetector;
+    private ScaleGestureDetector mScaleGestureDetector;
+    private GestureDetectorCompat mGestureDetector;
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,8 +101,8 @@ public class ScalableImageView extends View {
     private void init(Context context, AttributeSet attrs) {
         Log.d(TAG, "init()");
 
-        _scaleGestureDetector = new ScaleGestureDetector(context, _scaleGestureListener);
-        _gestureDetector = new GestureDetectorCompat(context, _gestureListener);
+        mScaleGestureDetector = new ScaleGestureDetector(context, _scaleGestureListener);
+        mGestureDetector = new GestureDetectorCompat(context, _gestureListener);
 
         if(attrs != null) {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.ScalableImageView);
@@ -116,27 +115,27 @@ public class ScalableImageView extends View {
             a.recycle();
         }
 
-        _rotationAngle = 0;
+        mRotationAngle = 0;
 
-        _paintBackground = new Paint();
-        _paintBackground.setStyle(Paint.Style.FILL);
-        _paintBackground.setColor(Color.BLACK);
+        mPaintBackground = new Paint();
+        mPaintBackground.setStyle(Paint.Style.FILL);
+        mPaintBackground.setColor(Color.BLACK);
 
-        _paintTransparent = new Paint();
-        _paintTransparent.setStyle(Paint.Style.STROKE);
-        _paintTransparent.setColor(Color.GREEN);
-        _paintTransparent.setStrokeWidth(1);
+        mPaintTransparent = new Paint();
+        mPaintTransparent.setStyle(Paint.Style.STROKE);
+        mPaintTransparent.setColor(Color.GREEN);
+        mPaintTransparent.setStrokeWidth(1);
 
-        _paintDashed = new Paint();
-        _paintDashed.setColor(getResources().getColor(R.color.colorPink));
-        _paintDashed.setStyle(Paint.Style.STROKE);
-        _paintDashed.setStrokeWidth(3);
-        _paintDashed.setPathEffect(new DashPathEffect(new float[]{30, 20}, 0));
+        mPaintDashed = new Paint();
+        mPaintDashed.setColor(getResources().getColor(R.color.colorPink));
+        mPaintDashed.setStyle(Paint.Style.FILL_AND_STROKE);
+        mPaintDashed.setStrokeWidth(3);
+        mPaintDashed.setPathEffect(new DashPathEffect(new float[]{30, 20}, 0));
 
-        _pathSeparator = new Path();
+        mPathSeparator = new Path();
 
-        _paintTransformed = new Paint();
-        _paintTransformed.setStyle(Paint.Style.FILL);
+        mPaintTransformed = new Paint();
+        mPaintTransformed.setStyle(Paint.Style.FILL);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,7 +147,7 @@ public class ScalableImageView extends View {
     public void setImageBitmap(Bitmap bitmap) {
         Log.d(TAG,"setImageBitmap()");
 
-        _bitmapSource = bitmap;
+        mBitmapSource = bitmap;
 
         initScaleOffset();
         calcTransition();
@@ -160,59 +159,61 @@ public class ScalableImageView extends View {
     public void onDraw(Canvas canvas) {
         Log.d(TAG,"onDraw()");
 
-        canvas.clipRect(_rectVisible);
+        canvas.clipRect(mRectVisible);
 
         // Scaled bitmap sizes
-        canvas.drawRect(_rectVisible, _paintBackground);
+        canvas.drawRect(mRectVisible, mPaintBackground);
 
-        if(_bitmapSource != null) {
+        if(mBitmapSource != null) {
 
-            canvas.drawRect(_rectBitmapTransformed, _paintTransformed);
+            canvas.drawRect(mRectBitmapTransformed, mPaintTransformed);
 
             drawBitmapRotated(canvas,
-                    _rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
-                    _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
-                    _scaleCurrent, _rotationAngle, _bitmapSource);
+                    mRectVisible.centerX() + mUnscaledOffsetX * mScaleCurrent,
+                    mRectVisible.centerY() + mUnscaledOffsetY * mScaleCurrent,
+                    mScaleCurrent, mRotationAngle, mBitmapSource);
         }
 
         // divider that shows where picture will be divided
 /*
-        canvas.drawRect(_rectVisible.centerX() - SPLITTER_HALF_WIDTH,
-                _rectVisible.top,
-                _rectVisible.centerX() + SPLITTER_HALF_WIDTH,
-                _rectVisible.bottom,
+        canvas.drawRect(mRectVisible.centerX() - SPLITTER_HALF_WIDTH,
+                mRectVisible.top,
+                mRectVisible.centerX() + SPLITTER_HALF_WIDTH,
+                mRectVisible.bottom,
                 _paintDividerFill);
 
-        canvas.drawRect(_rectVisible.centerX() - SPLITTER_HALF_WIDTH,
-                _rectVisible.top + 2,
-                _rectVisible.centerX() + SPLITTER_HALF_WIDTH,
-                _rectVisible.bottom - 2,
+        canvas.drawRect(mRectVisible.centerX() - SPLITTER_HALF_WIDTH,
+                mRectVisible.top + 2,
+                mRectVisible.centerX() + SPLITTER_HALF_WIDTH,
+                mRectVisible.bottom - 2,
                 _paintDividerBorder);
 */
-        canvas.drawPath(_pathSeparator, _paintDashed);
+        canvas.drawPath(mPathSeparator, mPaintDashed);
     }
 
     @Override
     public void onSizeChanged (int w, int h, int oldw, int oldh) {
         Log.d(TAG,"onSizeChanged()");
 
-        // TODO paddings
+        // TODO padding
 
         if( w * RATIO >= h ) {
-            _height = h;
-            _width = (int)(h / RATIO);
+            mBitmapHeight = h;
+            mBitmapWidth = (int)(h / RATIO);
         } else {
-            _height = (int)(w * RATIO);
-            _width = w;
+            mBitmapHeight = (int)(w * RATIO);
+            mBitmapWidth = w;
         }
-        _rectVisible.set( (w - _width)/2 , (h - _height)/2, (w + _width)/2 , (h + _height)/2);
-        _rectView.set(0, 0, w - 1, h - 1);
+        mRectVisible.set( (w - mBitmapWidth)/2 , (h - mBitmapHeight)/2, (w + mBitmapWidth)/2 , (h + mBitmapHeight)/2);
+        mRectView.set(0, 0, w - 1, h - 1);
 
         initScaleOffset();
         calcTransition();
 
-        _pathSeparator.moveTo(_width/2, 0);
-        _pathSeparator.quadTo(_width/2 - 3, 0, _width/2 + 3, _height);
+        mPathSeparator.reset();
+
+        mPathSeparator.moveTo(w /2, 0);
+        mPathSeparator.lineTo(w /2 , h);
 
         super.onSizeChanged(w, h, oldw, oldh);
     }
@@ -226,23 +227,20 @@ public class ScalableImageView extends View {
     private void initScaleOffset() {
         Log.d(TAG,"initScaleOffset()");
 
-        _unscaledOffsetX = 0;
-        _unscaledOffsetY = 0;
+        mUnscaledOffsetX = 0;
+        mUnscaledOffsetY = 0;
 
-        if( (_bitmapSource == null) || _rectVisible.isEmpty()) {
-            _scaleCurrent = 1;
-            _scaleMinimum = 1;
+        if( (mBitmapSource == null) || mRectVisible.isEmpty()) {
+            mScaleCurrent = 1;
+            mScaleMinimum = 1;
             return;
         }
 
-        int visibleHeight = _rectVisible.height();
-        int visibleWidth = _rectVisible.width();
+        int visibleHeight = mRectVisible.height();
+        int visibleWidth = mRectVisible.width();
 
-        // Initial scale is relation between source bitmap height and visible rect
-        _scaleCurrent = (float) visibleHeight / _bitmapSource.getHeight();
-
-        // This is minimal allowed scale
-        _scaleMinimum = _scaleCurrent;
+        mScaleCurrent = (float) visibleHeight / mBitmapSource.getHeight();
+        mScaleMinimum = mScaleCurrent;
     }
 
     /**
@@ -251,47 +249,47 @@ public class ScalableImageView extends View {
     private void calcTransition() {
         Log.d(TAG,"calcTransition()");
 
-        if(_bitmapSource == null) {
-            Log.e(TAG, "calcTransition(): _bitmapSource == null");
+        if(mBitmapSource == null) {
+            Log.e(TAG, "calcTransition(): mBitmapSource == null");
             return;
         }
 
-        RectF rectBounds = getMappedRect(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
-                                            _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
-                                             _scaleCurrent, _rotationAngle, _bitmapSource);
+        RectF rectBounds = getMappedRect(mRectVisible.centerX() + mUnscaledOffsetX * mScaleCurrent,
+                                            mRectVisible.centerY() + mUnscaledOffsetY * mScaleCurrent,
+                mScaleCurrent, mRotationAngle, mBitmapSource);
 
         float scaledBitmapWidth = rectBounds.width();
         float scaledBitmapHeight = rectBounds.height();
 
-        float scaledOffsetX = _unscaledOffsetX * _scaleCurrent;
-        float scaledOffsetY = _unscaledOffsetY * _scaleCurrent;
+        float scaledOffsetX = mUnscaledOffsetX * mScaleCurrent;
+        float scaledOffsetY = mUnscaledOffsetY * mScaleCurrent;
 
         // View's visible area sizes
-        int visibleWidth = _rectVisible.width();
-        int visibleHeight = _rectVisible.height();
+        int visibleWidth = mRectVisible.width();
+        int visibleHeight = mRectVisible.height();
 
         // calculating left and width of source bitmap to cut
 
-        if( _width > scaledBitmapWidth ) {
+        if( mBitmapWidth > scaledBitmapWidth ) {
             // SCALED bitmap width is less than view width
-            _unscaledOffsetX = 0;
+            mUnscaledOffsetX = 0;
         } else if(scaledOffsetX < visibleWidth/2 - scaledBitmapWidth/2) {
             // SCALED bitmap left is greater than view's left -> move bitmap left to view's left
-            _unscaledOffsetX = (visibleWidth/2 - scaledBitmapWidth/2) / _scaleCurrent;
+            mUnscaledOffsetX = (visibleWidth/2 - scaledBitmapWidth/2) / mScaleCurrent;
         } else if(scaledOffsetX > (scaledBitmapWidth - visibleWidth) / 2) {
-            _unscaledOffsetX = -1 * (visibleWidth/2 - scaledBitmapWidth/2) / _scaleCurrent;
+            mUnscaledOffsetX = -1 * (visibleWidth/2 - scaledBitmapWidth/2) / mScaleCurrent;
         }
 
 
-        if( _height > scaledBitmapHeight ) {
+        if( mBitmapHeight > scaledBitmapHeight ) {
             // SCALED bitmap height is less than view height
-            _unscaledOffsetY = 0;
+            mUnscaledOffsetY = 0;
         } else if(scaledOffsetY < visibleHeight/2 - scaledBitmapHeight/2) {
             // SCALED bitmap top is greater than view's top -> move bitmap top to view's top
-            _unscaledOffsetY = (visibleHeight/2 - scaledBitmapHeight/2) / _scaleCurrent;
+            mUnscaledOffsetY = (visibleHeight/2 - scaledBitmapHeight/2) / mScaleCurrent;
         } else if(scaledOffsetY > (scaledBitmapHeight - visibleHeight) / 2) {
             // SCALED bitmap bottom is less than view's bottom -> move bitmap bottom to view's bottom
-            _unscaledOffsetY = -1 * (visibleHeight/2 - scaledBitmapHeight/2) / _scaleCurrent;
+            mUnscaledOffsetY = -1 * (visibleHeight/2 - scaledBitmapHeight/2) / mScaleCurrent;
         }
     }
 
@@ -308,16 +306,16 @@ public class ScalableImageView extends View {
 
             case ACTION_POINTER_DOWN:
                 if (pointerCount > 1) {
-                    _fingerOne = new Point((int)event.getX(0), (int)event.getY(0));
-                    _fingerTwo = new Point((int)event.getX(1), (int)event.getY(1));
+                    mPointFingerOne = new Point((int)event.getX(0), (int)event.getY(0));
+                    mPointFingerTwo = new Point((int)event.getX(1), (int)event.getY(1));
                     onRotationStart();
                 }
                 break;
 
             case ACTION_MOVE:
-                if(_isScaled && (pointerCount > 1)) {
-                    _fingerOne = new Point((int)event.getX(0), (int)event.getY(0));
-                    _fingerTwo = new Point((int)event.getX(1), (int)event.getY(1));
+                if(mIsScaled && (pointerCount > 1)) {
+                    mPointFingerOne = new Point((int)event.getX(0), (int)event.getY(0));
+                    mPointFingerTwo = new Point((int)event.getX(1), (int)event.getY(1));
                     onRotate();
                 }
                 break;
@@ -333,8 +331,8 @@ public class ScalableImageView extends View {
 
         }
 
-        boolean retVal = _scaleGestureDetector.onTouchEvent(event);
-        retVal = _gestureDetector.onTouchEvent(event) || retVal;
+        boolean retVal = mScaleGestureDetector.onTouchEvent(event);
+        retVal = mGestureDetector.onTouchEvent(event) || retVal;
         return retVal || super.onTouchEvent(event);
     }
 
@@ -374,24 +372,24 @@ public class ScalableImageView extends View {
     }
 
     public Bitmap getResultBitmap() {
-        Matrix matrix = getMatrix(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
-                                    _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
-                                    _scaleCurrent, _rotationAngle, _bitmapSource);
+        Matrix matrix = getMatrix(mRectVisible.centerX() + mUnscaledOffsetX * mScaleCurrent,
+                                    mRectVisible.centerY() + mUnscaledOffsetY * mScaleCurrent,
+                mScaleCurrent, mRotationAngle, mBitmapSource);
 
-        Bitmap bmpTransformed = Bitmap.createBitmap(_bitmapSource,
+        Bitmap bmpTransformed = Bitmap.createBitmap(mBitmapSource,
                 0, 0,
-                _bitmapSource.getWidth(),
-                _bitmapSource.getHeight(),
+                mBitmapSource.getWidth(),
+                mBitmapSource.getHeight(),
                 matrix, true);
 
-        RectF rectTransformed = getMappedRect(_rectVisible.centerX() + _unscaledOffsetX * _scaleCurrent,
-                                                _rectVisible.centerY() + _unscaledOffsetY * _scaleCurrent,
-                                                _scaleCurrent, _rotationAngle, _bitmapSource);
+        RectF rectTransformed = getMappedRect(mRectVisible.centerX() + mUnscaledOffsetX * mScaleCurrent,
+                                                mRectVisible.centerY() + mUnscaledOffsetY * mScaleCurrent,
+                mScaleCurrent, mRotationAngle, mBitmapSource);
 
-        float leftBorder = Math.max(0, _rectVisible.left - rectTransformed.left);
-        float topBorder = Math.max(0, _rectVisible.top - rectTransformed.top);
-        float rightBorder = Math.min(rectTransformed.right - rectTransformed.left, _rectVisible.right - rectTransformed.left);
-        float bottomBorder = Math.min(rectTransformed.bottom - rectTransformed.top, _rectVisible.bottom - rectTransformed.top);
+        float leftBorder = Math.max(0, mRectVisible.left - rectTransformed.left);
+        float topBorder = Math.max(0, mRectVisible.top - rectTransformed.top);
+        float rightBorder = Math.min(rectTransformed.right - rectTransformed.left, mRectVisible.right - rectTransformed.left);
+        float bottomBorder = Math.min(rectTransformed.bottom - rectTransformed.top, mRectVisible.bottom - rectTransformed.top);
 
         if(rightBorder - leftBorder > rectTransformed.width()) {
             leftBorder = 0;
@@ -422,27 +420,27 @@ public class ScalableImageView extends View {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void setScale(float scale) {
-        if(_bitmapSource == null) {return;}
+        if(mBitmapSource == null) {return;}
 
-        if(scale >= _scaleMinimum) {
-            _scaleCurrent = scale;
+        if(scale >= mScaleMinimum) {
+            mScaleCurrent = scale;
         }
     }
 
     public float getScale() {
-        return _scaleCurrent;
+        return mScaleCurrent;
     }
 
     public float getMinScale() {
-        return _scaleMinimum;
+        return mScaleMinimum;
     }
 
     public void setRotationAngle(float radAngle) {
-        _rotationAngle = (float)(radAngle % (2 * Math.PI));
-        if (_rotationAngle < 0) {
-            _rotationAngle += 2 * Math.PI;
+        mRotationAngle = (float)(radAngle % (2 * Math.PI));
+        if (mRotationAngle < 0) {
+            mRotationAngle += 2 * Math.PI;
         }
-        Log.d(TAG, "setRotationAngle(): " + _rotationAngle * 180 / Math.PI);
+        Log.d(TAG, "setRotationAngle(): " + mRotationAngle * 180 / Math.PI);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,8 +454,8 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            _unscaledOffsetX -= distanceX / _scaleCurrent;
-            _unscaledOffsetY -= distanceY / _scaleCurrent;
+            mUnscaledOffsetX -= distanceX / mScaleCurrent;
+            mUnscaledOffsetY -= distanceY / mScaleCurrent;
             calcTransition();
 
             ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);
@@ -492,7 +490,7 @@ public class ScalableImageView extends View {
             double currentSpan = Math.sqrt(Math.pow(spanX, 2) + Math.pow(spanY, 2));
 
             //TODO try scaleGestureDetector.getScale
-            setScale((float)Math.max( (double) (_scaleMinimum), _scaleCurrent * currentSpan / lastSpan));
+            setScale((float)Math.max( (double) (mScaleMinimum), mScaleCurrent * currentSpan / lastSpan));
             calcTransition();
 
             lastSpan = currentSpan;
@@ -502,33 +500,33 @@ public class ScalableImageView extends View {
     };
 
     private void onRotationStart() {
-        _isScaled = true;
+        mIsScaled = true;
 
-        if ( (_fingerOne != null) && (_fingerTwo != null)) {
-            _lastFingerOne = _fingerOne;
-            _lastFingerTwo = _fingerTwo;
+        if ( (mPointFingerOne != null) && (mPointFingerTwo != null)) {
+            mLastPointFingerOne = mPointFingerOne;
+            mLastPointFingerTwo = mPointFingerTwo;
         }
 
         ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);
     }
 
     private void onRotate() {
-        if ( (_fingerOne != null) && (_fingerTwo != null) &&
-                (_lastFingerOne != null) && (_lastFingerTwo != null)) {
+        if ( (mPointFingerOne != null) && (mPointFingerTwo != null) &&
+                (mLastPointFingerOne != null) && (mLastPointFingerTwo != null)) {
 
-            _rotationAngle += Vector2D.
-                    getSignedAngleBetween(new Vector2D(_lastFingerOne, _lastFingerTwo),
-                            new Vector2D(_fingerOne, _fingerTwo));
-            _rotationAngle %= 360;
+            mRotationAngle += Vector2D.
+                    getSignedAngleBetween(new Vector2D(mLastPointFingerOne, mLastPointFingerTwo),
+                            new Vector2D(mPointFingerOne, mPointFingerTwo));
+            mRotationAngle %= 360;
 
-            _lastFingerOne = _fingerOne;
-            _lastFingerTwo = _fingerTwo;
+            mLastPointFingerOne = mPointFingerOne;
+            mLastPointFingerTwo = mPointFingerTwo;
         }
         ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);
     }
 
     private void onRotationEnds() {
-        _isScaled = false;
+        mIsScaled = false;
         ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);
     }
 
