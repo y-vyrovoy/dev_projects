@@ -105,7 +105,7 @@ public class PhotoSelectionActivity extends AppCompatActivity {
     }
 
     public void onBackPressed() {
-
+        // doing nothing to prevent moving to WelcomeActivity
     }
 
 }

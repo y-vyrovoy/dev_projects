@@ -13,22 +13,21 @@ import com.example.soulface.BitmapUtils;
 import com.example.soulface.MyApp;
 import com.example.soulface.R;
 
-public class VrModeActivity extends AppCompatActivity {
-    private final static String TAG = VrModeActivity.class.getSimpleName();
+public class SingleResultActivity extends AppCompatActivity {
+    private final static String TAG = SingleResultActivity.class.getSimpleName();
 
     private ImageView mImageGeneral;
     private ProgressBar mProgressBar;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_vr_mode);
+        setContentView(R.layout.activity_singlt_result);
 
         mImageGeneral = findViewById(R.id.image_general);
         mProgressBar = findViewById(R.id.progress_bar);
 
-        Bitmap bmpVrModeImage = MyApp.getVrModeBitmap(true);
+        Bitmap bmpVrModeImage = MyApp.getSingleResultBitmap();
 
         if (mImageGeneral != null && bmpVrModeImage != null) {
             mImageGeneral.setImageBitmap(bmpVrModeImage);
@@ -37,7 +36,6 @@ public class VrModeActivity extends AppCompatActivity {
         }
     }
 
-    @Override
     protected void onStart() {
         super.onStart();
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -67,5 +65,4 @@ public class VrModeActivity extends AppCompatActivity {
         v.setVisibility(View.INVISIBLE);
         Toast.makeText(this, R.string.image_saved, Toast.LENGTH_SHORT).show();
     }
-
 }

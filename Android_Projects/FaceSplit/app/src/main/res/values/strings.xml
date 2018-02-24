@@ -4,4 +4,5 @@
     <string name="app_logo_description">app logo</string>
     <string name="title_activity_edit_image">EditImageActivity</string>
     <string name="image_saved">Image saved</string>
+    <string name="title_activity_singlt_result">SingltResultActivity</string>
 </resources>

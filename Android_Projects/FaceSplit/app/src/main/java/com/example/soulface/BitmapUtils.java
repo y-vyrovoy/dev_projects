@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -86,6 +87,59 @@ public class BitmapUtils {
         return getDoubledBitmap(getRightSideBitmap(source), false);
     }
 
+    public static Bitmap compileVrModeBitmap(Bitmap bmpLeft, Bitmap bmpRight,
+                                             Bitmap bmpCaptionLeft, Bitmap bmpCaptionRight) {
+        int nIndent = 10;
+
+        int nLeftBitmapWidth = bmpLeft.getWidth();
+        int nLeftBitmapHeight = bmpLeft.getHeight();
+
+        int nRightBitmapWidth = bmpRight.getWidth();
+        int nRightBitmapHeight = bmpRight.getHeight();
+
+        int nNewBitmapWidth = nLeftBitmapWidth + nRightBitmapWidth;
+        int nNewBitmapHeight = Math.max(nLeftBitmapHeight, nRightBitmapHeight);
+
+        Bitmap bmpCanvas = Bitmap.createBitmap(nNewBitmapWidth, nNewBitmapHeight, bmpLeft.getConfig());
+
+        Canvas canvasResult = new Canvas(bmpCanvas);
+
+        canvasResult.drawBitmap(bmpLeft, 0, 0, null);
+        canvasResult.drawBitmap(bmpRight, nLeftBitmapWidth + nIndent, 0, null);
+
+        int nCaptionTop = 20;
+
+        if (bmpCaptionLeft != null) {
+            int nCaptionLeftLeft = nLeftBitmapWidth/2 - bmpCaptionLeft.getWidth();
+            canvasResult.drawBitmap(bmpCaptionLeft ,nCaptionLeftLeft, nCaptionTop, null);
+        }
+
+        if (bmpCaptionRight != null) {
+            int nCaptionRightLeft = nLeftBitmapWidth + nIndent + nRightBitmapWidth / 2;
+            canvasResult.drawBitmap(bmpCaptionRight, nCaptionRightLeft, nCaptionTop, null);
+        }
+
+        return bmpCanvas;
+    }
+
+    public static Bitmap compileOvelayedImage(Bitmap bmpLeft, Bitmap bmpRight) {
+
+        int nNewImageWidth = Math.max(bmpLeft.getWidth(), bmpRight.getWidth());
+        int nNewImageHeight = Math.max(bmpLeft.getHeight(), bmpRight.getHeight());
+
+        Bitmap bmpResult = Bitmap.createBitmap(nNewImageWidth, nNewImageHeight, bmpLeft.getConfig());
+
+        Canvas canvasResult = new Canvas(bmpResult);
+
+        Paint paint = new Paint();
+        paint.setAlpha(100);
+
+        canvasResult.drawBitmap(bmpLeft, 0, 0, null);
+        canvasResult.drawBitmap(bmpRight, 0, 0, paint);
+
+        return bmpResult;
+    }
+
     @Nullable
     public static String saveBitmapToAppFolder(Bitmap bmp, Context context) {
 
@@ -157,9 +211,6 @@ public class BitmapUtils {
         }
     }
 
-    public interface OnActionDoneCallback{
-        void doAction();
-    }
 
     public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int radius) {
         Bitmap imageRounded = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
@@ -171,4 +222,9 @@ public class BitmapUtils {
 
         return imageRounded;
     }
+
+    public interface OnActionDoneCallback {
+        void doAction();
+    }
+
 }

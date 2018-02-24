@@ -19,6 +19,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -31,24 +32,14 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activity.EditImageActivity"
-            android:label="@string/title_activity_edit_image"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activity.VrModeActivity"
             android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.SingleResultActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
-
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.example.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-
-
     </application>
 
 </manifest>

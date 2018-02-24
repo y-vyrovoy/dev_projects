@@ -148,6 +148,11 @@ public class ResultActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void onBtnSingleMode(View v) {
+        Intent intent = new Intent(this, SingleResultActivity.class);
+        startActivity(intent);
+    }
+
     public void onBtnBack(View v) {
         onBackPressed();
     }

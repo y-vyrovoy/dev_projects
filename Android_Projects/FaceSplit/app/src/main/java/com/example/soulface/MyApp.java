@@ -2,6 +2,7 @@ package com.example.soulface;
 
 import android.app.Application;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 
 import java.io.File;
@@ -72,6 +73,30 @@ public class MyApp extends Application {
             return null;
         }
         return mInstance.mBitmapRight;
+    }
+
+    public static Bitmap getVrModeBitmap(boolean bAddCaptures){
+        if (mInstance == null || mInstance.mBitmapLeft == null || mInstance.mBitmapRight == null) {
+            return null;
+        }
+
+        if (!bAddCaptures) {
+            return BitmapUtils.compileVrModeBitmap(mInstance.mBitmapLeft, mInstance.mBitmapRight,
+                                                            null, null);
+        } else {
+
+            Bitmap bmpCaptionLeft = BitmapFactory.decodeResource(mInstance.getResources(), R.drawable.ic_soul_vr_mode);
+            Bitmap bmpCaptionRight = BitmapFactory.decodeResource(mInstance.getResources(), R.drawable.ic_face_vr_mode);
+            return BitmapUtils.compileVrModeBitmap(mInstance.mBitmapLeft, mInstance.mBitmapRight,
+                    bmpCaptionLeft, bmpCaptionRight);
+        }
+    }
+
+    public static Bitmap getSingleResultBitmap() {
+        if (mInstance == null || mInstance.mBitmapLeft == null || mInstance.mBitmapRight == null) {
+            return null;
+        }
+        return BitmapUtils.compileOvelayedImage(mInstance.mBitmapLeft, mInstance.mBitmapRight);
     }
 
     private void createFolder() {
