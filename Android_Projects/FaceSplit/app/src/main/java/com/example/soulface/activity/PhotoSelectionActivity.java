@@ -14,12 +14,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.soulface.DebugLogger;
 import com.example.soulface.MyApp;
 import com.example.soulface.R;
 
 import java.io.IOException;
 
-public class PhotoSelectionActivity extends AppCompatActivity {
+public class PhotoSelectionActivity extends BasicBanneredActivity {
 
     private static final String TAG = PhotoSelectionActivity.class.getSimpleName();
 
@@ -30,19 +31,27 @@ public class PhotoSelectionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        DebugLogger.d();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_selection);
+
+        InitializeBanner();
 
         mImageMain = findViewById(R.id.imageTemplate);
     }
 
     @Override
     public void onStart () {
+        DebugLogger.d();
+
         super.onStart();
         mImageMain.setImageResource(R.drawable.nobody);
     }
 
     public void onBtlLoadPhoto(View v) {
+        DebugLogger.d();
+
         Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
         gallery.setType("image/*");
         startActivityForResult(gallery, RESULT_LOAD_IMAGE);
@@ -50,6 +59,7 @@ public class PhotoSelectionActivity extends AppCompatActivity {
 
     private Uri _imageUri;
     public void onBtnShootPhoto(View v) {
+        DebugLogger.d();
 
         ContentValues values = new ContentValues();
 
@@ -64,6 +74,8 @@ public class PhotoSelectionActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        DebugLogger.d();
+
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
@@ -105,6 +117,8 @@ public class PhotoSelectionActivity extends AppCompatActivity {
     }
 
     public void onBackPressed() {
+        DebugLogger.d();
+
         // doing nothing to prevent moving to WelcomeActivity
     }
 

@@ -9,9 +9,9 @@
     <application
         android:name=".MyApp"
         android:allowBackup="true"
-        android:icon="@drawable/ic_face_split"
+        android:icon="@drawable/ic_icon"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/ic_face_split"
+        android:roundIcon="@drawable/ic_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity

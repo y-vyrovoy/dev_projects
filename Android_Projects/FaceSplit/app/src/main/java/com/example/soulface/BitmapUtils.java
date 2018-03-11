@@ -31,9 +31,9 @@ import java.util.Date;
  */
 
 public class BitmapUtils {
-    private static final String TAG = BitmapUtils.class.getSimpleName();
 
     public static Bitmap getDoubledBitmap(Bitmap bmpSource, boolean bLeft) {
+        DebugLogger.d();
 
         Bitmap bmpFlipped = getFlippedBitmap(bmpSource);
 
@@ -53,6 +53,8 @@ public class BitmapUtils {
     }
 
     private static Bitmap getFlippedBitmap(Bitmap bmp) {
+        DebugLogger.d();
+
         Matrix matrix = new Matrix();
 
         matrix.preScale(-1, 1);
@@ -62,6 +64,7 @@ public class BitmapUtils {
     }
 
     public static Bitmap getLeftSideBitmap(Bitmap bmpSource) {
+        DebugLogger.d();
 
         return Bitmap.createBitmap(bmpSource,
                 0, 0,
@@ -71,6 +74,7 @@ public class BitmapUtils {
     }
 
     public static Bitmap getRightSideBitmap(Bitmap bmpSource) {
+        DebugLogger.d();
 
         return Bitmap.createBitmap(bmpSource,
                 bmpSource.getWidth()/2, 0,
@@ -80,15 +84,21 @@ public class BitmapUtils {
     }
 
     public static Bitmap getDoubledLeftPart(Bitmap source) {
+        DebugLogger.d();
+
         return getDoubledBitmap(getLeftSideBitmap(source), true);
     }
 
     public static Bitmap getDoubledRightPart(Bitmap source) {
+        DebugLogger.d();
+
         return getDoubledBitmap(getRightSideBitmap(source), false);
     }
 
     public static Bitmap compileVrModeBitmap(Bitmap bmpLeft, Bitmap bmpRight,
                                              Bitmap bmpCaptionLeft, Bitmap bmpCaptionRight) {
+        DebugLogger.d();
+
         int nIndent = 10;
 
         int nLeftBitmapWidth = bmpLeft.getWidth();
@@ -123,6 +133,7 @@ public class BitmapUtils {
     }
 
     public static Bitmap compileOvelayedImage(Bitmap bmpLeft, Bitmap bmpRight) {
+        DebugLogger.d();
 
         int nNewImageWidth = Math.max(bmpLeft.getWidth(), bmpRight.getWidth());
         int nNewImageHeight = Math.max(bmpLeft.getHeight(), bmpRight.getHeight());
@@ -142,6 +153,7 @@ public class BitmapUtils {
 
     @Nullable
     public static String saveBitmapToAppFolder(Bitmap bmp, Context context) {
+        DebugLogger.d();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
         String fileName = sdf.format(new Date(System.currentTimeMillis()));
@@ -162,6 +174,8 @@ public class BitmapUtils {
     }
 
     public static String getRealPathFromURI(Context context, Uri contentUri) {
+        DebugLogger.d();
+
         Cursor cursor = null;
         try {
             String[] proj = { MediaStore.Images.Media.DATA };
@@ -181,6 +195,7 @@ public class BitmapUtils {
 
     @Nullable
     public static String saveBitmapGallery(Bitmap bmp, Context context) {
+        DebugLogger.d();
 
         String sImageUrl = MediaStore.Images.Media.insertImage(context.getContentResolver(), bmp, "title" , "description");
         Uri savedImageURI = Uri.parse(sImageUrl);
@@ -191,6 +206,7 @@ public class BitmapUtils {
     public static void shareImage(Bitmap bmp, Context context,
                                     OnActionDoneCallback callbackOnSave,
                                     OnActionDoneCallback callbackOnShare) {
+        DebugLogger.d();
 
         String sImageUrl = MediaStore.Images.Media.insertImage(context.getContentResolver(), bmp, "title" , "description");
         Uri savedImageURI = Uri.parse(sImageUrl);
@@ -213,6 +229,8 @@ public class BitmapUtils {
 
 
     public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, int radius) {
+        DebugLogger.d();
+
         Bitmap imageRounded = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
         Canvas canvas = new Canvas(imageRounded);
         Paint mpaint = new Paint();

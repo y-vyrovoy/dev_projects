@@ -12,7 +12,6 @@ import java.io.File;
  */
 
 public class MyApp extends Application {
-    private final static String TAG = MyApp.class.getSimpleName();
 
     private static MyApp mInstance = null;
 
@@ -31,16 +30,21 @@ public class MyApp extends Application {
     }
 
     public static MyApp getInstance() {
+        DebugLogger.d();
         return mInstance;
     }
 
     public static void setBitmapToEdit(Bitmap bitmapToEdit) {
+        DebugLogger.d();
+
         if (mInstance == null) {
             return;
         }
         mInstance.mBitmapToEdit = bitmapToEdit;
     }
     public static Bitmap getBitmapToEdit() {
+        DebugLogger.d();
+
         if (mInstance == null) {
             return null;
         }
@@ -48,6 +52,8 @@ public class MyApp extends Application {
     }
 
     public static void setBitmapLeft(Bitmap bitmapToEdit) {
+        DebugLogger.d();
+
         if (mInstance == null) {
             return;
         }
@@ -55,6 +61,8 @@ public class MyApp extends Application {
     }
 
     public static Bitmap getBitmapLeft() {
+        DebugLogger.d();
+
         if (mInstance == null) {
             return null;
         }
@@ -62,6 +70,8 @@ public class MyApp extends Application {
     }
 
     public static void setBitmapRight(Bitmap bitmapToEdit) {
+        DebugLogger.d();
+
         if (mInstance == null) {
             return;
         }
@@ -69,6 +79,8 @@ public class MyApp extends Application {
     }
 
     public static Bitmap getBitmapRight() {
+        DebugLogger.d();
+
         if (mInstance == null) {
             return null;
         }
@@ -76,6 +88,8 @@ public class MyApp extends Application {
     }
 
     public static Bitmap getVrModeBitmap(boolean bAddCaptures){
+        DebugLogger.d();
+
         if (mInstance == null || mInstance.mBitmapLeft == null || mInstance.mBitmapRight == null) {
             return null;
         }
@@ -93,6 +107,8 @@ public class MyApp extends Application {
     }
 
     public static Bitmap getSingleResultBitmap() {
+        DebugLogger.d();
+
         if (mInstance == null || mInstance.mBitmapLeft == null || mInstance.mBitmapRight == null) {
             return null;
         }
@@ -100,6 +116,7 @@ public class MyApp extends Application {
     }
 
     private void createFolder() {
+        DebugLogger.d();
 
         mPathPhotos = "";
         try {
@@ -113,6 +130,8 @@ public class MyApp extends Application {
     }
 
     public String getPhotosPath() {
+        DebugLogger.d();
+
         return mPathPhotos;
     }
 }

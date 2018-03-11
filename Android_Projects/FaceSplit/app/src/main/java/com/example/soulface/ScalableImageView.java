@@ -85,21 +85,27 @@ public class ScalableImageView extends View {
 
     public ScalableImageView(Context context) {
         super(context);
+        DebugLogger.d();
+
         init(context, null);
     }
 
     public ScalableImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        DebugLogger.d();
+
         init(context, attrs);
     }
 
     public ScalableImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        DebugLogger.d();
+
         init(context, attrs);
     }
 
     private void init(Context context, AttributeSet attrs) {
-        Log.d(TAG, "init()");
+        DebugLogger.d();
 
         mScaleGestureDetector = new ScaleGestureDetector(context, _scaleGestureListener);
         mGestureDetector = new GestureDetectorCompat(context, _gestureListener);
@@ -145,7 +151,7 @@ public class ScalableImageView extends View {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void setImageBitmap(Bitmap bitmap) {
-        Log.d(TAG,"setImageBitmap()");
+        DebugLogger.d();
 
         mBitmapSource = bitmap;
 
@@ -157,7 +163,7 @@ public class ScalableImageView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        Log.d(TAG,"onDraw()");
+        DebugLogger.d();
 
         canvas.clipRect(mRectVisible);
 
@@ -193,7 +199,7 @@ public class ScalableImageView extends View {
 
     @Override
     public void onSizeChanged (int w, int h, int oldw, int oldh) {
-        Log.d(TAG,"onSizeChanged()");
+        DebugLogger.d();
 
         // TODO padding
 
@@ -225,7 +231,7 @@ public class ScalableImageView extends View {
      * Offsets are negative if bitmap size is less than view's size.
      */
     private void initScaleOffset() {
-        Log.d(TAG,"initScaleOffset()");
+        DebugLogger.d();
 
         mUnscaledOffsetX = 0;
         mUnscaledOffsetY = 0;
@@ -247,10 +253,10 @@ public class ScalableImageView extends View {
      * Prepares _btimapToDraw basing on source bitmap, current scale and offset
      */
     private void calcTransition() {
-        Log.d(TAG,"calcTransition()");
+        DebugLogger.d();
 
         if(mBitmapSource == null) {
-            Log.e(TAG, "calcTransition(): mBitmapSource == null");
+            DebugLogger.e("mBitmapSource == null");
             return;
         }
 
@@ -295,7 +301,7 @@ public class ScalableImageView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event){
-        Log.d(TAG,"onTouchEvent()");
+        DebugLogger.d();
 
         int action = event.getAction();
         int pointerCount = event.getPointerCount();
@@ -337,6 +343,8 @@ public class ScalableImageView extends View {
     }
 
     private static Matrix getMatrix(float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
+        DebugLogger.d();
+
         Matrix matrix = new Matrix();
         matrix.preRotate(rotationAngleDegrees, bitmap.getWidth()/2 * scale, bitmap.getHeight()/2 * scale);
         matrix.preScale(scale, scale);
@@ -347,6 +355,8 @@ public class ScalableImageView extends View {
     }
 
     private static RectF getMappedRect(float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
+        DebugLogger.d();
+
         Matrix matrixCalc = new Matrix();
         RectF rectBitmapTransformed = new RectF();
 
@@ -362,6 +372,8 @@ public class ScalableImageView extends View {
     }
 
     private static void drawBitmapRotated(Canvas canvas, float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
+        DebugLogger.d();
+
         Matrix matrix = new Matrix();
         matrix.preRotate(rotationAngleDegrees, bitmap.getWidth()/2 * scale, bitmap.getHeight()/2 * scale);
         matrix.preScale(scale, scale);
@@ -372,6 +384,8 @@ public class ScalableImageView extends View {
     }
 
     public Bitmap getResultBitmap() {
+        DebugLogger.d();
+
         Matrix matrix = getMatrix(mRectVisible.centerX() + mUnscaledOffsetX * mScaleCurrent,
                                     mRectVisible.centerY() + mUnscaledOffsetY * mScaleCurrent,
                 mScaleCurrent, mRotationAngle, mBitmapSource);
@@ -420,6 +434,8 @@ public class ScalableImageView extends View {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void setScale(float scale) {
+        DebugLogger.d();
+
         if(mBitmapSource == null) {return;}
 
         if(scale >= mScaleMinimum) {
@@ -428,14 +444,20 @@ public class ScalableImageView extends View {
     }
 
     public float getScale() {
+        DebugLogger.d();
+
         return mScaleCurrent;
     }
 
     public float getMinScale() {
+        DebugLogger.d();
+
         return mScaleMinimum;
     }
 
     public void setRotationAngle(float radAngle) {
+        DebugLogger.d();
+
         mRotationAngle = (float)(radAngle % (2 * Math.PI));
         if (mRotationAngle < 0) {
             mRotationAngle += 2 * Math.PI;
@@ -454,6 +476,8 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            DebugLogger.d();
+
             mUnscaledOffsetX -= distanceX / mScaleCurrent;
             mUnscaledOffsetY -= distanceY / mScaleCurrent;
             calcTransition();
@@ -476,6 +500,8 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector) {
+            DebugLogger.d();
+
             float lastSpanX = scaleGestureDetector.getCurrentSpanX();
             float lastSpanY = scaleGestureDetector.getCurrentSpanY();
             lastSpan = (float)Math.sqrt(Math.pow(lastSpanX, 2) + Math.pow(lastSpanY, 2));
@@ -485,6 +511,8 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
+            DebugLogger.d();
+
             float spanX = scaleGestureDetector.getCurrentSpanX();
             float spanY = scaleGestureDetector.getCurrentSpanY();
             double currentSpan = Math.sqrt(Math.pow(spanX, 2) + Math.pow(spanY, 2));
@@ -500,6 +528,8 @@ public class ScalableImageView extends View {
     };
 
     private void onRotationStart() {
+        DebugLogger.d();
+
         mIsScaled = true;
 
         if ( (mPointFingerOne != null) && (mPointFingerTwo != null)) {
@@ -511,6 +541,8 @@ public class ScalableImageView extends View {
     }
 
     private void onRotate() {
+        DebugLogger.d();
+
         if ( (mPointFingerOne != null) && (mPointFingerTwo != null) &&
                 (mLastPointFingerOne != null) && (mLastPointFingerTwo != null)) {
 
@@ -526,6 +558,8 @@ public class ScalableImageView extends View {
     }
 
     private void onRotationEnds() {
+        DebugLogger.d();
+
         mIsScaled = false;
         ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);
     }

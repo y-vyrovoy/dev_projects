@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.soulface.DebugLogger;
 import com.example.soulface.R;
 
 import java.util.ArrayList;
@@ -26,13 +27,16 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        DebugLogger.d();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        //setContentView(R.layout.layout_test_constraint);
     }
 
     @Override
     protected void onStart() {
+        DebugLogger.d();
+
         super.onStart();
 
         waitForPermissions = false;
@@ -78,6 +82,8 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
+        DebugLogger.d();
+
         switch (requestCode) {
             case PERMISSIONS_REQUEST: {
 
@@ -97,6 +103,8 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void waitForPermissions() {
+        DebugLogger.d();
+
         mHandler.postDelayed( () -> {
             while( waitForPermissions == true ) { }
 

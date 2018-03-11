@@ -3,6 +3,7 @@ package com.example.soulface.activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -14,27 +15,35 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.soulface.BitmapUtils;
+import com.example.soulface.DebugLogger;
 import com.example.soulface.MyApp;
 import com.example.soulface.R;
 
-public class ResultActivity extends AppCompatActivity {
+public class ResultActivity extends BasicBanneredActivity {
     private static final String TAG = ResultActivity.class.getSimpleName();
     private static final double RESULT_VIEW_PHOTO_RATIO = 0.75;
     private static final int ROUND_RADIUS = 40;
+
+    private Handler mHandler = new Handler();
 
     private View mLeftViewTop;
     private View mLeftViewBottom;
     private View mRightViewTop;
     private View mRightViewBottom;
     private ProgressBar mProgressBar;
+    private ImageView mImageSaved;
 
     private int mScreenWidth;
     private boolean mLeftOnTop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        DebugLogger.d();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+
+        InitializeBanner();
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -55,15 +64,20 @@ public class ResultActivity extends AppCompatActivity {
         setSizedDrawable (mRightViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS ));
 
         mProgressBar = findViewById(R.id.progressBar);
+        mImageSaved = findViewById(R.id.image_saved);
     }
 
     public void onStart() {
+        DebugLogger.d();
+
         super.onStart();
         doLayout(true);
         mProgressBar.setVisibility(View.INVISIBLE);
+        mImageSaved.setVisibility(View.INVISIBLE);
     }
 
     private void doLayout(boolean leftOnTop){
+        DebugLogger.d();
 
         if (mLeftOnTop == leftOnTop) {
             return;
@@ -87,6 +101,7 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     private void setSizedDrawable(View view, Bitmap bitmapSrc) {
+        DebugLogger.d();
 
         ImageView imageView = view.findViewById(R.id.photo);
 
@@ -107,6 +122,8 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     public void onBtnSave(View v) {
+        DebugLogger.d();
+
         Bitmap bmpToSave = null;
         if (v == mLeftViewTop.findViewById(R.id.btn_save_left)) {
             bmpToSave = MyApp.getBitmapLeft();
@@ -119,11 +136,15 @@ public class ResultActivity extends AppCompatActivity {
             BitmapUtils.saveBitmapGallery(bmpToSave, this);
             mProgressBar.setVisibility(View.INVISIBLE);
             v.setVisibility(View.INVISIBLE);
-            Toast.makeText(this, R.string.image_saved, Toast.LENGTH_SHORT).show();
+
+            mImageSaved.setVisibility(View.VISIBLE);
+            mHandler.postDelayed(() -> mImageSaved.setVisibility(View.INVISIBLE), 1000);
         }
     }
 
     public void onBtnShare(View v) {
+        DebugLogger.d();
+
         mProgressBar.setVisibility(View.VISIBLE);
         Bitmap bmpToShare = null;
         if (v == mLeftViewTop.findViewById(R.id.btn_share_left)) {
@@ -137,28 +158,36 @@ public class ResultActivity extends AppCompatActivity {
                                     this,
                                     ()-> {
                                         mProgressBar.setVisibility(View.INVISIBLE);
-                                        Toast.makeText(this, R.string.image_saved, Toast.LENGTH_SHORT).show();
+                                        mImageSaved.setVisibility(View.VISIBLE);
+                                        mHandler.postDelayed(() -> mImageSaved.setVisibility(View.INVISIBLE), 1000);
                                     },
                                     null);
         }
     }
 
     public void onBtnVrMode(View v) {
+        DebugLogger.d();
+
         Intent intent = new Intent(this, VrModeActivity.class);
         startActivity(intent);
     }
 
     public void onBtnSingleMode(View v) {
+        DebugLogger.d();
+
         Intent intent = new Intent(this, SingleResultActivity.class);
         startActivity(intent);
     }
 
     public void onBtnBack(View v) {
+        DebugLogger.d();
         onBackPressed();
     }
 
 
     public void onImageClick(View v) {
+        DebugLogger.d();
+
         if (v == mLeftViewBottom.findViewById(R.id.photo)) {
             doLayout(true);
         } else if (v == mRightViewBottom.findViewById(R.id.photo)) {
