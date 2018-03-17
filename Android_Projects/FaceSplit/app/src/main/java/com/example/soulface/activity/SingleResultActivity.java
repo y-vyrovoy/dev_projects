@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
@@ -28,7 +27,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
         DebugLogger.d();
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_singlt_result);
+        setContentView(R.layout.activity_single_result);
 
         InitializeBanner();
 
@@ -50,6 +49,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
 
         super.onStart();
         mProgressBar.setVisibility(View.INVISIBLE);
+        mImageSaved.setVisibility(View.INVISIBLE);
     }
 
     public void onBtnShare(View v) {

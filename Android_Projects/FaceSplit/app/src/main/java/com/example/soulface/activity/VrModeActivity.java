@@ -3,12 +3,10 @@ package com.example.soulface.activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
@@ -52,6 +50,7 @@ public class VrModeActivity extends BasicBanneredActivity {
 
         super.onStart();
         mProgressBar.setVisibility(View.INVISIBLE);
+        mImageSaved.setVisibility(View.INVISIBLE);
     }
 
     public void onBtnShare(View v) {
@@ -83,6 +82,7 @@ public class VrModeActivity extends BasicBanneredActivity {
         mProgressBar.setVisibility(View.INVISIBLE);
         v.setVisibility(View.INVISIBLE);
         mImageSaved.setVisibility(View.VISIBLE);
-        mHandler.postDelayed(() -> mImageSaved.setVisibility(View.INVISIBLE), 1000);    }
+        mHandler.postDelayed(() -> mImageSaved.setVisibility(View.INVISIBLE), 1000);
+    }
 
 }

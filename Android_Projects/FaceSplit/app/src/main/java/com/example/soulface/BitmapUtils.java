@@ -169,7 +169,7 @@ public class BitmapUtils {
             ex.printStackTrace();
             return null;
         }
-        Toast.makeText(context, context.getResources().getString(R.string.photos_saved), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(context, context.getResources().getString(R.string.photos_saved), Toast.LENGTH_SHORT).show();
         return fNew.getAbsolutePath();
     }
 

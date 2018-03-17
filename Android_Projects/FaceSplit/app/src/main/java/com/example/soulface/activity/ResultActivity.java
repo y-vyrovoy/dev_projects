@@ -4,24 +4,24 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
+import com.example.soulface.FullScreenAd;
 import com.example.soulface.MyApp;
 import com.example.soulface.R;
 
 public class ResultActivity extends BasicBanneredActivity {
     private static final String TAG = ResultActivity.class.getSimpleName();
-    private static final double RESULT_VIEW_PHOTO_RATIO = 0.75;
+    private static final double RESULT_VIEW_PHOTO_RATIO = 0.6;
     private static final int ROUND_RADIUS = 40;
 
     private Handler mHandler = new Handler();
@@ -32,6 +32,7 @@ public class ResultActivity extends BasicBanneredActivity {
     private View mRightViewBottom;
     private ProgressBar mProgressBar;
     private ImageView mImageSaved;
+    private FullScreenAd mFullScreenAd;
 
     private int mScreenWidth;
     private boolean mLeftOnTop;
@@ -65,12 +66,17 @@ public class ResultActivity extends BasicBanneredActivity {
 
         mProgressBar = findViewById(R.id.progressBar);
         mImageSaved = findViewById(R.id.image_saved);
+
+        mFullScreenAd = new FullScreenAd(this);
     }
 
     public void onStart() {
         DebugLogger.d();
 
         super.onStart();
+
+        mFullScreenAd.loadAd();
+
         doLayout(true);
         mProgressBar.setVisibility(View.INVISIBLE);
         mImageSaved.setVisibility(View.INVISIBLE);
@@ -168,22 +174,25 @@ public class ResultActivity extends BasicBanneredActivity {
     public void onBtnVrMode(View v) {
         DebugLogger.d();
 
-        Intent intent = new Intent(this, VrModeActivity.class);
-        startActivity(intent);
+        mFullScreenAd.showAd(()->{
+            Intent intent = new Intent(this, VrModeActivity.class);
+            startActivity(intent);
+        });
     }
 
     public void onBtnSingleMode(View v) {
         DebugLogger.d();
 
-        Intent intent = new Intent(this, SingleResultActivity.class);
-        startActivity(intent);
+        mFullScreenAd.showAd(()->{
+            Intent intent = new Intent(this, SingleResultActivity.class);
+            startActivity(intent);
+        });
     }
 
     public void onBtnBack(View v) {
         DebugLogger.d();
         onBackPressed();
     }
-
 
     public void onImageClick(View v) {
         DebugLogger.d();

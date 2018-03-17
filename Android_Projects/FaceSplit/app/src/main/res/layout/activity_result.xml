@@ -25,30 +25,6 @@
 
     </RelativeLayout>
 
-
-
-    <ImageButton
-        android:id="@+id/image_btn_vr_mode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_vr_mode"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="4dp"
-        android:background="@android:color/transparent"
-        android:onClick="onBtnVrMode"/>
-
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_btn_single_mode"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/image_btn_vr_mode"
-        android:layout_margin="4dp"
-        android:background="@android:color/transparent"
-        android:onClick="onBtnSingleMode"/>
-
-
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
