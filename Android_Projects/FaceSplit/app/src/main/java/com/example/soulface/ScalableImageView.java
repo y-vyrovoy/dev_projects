@@ -3,6 +3,7 @@ package com.example.soulface;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -194,7 +195,26 @@ public class ScalableImageView extends View {
                 mRectVisible.bottom - 2,
                 _paintDividerBorder);
 */
-        canvas.drawPath(mPathSeparator, mPaintDashed);
+        //canvas.drawPath(mPathSeparator, mPaintDashed);
+
+
+        Bitmap bmpDivider = getDividerBitmap();
+        canvas.drawBitmap(bmpDivider, mRectVisible.centerX() - bmpDivider.getWidth()/2, mRectVisible.top, null);
+    }
+
+    public Bitmap getDividerBitmap() {
+        Bitmap bmpDivider = BitmapFactory.decodeResource(getResources(), R.drawable.ic_vertical_divider);
+        int height = bmpDivider.getHeight();
+        int width = bmpDivider.getWidth();
+
+        float flHeightRatio = ((float) mRectVisible.height()) / height;
+        Matrix matrix = new Matrix();
+        matrix.postScale(1, flHeightRatio);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(bmpDivider, 0, 0, width, height, matrix, false);
+        bmpDivider.recycle();
+        return resizedBitmap;
     }
 
     @Override

@@ -20,9 +20,7 @@ public class FullScreenAd{
     private static final String APP_AD_ID = "ca-app-pub-3940256099942544~3347511713";
     private static final String SCREEN_AD_ID = "ca-app-pub-3940256099942544/1033173712";
 
-    private long LOAD_AD_TIMEOUT = 5_000;
-
-    private RelativeLayout mLayoutRoot;
+    private long LOAD_AD_TIMEOUT = 10_000;
 
     private String mAdAppId;
     private String mAdScreenId;
@@ -32,6 +30,8 @@ public class FullScreenAd{
     private OnAdClosedAction mOnAdCloseAction;
     private OnAdLoadedAction mOnAdLoadedAction;
     private AtomicBoolean mAdIsLoaded = new AtomicBoolean();
+
+    private long mLoadStart;
 
     public FullScreenAd(Context context) {
         super();
@@ -78,8 +78,6 @@ public class FullScreenAd{
         mInterstitialAd = new InterstitialAd(mContext);
         mInterstitialAd.setAdUnitId(mAdScreenId);
 
-
-
         setInterstitialAdListener();
         mOnAdCloseAction = null;
         mOnAdLoadedAction = null;
@@ -96,6 +94,7 @@ public class FullScreenAd{
         // Start loading the ad in the background.
         mAdIsLoaded.set(false);
         mInterstitialAd.loadAd(adRequest);
+        mLoadStart = System.currentTimeMillis();
     }
 
     private void setInterstitialAdListener() {
@@ -105,6 +104,8 @@ public class FullScreenAd{
             @Override
             public void onAdLoaded() {
                 DebugLogger.d();
+
+                DebugLogger.d(String.format("Ad loaded after %d ms", System.currentTimeMillis() - mLoadStart));
 
                 mAdIsLoaded.set(true);
                 if (mOnAdLoadedAction != null) {

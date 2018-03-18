@@ -53,16 +53,16 @@ public class ResultActivity extends BasicBanneredActivity {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
 
         mLeftViewTop = layoutInflater.inflate(R.layout.layout_left_photo_top, null);
-        setSizedDrawable (mLeftViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS ));
+        setSizedDrawable (mLeftViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS, true, this ));
 
         mLeftViewBottom = layoutInflater.inflate(R.layout.layout_left_photo_bottom, null);
-        setSizedDrawable (mLeftViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS ));
+        setSizedDrawable (mLeftViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS, true, this ));
 
         mRightViewTop = layoutInflater.inflate(R.layout.layout_right_photo_top, null);
-        setSizedDrawable (mRightViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS ));
+        setSizedDrawable (mRightViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS, true, this ));
 
         mRightViewBottom = layoutInflater.inflate(R.layout.layout_right_photo_bottom, null);
-        setSizedDrawable (mRightViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS ));
+        setSizedDrawable (mRightViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS, true, this ));
 
         mProgressBar = findViewById(R.id.progressBar);
         mImageSaved = findViewById(R.id.image_saved);

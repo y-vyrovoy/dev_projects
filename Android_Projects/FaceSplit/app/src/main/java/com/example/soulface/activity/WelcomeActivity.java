@@ -3,12 +3,19 @@ package com.example.soulface.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ImageView;
 
+import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
 import com.example.soulface.FullScreenAd;
 import com.example.soulface.R;
@@ -36,6 +43,7 @@ public class WelcomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
 
         mFullScreenAd = new FullScreenAd(this);
+        mFullScreenAd.loadAd();
     }
 
     @Override
@@ -43,8 +51,6 @@ public class WelcomeActivity extends AppCompatActivity {
         DebugLogger.d();
 
         super.onStart();
-
-        mFullScreenAd.loadAd();
 
         List<String> lstPermissions = new ArrayList<>();
         lstPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
