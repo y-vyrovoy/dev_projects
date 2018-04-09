@@ -11,25 +11,29 @@ import java.io.File;
  * Created by Yura Vyrovoy on 10/13/2017.
  */
 
-public class MyApp extends Application {
+public class SoulFaceApp extends Application {
 
-    private static MyApp mInstance = null;
+    private static SoulFaceApp mInstance = null;
 
     private Bitmap mBitmapToEdit = null;
     private Bitmap mBitmapLeft = null;
     private Bitmap mBitmapRight = null;
 
     private String mPathPhotos;
+    private FullScreenAd mFullScreenAd;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mFullScreenAd = new FullScreenAd(this);
+        mFullScreenAd.loadAd();
+
         createFolder();
 
         mInstance = this;
     }
 
-    public static MyApp getInstance() {
+    public static SoulFaceApp getInstance() {
         DebugLogger.d();
         return mInstance;
     }
@@ -42,6 +46,7 @@ public class MyApp extends Application {
         }
         mInstance.mBitmapToEdit = bitmapToEdit;
     }
+
     public static Bitmap getBitmapToEdit() {
         DebugLogger.d();
 
@@ -112,7 +117,7 @@ public class MyApp extends Application {
         if (mInstance == null || mInstance.mBitmapLeft == null || mInstance.mBitmapRight == null) {
             return null;
         }
-        return BitmapUtils.compileOvelayedImage(mInstance.mBitmapLeft, mInstance.mBitmapRight);
+        return BitmapUtils.compileOverlayedImage(mInstance.mBitmapLeft, mInstance.mBitmapRight);
     }
 
     private void createFolder() {
@@ -133,5 +138,9 @@ public class MyApp extends Application {
         DebugLogger.d();
 
         return mPathPhotos;
+    }
+
+    public FullScreenAd getPreloadedAd() {
+        return mFullScreenAd;
     }
 }

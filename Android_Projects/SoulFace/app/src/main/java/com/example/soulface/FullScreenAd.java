@@ -84,6 +84,7 @@ public class FullScreenAd{
     }
 
     public void loadAd() {
+        DebugLogger.d();
 
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(mContext, mAdAppId);
@@ -105,7 +106,7 @@ public class FullScreenAd{
             public void onAdLoaded() {
                 DebugLogger.d();
 
-                DebugLogger.d(String.format("Ad loaded after %d ms", System.currentTimeMillis() - mLoadStart));
+                DebugLogger.d(String.format("Ad loaded in %d ms", System.currentTimeMillis() - mLoadStart));
 
                 mAdIsLoaded.set(true);
                 if (mOnAdLoadedAction != null) {
@@ -133,13 +134,15 @@ public class FullScreenAd{
                 DebugLogger.d();
                 if (mOnAdCloseAction != null) {
                     mOnAdCloseAction.onAdCloseAction();
+                    loadAd();
                 }
             }
         });
     }
 
-    public void showAd(OnAdClosedAction action) {
+   public void showAd(OnAdClosedAction action) {
         DebugLogger.d();
+        DebugLogger.d("Ad is loaded: " + mInterstitialAd.isLoaded());
 
         mOnAdCloseAction = action;
         boolean bShow = false;
@@ -153,9 +156,7 @@ public class FullScreenAd{
 
             try {
                 Thread.sleep(500);
-            } catch (InterruptedException ex) {
-
-            }
+            } catch (InterruptedException ex) {}
         }
 
         if (bShow) {
@@ -164,7 +165,6 @@ public class FullScreenAd{
             DebugLogger.e("Can't load ad. Starting onAdClosedAction immediately.");
             mOnAdCloseAction.onAdCloseAction();
         }
-
     }
 
     public interface OnAdClosedAction {

@@ -13,12 +13,15 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
 import com.example.soulface.FullScreenAd;
 import com.example.soulface.R;
+import com.example.soulface.SoulFaceApp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +36,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private List<String> mLstPermissions;
 
     private final Handler mHandler = new Handler();
-    private FullScreenAd mFullScreenAd;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +45,7 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
-        mFullScreenAd = new FullScreenAd(this);
-        mFullScreenAd.loadAd();
+        mProgressBar = findViewById(R.id.progress_bar);
     }
 
     @Override
@@ -62,6 +64,7 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void fillPermissionsRequest(List<String> lstPermissions) {
+        DebugLogger.d();
 
         mIsPermissionsGranted.set(true);
         mWaitForPermissions.set(false);
@@ -70,6 +73,7 @@ public class WelcomeActivity extends AppCompatActivity {
         for (String sPermission : lstPermissions) {
             if(ContextCompat.checkSelfPermission(this, sPermission) !=
                                                                 PackageManager.PERMISSION_GRANTED) {
+                mIsPermissionsGranted.set(false);
                 mWaitForPermissions.set(true);
                 mLstPermissions.add(sPermission);
             }
@@ -90,34 +94,40 @@ public class WelcomeActivity extends AppCompatActivity {
 
         switch (requestCode) {
             case PERMISSIONS_REQUEST: {
-
                 List lstGranted = new ArrayList<>();
 
+                boolean isAllPermissionsGranted = true;
                 for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                        lstGranted.add(mLstPermissions.get(i));
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        isAllPermissionsGranted = false;
+                        break;
                     }
                 }
-                mLstPermissions.removeAll(lstGranted);
 
-                mIsPermissionsGranted.set(mLstPermissions.isEmpty() == true);
+                mIsPermissionsGranted.set(isAllPermissionsGranted);
                 mWaitForPermissions.set(false);
+
+                if (mIsPermissionsGranted.get() == false) {
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                }
             }
         }
-    }
+     }
 
     private void waitForPermissions() {
         DebugLogger.d();
 
         mHandler.postDelayed( () -> {
 
-            while( mWaitForPermissions.get() == true ) { }
+            while( mWaitForPermissions.get() == true ) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {}
+            }
 
             if( mIsPermissionsGranted.get() == true ) {
-                mFullScreenAd.showAd(()->{
-                    startActivity(new Intent(WelcomeActivity.this, PhotoSelectionActivity.class));
-                    finish();
-                });
+                startActivity(new Intent(WelcomeActivity.this, PhotoSelectionActivity.class));
+                finish();
             }
         }, 3000);
     }

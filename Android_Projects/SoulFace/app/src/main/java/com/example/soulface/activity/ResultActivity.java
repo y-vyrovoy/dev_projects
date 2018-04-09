@@ -9,14 +9,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
 import com.example.soulface.FullScreenAd;
-import com.example.soulface.MyApp;
+import com.example.soulface.SoulFaceApp;
 import com.example.soulface.R;
 
 public class ResultActivity extends BasicBanneredActivity {
@@ -53,29 +52,27 @@ public class ResultActivity extends BasicBanneredActivity {
         LayoutInflater layoutInflater = LayoutInflater.from(this);
 
         mLeftViewTop = layoutInflater.inflate(R.layout.layout_left_photo_top, null);
-        setSizedDrawable (mLeftViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS, true, this ));
+        setSizedDrawable (mLeftViewTop, BitmapUtils.getRoundedCornerBitmap( SoulFaceApp.getBitmapLeft(), ROUND_RADIUS, true, this ));
 
         mLeftViewBottom = layoutInflater.inflate(R.layout.layout_left_photo_bottom, null);
-        setSizedDrawable (mLeftViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapLeft(), ROUND_RADIUS, true, this ));
+        setSizedDrawable (mLeftViewBottom, BitmapUtils.getRoundedCornerBitmap( SoulFaceApp.getBitmapLeft(), ROUND_RADIUS, true, this ));
 
         mRightViewTop = layoutInflater.inflate(R.layout.layout_right_photo_top, null);
-        setSizedDrawable (mRightViewTop, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS, true, this ));
+        setSizedDrawable (mRightViewTop, BitmapUtils.getRoundedCornerBitmap( SoulFaceApp.getBitmapRight(), ROUND_RADIUS, true, this ));
 
         mRightViewBottom = layoutInflater.inflate(R.layout.layout_right_photo_bottom, null);
-        setSizedDrawable (mRightViewBottom, BitmapUtils.getRoundedCornerBitmap( MyApp.getBitmapRight(), ROUND_RADIUS, true, this ));
+        setSizedDrawable (mRightViewBottom, BitmapUtils.getRoundedCornerBitmap( SoulFaceApp.getBitmapRight(), ROUND_RADIUS, true, this ));
 
         mProgressBar = findViewById(R.id.progressBar);
         mImageSaved = findViewById(R.id.image_saved);
 
-        mFullScreenAd = new FullScreenAd(this);
+        mFullScreenAd = SoulFaceApp.getInstance().getPreloadedAd();
     }
 
     public void onStart() {
         DebugLogger.d();
 
         super.onStart();
-
-        mFullScreenAd.loadAd();
 
         doLayout(true);
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -114,7 +111,7 @@ public class ResultActivity extends BasicBanneredActivity {
         if (imageView != null) {
             try {
                 double desiredWidth = mScreenWidth * RESULT_VIEW_PHOTO_RATIO;
-                int bmpWidth = MyApp.getBitmapLeft().getWidth();
+                int bmpWidth = SoulFaceApp.getBitmapLeft().getWidth();
                 double ratio = desiredWidth / bmpWidth;
 
                 int imageWidth = (int) (bitmapSrc.getWidth() * ratio);
@@ -132,9 +129,9 @@ public class ResultActivity extends BasicBanneredActivity {
 
         Bitmap bmpToSave = null;
         if (v == mLeftViewTop.findViewById(R.id.btn_save_left)) {
-            bmpToSave = MyApp.getBitmapLeft();
+            bmpToSave = SoulFaceApp.getBitmapLeft();
         } else if (v == mRightViewTop.findViewById(R.id.btn_save_right)) {
-            bmpToSave = MyApp.getBitmapRight();
+            bmpToSave = SoulFaceApp.getBitmapRight();
         }
 
         if (bmpToSave != null) {
@@ -154,9 +151,9 @@ public class ResultActivity extends BasicBanneredActivity {
         mProgressBar.setVisibility(View.VISIBLE);
         Bitmap bmpToShare = null;
         if (v == mLeftViewTop.findViewById(R.id.btn_share_left)) {
-            bmpToShare = MyApp.getBitmapLeft();
+            bmpToShare = SoulFaceApp.getBitmapLeft();
         } else if (v == mRightViewTop.findViewById(R.id.btn_share_right)) {
-            bmpToShare = MyApp.getBitmapRight();
+            bmpToShare = SoulFaceApp.getBitmapRight();
         }
 
         if (bmpToShare != null) {

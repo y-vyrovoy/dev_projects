@@ -5,14 +5,16 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.soulface.DebugLogger;
-import com.example.soulface.MyApp;
+import com.example.soulface.FullScreenAd;
 import com.example.soulface.R;
+import com.example.soulface.SoulFaceApp;
 
 import java.io.IOException;
 
@@ -23,7 +25,13 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
     private static int RESULT_LOAD_IMAGE = 1;
     private static int RESULT_CAMERA_IMAGE = 2;
 
-    private ImageView mImageMain = null;
+    private ImageView mImageMain;
+    private ImageView mImageAnimation;
+    private FullScreenAd mFullScreenAd;
+
+    private int mAlpha0;
+    private int mAlpha1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,15 +42,26 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
         InitializeBanner();
 
-        mImageMain = findViewById(R.id.imageTemplate);
+        mImageAnimation = findViewById(R.id.image_animation);
+        mImageMain = findViewById(R.id.image_main);
+        mFullScreenAd = SoulFaceApp.getInstance().getPreloadedAd();
     }
 
     @Override
     public void onStart () {
         DebugLogger.d();
-
         super.onStart();
-        mImageMain.setImageResource(R.drawable.nobody);
+
+        mAlpha0 = 0xFF;
+        mAlpha1 = 0x00;
+
+        mImageAnimation.setImageResource(R.drawable.face_anim_0);
+        mImageAnimation.setImageAlpha(mAlpha0);
+        mImageMain.setImageResource(R.drawable.face_anim_1);
+        mImageMain.setImageAlpha(mAlpha1);
+
+        RedrawThread th = new RedrawThread();
+        th.start();
     }
 
     public void onBtlLoadPhoto(View v) {
@@ -91,7 +110,7 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
                 }
 
                 if(bmp != null) {
-                    MyApp.setBitmapToEdit(bmp);
+                    SoulFaceApp.setBitmapToEdit(bmp);
                     mImageMain.setImageBitmap(bmp);
                     Log.d(TAG, "Save bitmap to load: w: " + bmp.getWidth() +
                                         ", h: " + bmp.getHeight());
@@ -105,10 +124,10 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
                 } catch (Exception e) {e.printStackTrace();}
 
                 mImageMain.setImageBitmap(bmp);
-                MyApp.setBitmapToEdit(bmp);
+                SoulFaceApp.setBitmapToEdit(bmp);
             }
 
-            startActivity(new Intent(this, EditImageActivity.class));
+            mFullScreenAd.showAd(() -> startActivity(new Intent(this, EditImageActivity.class)));
         }
     }
 
@@ -118,4 +137,52 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
         // doing nothing to prevent moving to WelcomeActivity
     }
 
+    private void refreshImages() {
+
+        if (mImageMain != null && mImageAnimation != null)
+        {
+            mImageAnimation.setImageAlpha(mAlpha0);
+            mImageMain.setImageAlpha(mAlpha1);
+            mImageMain.postInvalidate();
+            mImageAnimation.postInvalidate();
+        }
+    }
+
+    private class RedrawThread extends Thread {
+
+        private int mFramesCount = 50;
+        private int mFrameDuration = 40;
+        private int alphaDelta;
+
+        public RedrawThread() {
+        }
+
+        public RedrawThread(int framesCount, int animationDuration) {
+            mFramesCount = framesCount;
+            mFrameDuration = animationDuration / mFramesCount;
+        }
+
+        @Override
+        public void run() {
+            alphaDelta = 255 / mFramesCount;
+            if (alphaDelta * mFramesCount < 255) {
+                mFramesCount += 1;
+            }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex){ }
+
+            for (int i = 0; i < mFramesCount; i++)
+            {
+                mAlpha0 -= alphaDelta;
+                mAlpha1 += alphaDelta;
+                runOnUiThread(()->refreshImages()) ;
+
+                try {
+                    Thread.sleep(mFrameDuration);
+                } catch (InterruptedException ex){ }
+            }
+        }
+    }
 }

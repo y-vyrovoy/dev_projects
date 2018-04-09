@@ -10,7 +10,7 @@ import android.widget.ProgressBar;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
-import com.example.soulface.MyApp;
+import com.example.soulface.SoulFaceApp;
 import com.example.soulface.R;
 
 public class SingleResultActivity extends BasicBanneredActivity {
@@ -35,7 +35,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
         mProgressBar = findViewById(R.id.progress_bar);
         mImageSaved = findViewById(R.id.image_saved);
 
-        Bitmap bmpVrModeImage = MyApp.getSingleResultBitmap();
+        Bitmap bmpVrModeImage = SoulFaceApp.getSingleResultBitmap();
 
         if (mImageGeneral != null && bmpVrModeImage != null) {
             mImageGeneral.setImageBitmap(bmpVrModeImage);
@@ -56,7 +56,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
         DebugLogger.d();
 
         mProgressBar.setVisibility(View.VISIBLE);
-        Bitmap bmpVrModeImage = MyApp.getVrModeBitmap(false);
+        Bitmap bmpVrModeImage = SoulFaceApp.getVrModeBitmap(false);
         BitmapUtils.shareImage(bmpVrModeImage,
                 this,
                 ()-> {
@@ -77,7 +77,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
         DebugLogger.d();
 
         mProgressBar.setVisibility(View.VISIBLE);
-        Bitmap bmpVrModeImage = MyApp.getVrModeBitmap(false);
+        Bitmap bmpVrModeImage = SoulFaceApp.getVrModeBitmap(false);
         BitmapUtils.saveBitmapGallery(bmpVrModeImage, this);
         mProgressBar.setVisibility(View.INVISIBLE);
         v.setVisibility(View.INVISIBLE);

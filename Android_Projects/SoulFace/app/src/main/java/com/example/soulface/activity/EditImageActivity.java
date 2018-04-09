@@ -7,7 +7,7 @@ import android.view.View;
 
 import com.example.soulface.BitmapUtils;
 import com.example.soulface.DebugLogger;
-import com.example.soulface.MyApp;
+import com.example.soulface.SoulFaceApp;
 import com.example.soulface.R;
 import com.example.soulface.ScalableImageView;
 
@@ -32,7 +32,7 @@ public class EditImageActivity extends BasicBanneredActivity {
         DebugLogger.d();
 
         super.onStart();
-        mImageMain.setImageBitmap(MyApp.getBitmapToEdit());
+        mImageMain.setImageBitmap(SoulFaceApp.getBitmapToEdit());
     }
 
     public void onBtnBack(View v) {
@@ -45,8 +45,8 @@ public class EditImageActivity extends BasicBanneredActivity {
 
         Bitmap bmpResult = mImageMain.getResultBitmap();
 
-        MyApp.setBitmapLeft(BitmapUtils.getDoubledLeftPart(bmpResult));
-        MyApp.setBitmapRight(BitmapUtils.getDoubledRightPart(bmpResult));
+        SoulFaceApp.setBitmapLeft(BitmapUtils.getDoubledLeftPart(bmpResult));
+        SoulFaceApp.setBitmapRight(BitmapUtils.getDoubledRightPart(bmpResult));
 
         startActivity(new Intent(this, ResultActivity.class));
     }

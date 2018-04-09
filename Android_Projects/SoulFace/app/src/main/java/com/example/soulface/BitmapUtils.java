@@ -1,26 +1,18 @@
 package com.example.soulface;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.v4.content.FileProvider;
-import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -133,7 +125,7 @@ public class BitmapUtils {
         return bmpCanvas;
     }
 
-    public static Bitmap compileOvelayedImage(Bitmap bmpLeft, Bitmap bmpRight) {
+    public static Bitmap compileOverlayedImage(Bitmap bmpLeft, Bitmap bmpRight) {
         DebugLogger.d();
 
         int nNewImageWidth = Math.max(bmpLeft.getWidth(), bmpRight.getWidth());
@@ -158,7 +150,7 @@ public class BitmapUtils {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
         String fileName = sdf.format(new Date(System.currentTimeMillis()));
-        File fNew = new File(MyApp.getInstance().getPhotosPath(), fileName + ".png");
+        File fNew = new File(SoulFaceApp.getInstance().getPhotosPath(), fileName + ".png");
 
         FileOutputStream out = null;
         try {
