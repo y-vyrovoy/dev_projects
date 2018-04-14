@@ -86,27 +86,27 @@ public class ScalableImageView extends View {
 
     public ScalableImageView(Context context) {
         super(context);
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         init(context, null);
     }
 
     public ScalableImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         init(context, attrs);
     }
 
     public ScalableImageView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         init(context, attrs);
     }
 
     private void init(Context context, AttributeSet attrs) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mScaleGestureDetector = new ScaleGestureDetector(context, _scaleGestureListener);
         mGestureDetector = new GestureDetectorCompat(context, _gestureListener);
@@ -152,7 +152,9 @@ public class ScalableImageView extends View {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void setImageBitmap(Bitmap bitmap) {
-        DebugLogger.d();
+        DebugLogger.d(null);
+
+        DebugLogger.d("Bitmap w: " + bitmap.getWidth() + ", h: " + bitmap.getHeight());
 
         mBitmapSource = bitmap;
 
@@ -164,7 +166,7 @@ public class ScalableImageView extends View {
 
     @Override
     public void onDraw(Canvas canvas) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         canvas.clipRect(mRectVisible);
 
@@ -180,22 +182,6 @@ public class ScalableImageView extends View {
                     mRectVisible.centerY() + mUnscaledOffsetY * mScaleCurrent,
                     mScaleCurrent, mRotationAngle, mBitmapSource);
         }
-
-        // divider that shows where picture will be divided
-/*
-        canvas.drawRect(mRectVisible.centerX() - SPLITTER_HALF_WIDTH,
-                mRectVisible.top,
-                mRectVisible.centerX() + SPLITTER_HALF_WIDTH,
-                mRectVisible.bottom,
-                _paintDividerFill);
-
-        canvas.drawRect(mRectVisible.centerX() - SPLITTER_HALF_WIDTH,
-                mRectVisible.top + 2,
-                mRectVisible.centerX() + SPLITTER_HALF_WIDTH,
-                mRectVisible.bottom - 2,
-                _paintDividerBorder);
-*/
-        //canvas.drawPath(mPathSeparator, mPaintDashed);
 
 
         Bitmap bmpDivider = getDividerBitmap();
@@ -219,7 +205,7 @@ public class ScalableImageView extends View {
 
     @Override
     public void onSizeChanged (int w, int h, int oldw, int oldh) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         // TODO padding
 
@@ -232,6 +218,9 @@ public class ScalableImageView extends View {
         }
         mRectVisible.set( (w - mBitmapWidth)/2 , (h - mBitmapHeight)/2, (w + mBitmapWidth)/2 , (h + mBitmapHeight)/2);
         mRectView.set(0, 0, w - 1, h - 1);
+
+        DebugLogger.d("Bitmap w:" + mBitmapWidth + ", h: " + mBitmapHeight);
+        DebugLogger.d("mRectVisible w:" + mRectVisible.width() + ", h: " + mRectVisible.height());
 
         initScaleOffset();
         calcTransition();
@@ -251,7 +240,7 @@ public class ScalableImageView extends View {
      * Offsets are negative if bitmap size is less than view's size.
      */
     private void initScaleOffset() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mUnscaledOffsetX = 0;
         mUnscaledOffsetY = 0;
@@ -273,7 +262,7 @@ public class ScalableImageView extends View {
      * Prepares _btimapToDraw basing on source bitmap, current scale and offset
      */
     private void calcTransition() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if(mBitmapSource == null) {
             DebugLogger.e("mBitmapSource == null");
@@ -321,7 +310,7 @@ public class ScalableImageView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event){
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         int action = event.getAction();
         int pointerCount = event.getPointerCount();
@@ -363,7 +352,7 @@ public class ScalableImageView extends View {
     }
 
     private static Matrix getMatrix(float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         Matrix matrix = new Matrix();
         matrix.preRotate(rotationAngleDegrees, bitmap.getWidth()/2 * scale, bitmap.getHeight()/2 * scale);
@@ -375,7 +364,7 @@ public class ScalableImageView extends View {
     }
 
     private static RectF getMappedRect(float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         Matrix matrixCalc = new Matrix();
         RectF rectBitmapTransformed = new RectF();
@@ -392,7 +381,7 @@ public class ScalableImageView extends View {
     }
 
     private static void drawBitmapRotated(Canvas canvas, float centerX, float centerY, float scale, float rotationAngleDegrees, Bitmap bitmap) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         Matrix matrix = new Matrix();
         matrix.preRotate(rotationAngleDegrees, bitmap.getWidth()/2 * scale, bitmap.getHeight()/2 * scale);
@@ -404,7 +393,7 @@ public class ScalableImageView extends View {
     }
 
     public Bitmap getResultBitmap() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         Matrix matrix = getMatrix(mRectVisible.centerX() + mUnscaledOffsetX * mScaleCurrent,
                                     mRectVisible.centerY() + mUnscaledOffsetY * mScaleCurrent,
@@ -438,11 +427,31 @@ public class ScalableImageView extends View {
         RectF rectResult = new RectF();
         rectResult.set(leftBorder, topBorder, rightBorder, bottomBorder);
 
-        Bitmap bmpReturn = Bitmap.createBitmap(bmpTransformed,
-                                            (int)leftBorder,
-                                            (int)topBorder,
-                                            (int)(rightBorder - leftBorder),
-                                            (int)(bottomBorder - topBorder));
+        Bitmap bmpUnCropped = Bitmap.createBitmap(bmpTransformed,
+                                                    (int)leftBorder,
+                                                    (int)topBorder,
+                                                    (int)(rightBorder - leftBorder),
+                                                    (int)(bottomBorder - topBorder));
+
+        int croppedHeight;
+        int croppedWidth;
+
+        if (bmpUnCropped.getHeight() / bmpUnCropped.getWidth() > RATIO) {
+            croppedWidth = bmpUnCropped.getWidth();
+            croppedHeight = (int)(croppedWidth * RATIO);
+        } else {
+            croppedHeight = bmpUnCropped.getHeight();
+            croppedWidth = (int)(croppedHeight / RATIO);
+        }
+
+        Bitmap bmpReturn = Bitmap.createBitmap(croppedWidth, croppedHeight, bmpUnCropped.getConfig());
+        Canvas canvasReturn = new Canvas(bmpReturn);
+        canvasReturn.drawRect(0, 0, croppedWidth, croppedHeight, mPaintBackground   );
+
+        canvasReturn.drawBitmap(bmpUnCropped,
+                                (croppedWidth - bmpUnCropped.getWidth()) / 2,
+                                (croppedHeight - bmpUnCropped.getHeight()) / 2,
+                                null);
 
         return bmpReturn;
     }
@@ -454,7 +463,7 @@ public class ScalableImageView extends View {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void setScale(float scale) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if(mBitmapSource == null) {return;}
 
@@ -464,19 +473,19 @@ public class ScalableImageView extends View {
     }
 
     public float getScale() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         return mScaleCurrent;
     }
 
     public float getMinScale() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         return mScaleMinimum;
     }
 
     public void setRotationAngle(float radAngle) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mRotationAngle = (float)(radAngle % (2 * Math.PI));
         if (mRotationAngle < 0) {
@@ -496,7 +505,7 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            DebugLogger.d();
+            DebugLogger.d(null);
 
             mUnscaledOffsetX -= distanceX / mScaleCurrent;
             mUnscaledOffsetY -= distanceY / mScaleCurrent;
@@ -520,7 +529,7 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector) {
-            DebugLogger.d();
+            DebugLogger.d(null);
 
             float lastSpanX = scaleGestureDetector.getCurrentSpanX();
             float lastSpanY = scaleGestureDetector.getCurrentSpanY();
@@ -531,7 +540,7 @@ public class ScalableImageView extends View {
 
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
-            DebugLogger.d();
+            DebugLogger.d(null);
 
             float spanX = scaleGestureDetector.getCurrentSpanX();
             float spanY = scaleGestureDetector.getCurrentSpanY();
@@ -548,7 +557,7 @@ public class ScalableImageView extends View {
     };
 
     private void onRotationStart() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mIsScaled = true;
 
@@ -561,7 +570,7 @@ public class ScalableImageView extends View {
     }
 
     private void onRotate() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if ( (mPointFingerOne != null) && (mPointFingerTwo != null) &&
                 (mLastPointFingerOne != null) && (mLastPointFingerTwo != null)) {
@@ -578,7 +587,7 @@ public class ScalableImageView extends View {
     }
 
     private void onRotationEnds() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mIsScaled = false;
         ViewCompat.postInvalidateOnAnimation(ScalableImageView.this);

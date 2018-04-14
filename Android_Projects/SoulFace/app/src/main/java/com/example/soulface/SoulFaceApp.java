@@ -1,8 +1,11 @@
 package com.example.soulface;
 
 import android.app.Application;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 
 import java.io.File;
@@ -25,21 +28,21 @@ public class SoulFaceApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        mInstance = this;
+
         mFullScreenAd = new FullScreenAd(this);
         mFullScreenAd.loadAd();
 
         createFolder();
-
-        mInstance = this;
     }
 
     public static SoulFaceApp getInstance() {
-        DebugLogger.d();
+        DebugLogger.d(null);
         return mInstance;
     }
 
     public static void setBitmapToEdit(Bitmap bitmapToEdit) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null) {
             return;
@@ -48,7 +51,7 @@ public class SoulFaceApp extends Application {
     }
 
     public static Bitmap getBitmapToEdit() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null) {
             return null;
@@ -57,7 +60,7 @@ public class SoulFaceApp extends Application {
     }
 
     public static void setBitmapLeft(Bitmap bitmapToEdit) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null) {
             return;
@@ -66,7 +69,7 @@ public class SoulFaceApp extends Application {
     }
 
     public static Bitmap getBitmapLeft() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null) {
             return null;
@@ -75,7 +78,7 @@ public class SoulFaceApp extends Application {
     }
 
     public static void setBitmapRight(Bitmap bitmapToEdit) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null) {
             return;
@@ -84,7 +87,7 @@ public class SoulFaceApp extends Application {
     }
 
     public static Bitmap getBitmapRight() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null) {
             return null;
@@ -93,7 +96,7 @@ public class SoulFaceApp extends Application {
     }
 
     public static Bitmap getVrModeBitmap(boolean bAddCaptures){
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null || mInstance.mBitmapLeft == null || mInstance.mBitmapRight == null) {
             return null;
@@ -112,7 +115,7 @@ public class SoulFaceApp extends Application {
     }
 
     public static Bitmap getSingleResultBitmap() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mInstance == null || mInstance.mBitmapLeft == null || mInstance.mBitmapRight == null) {
             return null;
@@ -121,7 +124,7 @@ public class SoulFaceApp extends Application {
     }
 
     private void createFolder() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mPathPhotos = "";
         try {
@@ -135,12 +138,19 @@ public class SoulFaceApp extends Application {
     }
 
     public String getPhotosPath() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         return mPathPhotos;
     }
 
     public FullScreenAd getPreloadedAd() {
         return mFullScreenAd;
+    }
+
+    public boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

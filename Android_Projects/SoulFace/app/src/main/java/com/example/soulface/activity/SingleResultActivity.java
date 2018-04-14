@@ -24,7 +24,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_result);
@@ -45,7 +45,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
     }
 
     protected void onStart() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onStart();
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -53,7 +53,7 @@ public class SingleResultActivity extends BasicBanneredActivity {
     }
 
     public void onBtnShare(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mProgressBar.setVisibility(View.VISIBLE);
         Bitmap bmpVrModeImage = SoulFaceApp.getVrModeBitmap(false);
@@ -68,16 +68,16 @@ public class SingleResultActivity extends BasicBanneredActivity {
     }
 
     public void onBtnBack(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         onBackPressed();
     }
 
     public void onBtnSave(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mProgressBar.setVisibility(View.VISIBLE);
-        Bitmap bmpVrModeImage = SoulFaceApp.getVrModeBitmap(false);
+        Bitmap bmpVrModeImage = SoulFaceApp.getSingleResultBitmap();
         BitmapUtils.saveBitmapGallery(bmpVrModeImage, this);
         mProgressBar.setVisibility(View.INVISIBLE);
         v.setVisibility(View.INVISIBLE);

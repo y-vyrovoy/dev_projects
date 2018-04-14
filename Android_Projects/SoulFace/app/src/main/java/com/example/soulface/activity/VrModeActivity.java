@@ -24,7 +24,7 @@ public class VrModeActivity extends BasicBanneredActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vr_mode);
@@ -46,7 +46,7 @@ public class VrModeActivity extends BasicBanneredActivity {
 
     @Override
     protected void onStart() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onStart();
         mProgressBar.setVisibility(View.INVISIBLE);
@@ -54,7 +54,7 @@ public class VrModeActivity extends BasicBanneredActivity {
     }
 
     public void onBtnShare(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mProgressBar.setVisibility(View.VISIBLE);
         Bitmap bmpVrModeImage = SoulFaceApp.getVrModeBitmap(false);
@@ -69,12 +69,12 @@ public class VrModeActivity extends BasicBanneredActivity {
     }
 
     public void onBtnBack(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
         onBackPressed();
     }
 
     public void onBtnSave(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mProgressBar.setVisibility(View.VISIBLE);
         Bitmap bmpVrModeImage = SoulFaceApp.getVrModeBitmap(false);

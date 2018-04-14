@@ -33,29 +33,45 @@ public class FullScreenAd{
 
     private long mLoadStart;
 
+    private boolean isInternetConnection;
+
     public FullScreenAd(Context context) {
         super();
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mContext = context;
-        initAdIDs(null, null);
+        isInternetConnection = SoulFaceApp.getInstance().isNetworkAvailable();
+
+        if (isInternetConnection) {
+            initAdIDs(null, null);
+        }
     }
 
     public FullScreenAd(Context context, String adAppId, String adScreenId) {
         super();
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mContext = context;
-        initAdIDs(adAppId, adScreenId);
+        isInternetConnection = SoulFaceApp.getInstance().isNetworkAvailable();
+
+        if (isInternetConnection) {
+            initAdIDs(adAppId, adScreenId);
+        }
     }
 
     public FullScreenAd(Context context, int adAppId, int adBannerId) {
         super();
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mContext = context;
-        initAdIDs( context.getResources().getString(adAppId), context.getResources().getString(adBannerId) );
+        isInternetConnection = SoulFaceApp.getInstance().isNetworkAvailable();
+
+        if (isInternetConnection) {
+            initAdIDs(context.getResources().getString(adAppId), context.getResources().getString(adBannerId));
+        }
     }
+
+
 
     public void setOnAdLoadedAction(OnAdLoadedAction action) {
         mOnAdLoadedAction = action;
@@ -70,21 +86,28 @@ public class FullScreenAd{
     }
 
     private void initAdIDs(String adAppId, String adScreenId) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
-        mAdAppId = (adAppId != null) ? adAppId : APP_AD_ID;
-        mAdScreenId = (adScreenId != null) ? adScreenId : SCREEN_AD_ID;
+        if (isInternetConnection) {
+            mAdAppId = (adAppId != null) ? adAppId : APP_AD_ID;
+            mAdScreenId = (adScreenId != null) ? adScreenId : SCREEN_AD_ID;
 
-        mInterstitialAd = new InterstitialAd(mContext);
-        mInterstitialAd.setAdUnitId(mAdScreenId);
+            mInterstitialAd = new InterstitialAd(mContext);
+            mInterstitialAd.setAdUnitId(mAdScreenId);
 
-        setInterstitialAdListener();
-        mOnAdCloseAction = null;
-        mOnAdLoadedAction = null;
+            setInterstitialAdListener();
+            mOnAdCloseAction = null;
+            mOnAdLoadedAction = null;
+        }
     }
 
     public void loadAd() {
-        DebugLogger.d();
+        DebugLogger.d(null);
+
+        if (isInternetConnection == false) {
+            DebugLogger.d("No internet connection");
+            return;
+        }
 
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(mContext, mAdAppId);
@@ -99,12 +122,17 @@ public class FullScreenAd{
     }
 
     private void setInterstitialAdListener() {
-        DebugLogger.d();
+        DebugLogger.d(null);
+
+        if (isInternetConnection == false) {
+            DebugLogger.d("No internet connection");
+            return;
+        }
 
         mInterstitialAd.setAdListener(new AdListener() {
             @Override
             public void onAdLoaded() {
-                DebugLogger.d();
+                DebugLogger.d(null);
 
                 DebugLogger.d(String.format("Ad loaded in %d ms", System.currentTimeMillis() - mLoadStart));
 
@@ -121,17 +149,17 @@ public class FullScreenAd{
 
             @Override
             public void onAdOpened() {
-                DebugLogger.d();
+                DebugLogger.d(null);
             }
 
             @Override
             public void onAdLeftApplication() {
-                DebugLogger.d();
+                DebugLogger.d(null);
             }
 
             @Override
             public void onAdClosed() {
-                DebugLogger.d();
+                DebugLogger.d(null);
                 if (mOnAdCloseAction != null) {
                     mOnAdCloseAction.onAdCloseAction();
                     loadAd();
@@ -141,8 +169,14 @@ public class FullScreenAd{
     }
 
    public void showAd(OnAdClosedAction action) {
-        DebugLogger.d();
-        DebugLogger.d("Ad is loaded: " + mInterstitialAd.isLoaded());
+        DebugLogger.d(null);
+        DebugLogger.d("Ad is loaded: " + mAdIsLoaded.get());
+
+       if (isInternetConnection == false) {
+           DebugLogger.d("No internet connection. Starting onAdClosedAction immediately");
+           action.onAdCloseAction();
+           return;
+       }
 
         mOnAdCloseAction = action;
         boolean bShow = false;
@@ -150,7 +184,7 @@ public class FullScreenAd{
         long lStartTime = System.currentTimeMillis();
 
         while (System.currentTimeMillis() - lStartTime < LOAD_AD_TIMEOUT && bShow == false) {
-            if (mInterstitialAd.isLoaded()) {
+            if (mAdIsLoaded.get()) {
                 bShow = true;
             }
 

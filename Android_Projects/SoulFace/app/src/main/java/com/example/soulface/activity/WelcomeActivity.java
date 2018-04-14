@@ -40,7 +40,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
@@ -50,7 +50,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onStart();
 
@@ -59,12 +59,13 @@ public class WelcomeActivity extends AppCompatActivity {
         lstPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         lstPermissions.add(Manifest.permission.CAMERA);
         lstPermissions.add(Manifest.permission.INTERNET);
+        lstPermissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
 
         fillPermissionsRequest(lstPermissions);
     }
 
     private void fillPermissionsRequest(List<String> lstPermissions) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mIsPermissionsGranted.set(true);
         mWaitForPermissions.set(false);
@@ -90,7 +91,7 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         switch (requestCode) {
             case PERMISSIONS_REQUEST: {
@@ -115,7 +116,7 @@ public class WelcomeActivity extends AppCompatActivity {
      }
 
     private void waitForPermissions() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mHandler.postDelayed( () -> {
 

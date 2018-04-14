@@ -57,7 +57,7 @@
         android:layout_alignParentEnd="true"
         android:gravity="end|bottom"
         android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="24dp"
         android:layout_above="@id/photo">
 
         <ImageButton
@@ -65,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_vr_mode"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="24dp"
             android:background="@android:color/transparent"
             android:onClick="onBtnVrMode"/>
 

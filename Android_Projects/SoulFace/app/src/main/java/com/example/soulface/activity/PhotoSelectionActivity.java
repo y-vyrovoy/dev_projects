@@ -5,11 +5,15 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.example.soulface.DebugLogger;
 import com.example.soulface.FullScreenAd;
@@ -27,15 +31,21 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
     private ImageView mImageMain;
     private ImageView mImageAnimation;
-    private FullScreenAd mFullScreenAd;
+
+    private ImageButton mButtonLoad;
+    private ImageButton mButtonShoot;
+    private ProgressBar mProgressBar;
 
     private int mAlpha0;
     private int mAlpha1;
 
+    private FullScreenAd mFullScreenAd;
+    private boolean mShowAnimation;
+    private boolean mShowProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_selection);
@@ -44,28 +54,41 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
         mImageAnimation = findViewById(R.id.image_animation);
         mImageMain = findViewById(R.id.image_main);
+        mButtonLoad = findViewById(R.id.btn_load);
+        mButtonShoot = findViewById(R.id.btn_shoot);
+        mProgressBar = findViewById(R.id.progress_bar);
+
         mFullScreenAd = SoulFaceApp.getInstance().getPreloadedAd();
+
+        mShowAnimation = true;
+        mShowProgressBar = false;
     }
 
     @Override
     public void onStart () {
-        DebugLogger.d();
+        DebugLogger.d(null);
         super.onStart();
 
-        mAlpha0 = 0xFF;
-        mAlpha1 = 0x00;
+        if (mShowAnimation == true) {
+            mAlpha0 = 0xFF;
+            mAlpha1 = 0x00;
 
-        mImageAnimation.setImageResource(R.drawable.face_anim_0);
-        mImageAnimation.setImageAlpha(mAlpha0);
-        mImageMain.setImageResource(R.drawable.face_anim_1);
-        mImageMain.setImageAlpha(mAlpha1);
+            mImageAnimation.setImageResource(R.drawable.face_anim_0);
+            mImageAnimation.setImageAlpha(mAlpha0);
+            mImageMain.setImageResource(R.drawable.face_anim_1);
+            mImageMain.setImageAlpha(mAlpha1);
 
-        RedrawThread th = new RedrawThread();
-        th.start();
+            RedrawThread th = new RedrawThread();
+            th.start();
+
+            mShowAnimation = false;
+        }
+
+        mProgressBar.setVisibility(mShowProgressBar ? View.VISIBLE : View.INVISIBLE);
     }
 
     public void onBtlLoadPhoto(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
         gallery.setType("image/*");
@@ -74,7 +97,7 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
     private Uri _imageUri;
     public void onBtnShootPhoto(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         ContentValues values = new ContentValues();
 
@@ -83,16 +106,15 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, _imageUri);
+
         startActivityForResult(intent, RESULT_CAMERA_IMAGE);
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onActivityResult(requestCode, resultCode, data);
-
         if (resultCode == RESULT_OK) {
 
             if(requestCode == RESULT_LOAD_IMAGE) {
@@ -104,16 +126,14 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
                 Bitmap bmp = null;
                 try {
-                    bmp = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                    bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
 
                 if(bmp != null) {
                     SoulFaceApp.setBitmapToEdit(bmp);
-                    mImageMain.setImageBitmap(bmp);
-                    Log.d(TAG, "Save bitmap to load: w: " + bmp.getWidth() +
-                                        ", h: " + bmp.getHeight());
+                    setBitmapAndWait(bmp);
                 }
             } else if(requestCode == RESULT_CAMERA_IMAGE) {
                 Bitmap bmp = null;
@@ -123,16 +143,29 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
                 } catch (Exception e) {e.printStackTrace();}
 
-                mImageMain.setImageBitmap(bmp);
+                setBitmapAndWait (bmp);
                 SoulFaceApp.setBitmapToEdit(bmp);
             }
 
-            mFullScreenAd.showAd(() -> startActivity(new Intent(this, EditImageActivity.class)));
+            Runnable task = () ->
+                        mFullScreenAd.showAd(() ->
+                                runOnUiThread(() -> startActivity(new Intent(this, EditImageActivity.class))));
+
+            Thread thread = new Thread(task);
+            thread.start();
         }
     }
 
+    private void setBitmapAndWait(Bitmap bmp) {
+        mImageMain.setImageBitmap(bmp);
+        mShowProgressBar = true;
+
+        mButtonLoad.setVisibility(View.INVISIBLE);
+        mButtonShoot.setVisibility(View.INVISIBLE);
+    }
+
     public void onBackPressed() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         // doing nothing to prevent moving to WelcomeActivity
     }

@@ -25,7 +25,7 @@ public class BasicBanneredActivity extends AppCompatActivity {
 
     @Override
     public void setContentView (int layoutResID) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         ViewGroup viewContent = null;
 
@@ -45,7 +45,7 @@ public class BasicBanneredActivity extends AppCompatActivity {
      * Should be called after super.onCreate()
      */
     protected void InitializeBanner() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         InitializeBanner(null, null);
     }
@@ -54,7 +54,7 @@ public class BasicBanneredActivity extends AppCompatActivity {
      * Should be called after super.onCreate()
      */
     protected void InitializeBanner(int adAppId, int adBannerId) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         InitializeBanner( getResources().getString(adAppId), getResources().getString(adBannerId));
     }
@@ -63,7 +63,7 @@ public class BasicBanneredActivity extends AppCompatActivity {
      * Should be called after super.onCreate()
      */
     protected void InitializeBanner(String adAppId, String adBannerId) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         RelativeLayout layoutBanner = findViewById(R.id.layout_banner);
 
@@ -90,7 +90,7 @@ public class BasicBanneredActivity extends AppCompatActivity {
     /** Called when leaving the activity */
     @Override
     public void onPause() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mAdBanner != null) {
             mAdBanner.pause();
@@ -101,7 +101,7 @@ public class BasicBanneredActivity extends AppCompatActivity {
     /** Called when returning to the activity */
     @Override
     public void onResume() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onResume();
         if (mAdBanner != null) {
@@ -112,7 +112,7 @@ public class BasicBanneredActivity extends AppCompatActivity {
     /** Called before the activity is destroyed */
     @Override
     public void onDestroy() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mAdBanner != null) {
             mAdBanner.destroy();

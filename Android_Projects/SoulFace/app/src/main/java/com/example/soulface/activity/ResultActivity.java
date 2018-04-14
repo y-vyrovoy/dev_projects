@@ -38,7 +38,7 @@ public class ResultActivity extends BasicBanneredActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
@@ -70,7 +70,7 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     public void onStart() {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         super.onStart();
 
@@ -80,7 +80,7 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     private void doLayout(boolean leftOnTop){
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (mLeftOnTop == leftOnTop) {
             return;
@@ -104,7 +104,7 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     private void setSizedDrawable(View view, Bitmap bitmapSrc) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         ImageView imageView = view.findViewById(R.id.photo);
 
@@ -125,7 +125,7 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     public void onBtnSave(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         Bitmap bmpToSave = null;
         if (v == mLeftViewTop.findViewById(R.id.btn_save_left)) {
@@ -146,7 +146,7 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     public void onBtnShare(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mProgressBar.setVisibility(View.VISIBLE);
         Bitmap bmpToShare = null;
@@ -169,7 +169,7 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     public void onBtnVrMode(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mFullScreenAd.showAd(()->{
             Intent intent = new Intent(this, VrModeActivity.class);
@@ -178,7 +178,7 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     public void onBtnSingleMode(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         mFullScreenAd.showAd(()->{
             Intent intent = new Intent(this, SingleResultActivity.class);
@@ -187,12 +187,12 @@ public class ResultActivity extends BasicBanneredActivity {
     }
 
     public void onBtnBack(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
         onBackPressed();
     }
 
     public void onImageClick(View v) {
-        DebugLogger.d();
+        DebugLogger.d(null);
 
         if (v == mLeftViewBottom.findViewById(R.id.photo)) {
             doLayout(true);
