@@ -33,16 +33,13 @@ public class FullScreenAd{
 
     private long mLoadStart;
 
-    private boolean isInternetConnection;
-
     public FullScreenAd(Context context) {
         super();
         DebugLogger.d(null);
 
         mContext = context;
-        isInternetConnection = SoulFaceApp.getInstance().isNetworkAvailable();
 
-        if (isInternetConnection) {
+        if (SoulFaceApp.getInstance().isNetworkAvailable()) {
             initAdIDs(null, null);
         }
     }
@@ -52,9 +49,8 @@ public class FullScreenAd{
         DebugLogger.d(null);
 
         mContext = context;
-        isInternetConnection = SoulFaceApp.getInstance().isNetworkAvailable();
 
-        if (isInternetConnection) {
+        if (SoulFaceApp.getInstance().isNetworkAvailable()) {
             initAdIDs(adAppId, adScreenId);
         }
     }
@@ -64,9 +60,8 @@ public class FullScreenAd{
         DebugLogger.d(null);
 
         mContext = context;
-        isInternetConnection = SoulFaceApp.getInstance().isNetworkAvailable();
 
-        if (isInternetConnection) {
+        if (SoulFaceApp.getInstance().isNetworkAvailable()) {
             initAdIDs(context.getResources().getString(adAppId), context.getResources().getString(adBannerId));
         }
     }
@@ -88,7 +83,7 @@ public class FullScreenAd{
     private void initAdIDs(String adAppId, String adScreenId) {
         DebugLogger.d(null);
 
-        if (isInternetConnection) {
+        if (SoulFaceApp.getInstance().isNetworkAvailable()) {
             mAdAppId = (adAppId != null) ? adAppId : APP_AD_ID;
             mAdScreenId = (adScreenId != null) ? adScreenId : SCREEN_AD_ID;
 
@@ -104,7 +99,7 @@ public class FullScreenAd{
     public void loadAd() {
         DebugLogger.d(null);
 
-        if (isInternetConnection == false) {
+        if (SoulFaceApp.getInstance().isNetworkAvailable() == false) {
             DebugLogger.d("No internet connection");
             return;
         }
@@ -124,10 +119,10 @@ public class FullScreenAd{
     private void setInterstitialAdListener() {
         DebugLogger.d(null);
 
-        if (isInternetConnection == false) {
-            DebugLogger.d("No internet connection");
-            return;
-        }
+//        if (SoulFaceApp.getInstance().isNetworkAvailable() == false) {
+//            DebugLogger.d("No internet connection");
+//            return;
+//        }
 
         mInterstitialAd.setAdListener(new AdListener() {
             @Override
@@ -172,7 +167,7 @@ public class FullScreenAd{
         DebugLogger.d(null);
         DebugLogger.d("Ad is loaded: " + mAdIsLoaded.get());
 
-       if (isInternetConnection == false) {
+       if (SoulFaceApp.getInstance().isNetworkAvailable() == false) {
            DebugLogger.d("No internet connection. Starting onAdClosedAction immediately");
            action.onAdCloseAction();
            return;

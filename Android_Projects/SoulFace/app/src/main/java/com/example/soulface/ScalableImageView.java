@@ -189,7 +189,7 @@ public class ScalableImageView extends View {
     }
 
     public Bitmap getDividerBitmap() {
-        Bitmap bmpDivider = BitmapFactory.decodeResource(getResources(), R.drawable.ic_vertical_divider);
+        Bitmap bmpDivider = BitmapFactory.decodeResource(getResources(), R.drawable.vertical_divider);
         int height = bmpDivider.getHeight();
         int width = bmpDivider.getWidth();
 
@@ -651,4 +651,19 @@ public class ScalableImageView extends View {
         }
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        DebugLogger.d(null);
+
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        if (heightSize > widthSize * RATIO) {
+            heightSize = (int)(widthSize * RATIO);
+        } else {
+            widthSize = (int)(heightSize / RATIO);
+        }
+
+        setMeasuredDimension(widthSize, heightSize);
+    }
 }

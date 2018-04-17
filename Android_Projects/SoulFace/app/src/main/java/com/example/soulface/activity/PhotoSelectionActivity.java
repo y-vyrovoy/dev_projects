@@ -39,8 +39,9 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
     private int mAlpha0;
     private int mAlpha1;
 
+    private boolean mIsFirstShow;
+
     private FullScreenAd mFullScreenAd;
-    private boolean mShowAnimation;
     private boolean mShowProgressBar;
 
     @Override
@@ -60,7 +61,7 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
         mFullScreenAd = SoulFaceApp.getInstance().getPreloadedAd();
 
-        mShowAnimation = true;
+        mIsFirstShow = true;
         mShowProgressBar = false;
     }
 
@@ -69,9 +70,11 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
         DebugLogger.d(null);
         super.onStart();
 
-        if (mShowAnimation == true) {
+        if (mIsFirstShow == true) {
             mAlpha0 = 0xFF;
             mAlpha1 = 0x00;
+
+            setProgressBarState(false);
 
             mImageAnimation.setImageResource(R.drawable.face_anim_0);
             mImageAnimation.setImageAlpha(mAlpha0);
@@ -80,11 +83,12 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
 
             RedrawThread th = new RedrawThread();
             th.start();
-
-            mShowAnimation = false;
+        } else {
+            mImageAnimation.setVisibility(View.INVISIBLE);
+            mImageMain.setImageResource(R.drawable.face_anim_1);
         }
 
-        mProgressBar.setVisibility(mShowProgressBar ? View.VISIBLE : View.INVISIBLE);
+        mIsFirstShow = false;
     }
 
     public void onBtlLoadPhoto(View v) {
@@ -113,8 +117,10 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         DebugLogger.d(null);
-
         super.onActivityResult(requestCode, resultCode, data);
+
+        Bitmap bmp = null;
+
         if (resultCode == RESULT_OK) {
 
             if(requestCode == RESULT_LOAD_IMAGE) {
@@ -124,19 +130,15 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
                     return;
                 }
 
-                Bitmap bmp = null;
                 try {
                     bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                } catch (IOException ex) {ex.printStackTrace();}
 
                 if(bmp != null) {
                     SoulFaceApp.setBitmapToEdit(bmp);
                     setBitmapAndWait(bmp);
                 }
             } else if(requestCode == RESULT_CAMERA_IMAGE) {
-                Bitmap bmp = null;
                 try {
                     bmp = MediaStore.Images.Media.getBitmap(
                                                     getContentResolver(), _imageUri);
@@ -147,21 +149,35 @@ public class PhotoSelectionActivity extends BasicBanneredActivity {
                 SoulFaceApp.setBitmapToEdit(bmp);
             }
 
-            Runnable task = () ->
-                        mFullScreenAd.showAd(() ->
-                                runOnUiThread(() -> startActivity(new Intent(this, EditImageActivity.class))));
+            if (bmp != null) {
+                Runnable task = () ->
+                        runOnUiThread(() ->
+                                mFullScreenAd.showAd(() -> {
+                                    setProgressBarState(false);
+                                    runOnUiThread(() -> startActivity(new Intent(this, EditImageActivity.class)));
+                                }));
 
-            Thread thread = new Thread(task);
-            thread.start();
+                Thread thread = new Thread(task);
+                thread.start();
+            } else {
+                mImageMain.setImageResource(R.drawable.image_load_error);
+                setProgressBarState(false);
+            }
         }
     }
 
     private void setBitmapAndWait(Bitmap bmp) {
         mImageMain.setImageBitmap(bmp);
-        mShowProgressBar = true;
+        setProgressBarState(true);
+    }
 
-        mButtonLoad.setVisibility(View.INVISIBLE);
-        mButtonShoot.setVisibility(View.INVISIBLE);
+    private void setProgressBarState(boolean showProgressBar) {
+        mShowProgressBar = showProgressBar;
+
+        mProgressBar.setVisibility(mShowProgressBar ? View.VISIBLE : View.INVISIBLE);
+
+        mButtonLoad.setVisibility(mShowProgressBar ? View.INVISIBLE : View.VISIBLE);
+        mButtonShoot.setVisibility(mShowProgressBar ? View.INVISIBLE : View.VISIBLE);
     }
 
     public void onBackPressed() {

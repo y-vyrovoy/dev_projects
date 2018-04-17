@@ -11,18 +11,28 @@
         android:id="@+id/imageSelection"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
         custom:src="@drawable/nobody" />
 
     <ImageView
+        android:id="@+id/image_hand_0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@id/imageSelection"
         android:layout_alignTop="@id/imageSelection"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
-        android:src="@drawable/ic_transform" />
+        android:src="@drawable/ic_hand_0" />
+
+    <ImageView
+        android:id="@+id/image_hand_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/imageSelection"
+        android:layout_alignTop="@id/imageSelection"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/ic_hand_0" />
 
     <LinearLayout
         android:layout_width="match_parent"
