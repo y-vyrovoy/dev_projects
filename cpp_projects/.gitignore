@@ -1,3 +1,8 @@
-Debug\
-Release\
-
+Debug/
+Release/
+.cproject/
+.settings/
+.project/
+.cproject
+.settings
+.project
