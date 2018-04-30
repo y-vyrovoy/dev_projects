@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<business_circiut
+	name="effective_management"
+	header="Effective management"
+	subheader="">
+
+
+	<input_group>
+
+		<input
+			name="communication"
+			caption="Communication"/>
+
+		<input
+			name="unclear_goals"
+			caption="Unclear&#10;goals"/>
+
+		<input
+			name="team"
+			caption="Knowing&#10;your team"/>
+
+		<input
+			name="rules"
+			caption="Always sticking&#10;to the reles"/>
+
+		<input
+			name="motivation"
+			caption="Noble cause&#10;motivation"/>
+
+		<input
+			name="bonuses"
+			caption="Bonuses"/>
+
+	</input_group>
+
+
+
+	<operators_group>
+
+		<operator
+			name="and1"
+			type="and"
+			in_one="communication"
+			in_two="unclear_goals"/>
+
+		<operator
+			name="and2"
+			type="and"
+			in_one="team"
+			in_two="rules"/>
+
+		<operator
+			name="or1"
+			type="or"
+			in_one="motivation"
+			in_two="bonuses"/>
+
+		<operator
+			name="and3"
+			type="and"
+			in_one="and1"
+			in_two="and2"/>
+
+
+		<operator
+			name="and4"
+			type="and"
+			in_one="and3"
+			in_two="or1"/>
+
+
+	</operators_group>
+
+
+
+	<result_group>
+
+		<result
+			name="res1"
+			caption=""
+			in="and4"
+			text_success="Effective management"
+			text_fail=""/>
+
+	</result_group>
+
+
+</business_circiut>

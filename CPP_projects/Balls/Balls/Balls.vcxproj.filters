@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="cBallGame.cpp" />
+    <ClCompile Include="Balls.cpp" />
+    <ClCompile Include="cBallItem.cpp" />
+    <ClCompile Include="cPath.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Floyd.cpp" />
+    <ClCompile Include="Dijkstra.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Algorithms.h" />
+    <ClInclude Include="cBallGame.h" />
+    <ClInclude Include="cBallItem.h" />
+    <ClInclude Include="cPath.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>

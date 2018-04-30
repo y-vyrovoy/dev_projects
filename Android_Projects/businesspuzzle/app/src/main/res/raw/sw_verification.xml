@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<business_circiut
+	name="sw_verification"
+	header="Software Verification"
+	subheader="">
+
+
+	<input_group>
+
+		<input
+			name="auto_testing"
+			caption="Automatic&#10;testing"/>
+
+		<input
+			name="man_testing"
+			caption="Manual&#10;testing"/>
+
+		<input
+			name="identifying"
+			caption="Identifying&#10;problems"/>
+
+		<input
+			name="debugging"
+			caption="Debugging"/>
+
+		<input
+			name="fixing"
+			caption="Fixing"/>
+
+		<input
+			name="blaming_hw"
+			caption="Blaming&#10;a problem&#10;on hardware"/>
+
+	</input_group>
+
+
+
+	<operators_group>
+
+		<operator
+			name="or1"
+			type="or"
+			in_one="auto_testing"
+			in_two="man_testing"/>
+
+		<operator
+			name="or2"
+			type="or"
+			in_one="identifying"
+			in_two="debugging"/>
+
+		<operator
+			name="not1"
+			type="not"
+			in_one="blaming_hw"
+			in_two=""/>
+
+		<operator
+			name="and1"
+			type="and"
+			in_one="or1"
+			in_two="or2"/>
+
+		<operator
+			name="and2"
+			type="and"
+			in_one="fixing"
+			in_two="not1"/>
+
+		<operator
+			name="and3"
+			type="and"
+			in_one="and1"
+			in_two="and2"/>
+
+
+	</operators_group>
+
+
+
+	<result_group>
+
+		<result
+			name="res1"
+			caption=""
+			in="and3"
+			text_success="Software Verification"
+			text_fail=""/>
+
+	</result_group>
+
+
+</business_circiut>

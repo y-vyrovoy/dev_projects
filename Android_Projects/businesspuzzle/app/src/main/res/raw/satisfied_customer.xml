@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<business_circiut
+	name="satisfied_customer"
+	header="Satisfied Customer"
+	subheader="">
+
+
+	<input_group>
+
+		<input
+			name="project_manager"
+			caption="Reliable&#10;project&#10;manager"/>
+
+		<input
+			name="processes"
+			caption="Organized&#10;process"/>
+
+		<input
+			name="managers"
+			caption="Managers&#10;miluim"/>
+
+		<input
+			name="all_info"
+			caption="Keeping&#10;the project info&#10;all to self"/>
+
+		<input
+			name="mail"
+			caption="Checking mails&#10;every day"/>
+
+		<input
+			name="backup"
+			caption="Giving&#10;backup"/>
+
+		<input
+			name="outsourcing"
+			caption="Outsoursing&#10;the project"/>
+
+
+	</input_group>
+
+
+
+	<operators_group>
+
+		<operator
+			name="and1"
+			type="and"
+			in_one="project_manager"
+			in_two="processes"/>
+
+		<operator
+			name="not1"
+			type="not"
+			in_one="managers"
+			in_two=""/>
+
+		<operator
+			name="not2"
+			type="not"
+			in_one="all_info"
+			in_two=""/>
+
+		<operator
+			name="or1"
+			type="or"
+			in_one="mail"
+			in_two="backup"/>
+
+		<operator
+			name="and2"
+			type="and"
+			in_one="not1"
+			in_two="not2"/>
+
+		<operator
+			name="and3"
+			type="and"
+			in_one="and2"
+			in_two="or1"/>
+
+		<operator
+			name="and4"
+			type="and"
+			in_one="and1"
+			in_two="and3"/>
+
+		<operator
+			name="or2"
+			type="or"
+			in_one="and4"
+			in_two="outsourcing"/>
+
+	</operators_group>
+
+
+
+	<result_group>
+
+		<result
+			name="res1"
+			caption=""
+			in="or2"
+			text_success="Trouble free vacation"
+			text_fail=""/>
+
+	</result_group>
+
+
+</business_circiut>

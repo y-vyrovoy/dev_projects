@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TryLocation</string>
+    <string name="btnRequest">Request location</string>
+    <string name="btnStop">Cancel location request</string>
+</resources>
