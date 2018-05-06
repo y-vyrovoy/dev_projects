@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <functional>
+#include <memory>
 
 class cServer
 {
@@ -31,9 +32,12 @@ public:
 private:
     int m_socketListen;
     std::atomic<bool> m_bListen;
+    //std::string m_sAnswer;
 
-    void WaitAndHandleConnections(std::function<void(const char *, const int &)> requestHandler);
-    void HandleRequest(int sock, std::function<void(const char *, const int &)> requestHandler);
+    void WaitAndHandleConnections(std::function<void(const int, const char *, const int &)> requestHandler);
+    static void HandleRequest(int sock, std::function<void(const int, const char *, const int &)> requestHandler);
+
+    void InitResponce();
 };
 
 #endif	/* CSERVER_H */

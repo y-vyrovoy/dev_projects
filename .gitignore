@@ -17,3 +17,4 @@ nbproject/private/
 #ignoring all projects. Only mentioned here
 java_projects/
 **/Android_Projects
+/.metadata/

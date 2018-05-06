@@ -9,15 +9,20 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <future>
+#include <thread>
+#include <chrono>
+#include <fstream>
 
 #define DEFAULT_HTTP_PORT 5080
 #define BUF_SIZE 1024
 
+std::string m_sAnswer;
 
 cServer::cServer()
 {
 	m_socketListen = -1;
 	m_bListen.store(false);
+	InitResponce();
 }
 
 cServer::~cServer()
@@ -69,6 +74,26 @@ int cServer::Init()
     return 0;
 }
 
+void cServer::InitResponce()
+{
+	std::ifstream ifResponce;
+	std::string sLine;
+	try
+	{
+		ifResponce.open("responce.html");
+		while (ifResponce >> sLine)
+		{
+			m_sAnswer.append(sLine);
+		}
+
+	}
+	catch (const std::exception & ex)
+	{
+		std::cout << "Can't open responce.html" << std::endl;
+	}
+	ifResponce.close();
+}
+
 void cServer::CloseServer()
 {
 	close(m_socketListen);
@@ -78,15 +103,26 @@ void cServer::Listen(bool bNewThread)
 {
 	m_bListen = true;
 
-	auto lambda = [](const char * pBuffer, const int & nSize)
+	auto lambda = [](int sock, const char * pBuffer, const int & nSize)
 					{
-						std::cout << "we have request" << std::endl;
+						std::cout << "Request:" << std::endl;
+						if (m_sAnswer.size() > 0)
+						{
+							send(sock, m_sAnswer.c_str(), m_sAnswer.size(), 0);
+						}
+
+						std::cout << pBuffer << std::endl;
+
+						std::ofstream ofs;
+						ofs.open("request.txt");
+						ofs << pBuffer;
+						ofs.close();
 					};
 
 	WaitAndHandleConnections(lambda);
 }
 
-void cServer::WaitAndHandleConnections(std::function<void(const char *, const int &)> requestHandler)
+void cServer::WaitAndHandleConnections(std::function<void(const int, const char *, const int &)> requestHandler)
 {
 	struct sockaddr_in addrClient;
 	while (m_bListen.load())
@@ -109,7 +145,7 @@ void cServer::WaitAndHandleConnections(std::function<void(const char *, const in
 		struct timeval timeout;
 
 		/* Initialize the timeout data structure. */
-		timeout.tv_sec = 5;
+		timeout.tv_sec = 20;
 		timeout.tv_usec = 0;
 
 		fd_set set;
@@ -169,38 +205,110 @@ void cServer::WaitAndHandleConnections(std::function<void(const char *, const in
 			}
 
 			std::cout << "accept() ok. socket: " << clientSocket << std::endl;
-			HandleRequest(clientSocket, requestHandler);
+
+			auto fut = std::async(std::launch::async, HandleRequest, clientSocket, requestHandler);
 		}
 	}
 }
 
-void cServer::HandleRequest(int sock, std::function<void(const char *, const int &)> requestHandler)
+void cServer::HandleRequest(int sock, std::function<void(const int, const char *, const int &)> requestHandler)
 {
-	std::cout << "requestHandler()" << std::endl;
+	std::cout << "HandleRequest()" << std::endl;
 
-	int NRead;
 	char buffer[BUF_SIZE];
 	bzero(&buffer, BUF_SIZE);
 
+	int nMessageBufferSize = BUF_SIZE;
+	char * pchMessageBuffer = new char[nMessageBufferSize];
+
+	int nMessageSize = 0;
+
+	bool bProcessRequest = true;
+
 	try
 	{
-		NRead = read(sock, &buffer, BUF_SIZE);
+		int NRead;
+		bool bKeepReading = true;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+		while (bKeepReading)
+		{
+			NRead = recv(sock, &buffer, BUF_SIZE, MSG_DONTWAIT);
+
+			if (NRead > 0)
+			{
+				std::cout << "NRead = " << NRead << std::endl;
+			}
+			else if (NRead == 0)
+			{
+				std::cout << "HandleRequest(). NRead == 0" << std::endl;
+				bKeepReading = false;
+				continue;
+			}
+			else if (NRead == -1)
+			{
+				if (errno == EAGAIN || errno == EWOULDBLOCK)
+				{
+					std::cout << "HandleRequest(). NRead == -1 errno == EAGAIN" << std::endl;
+					bKeepReading = false;
+					continue;
+				}
+				else
+				{
+					std::cout << "HandleRequest(). recv() error. errno: " << errno << std::endl;
+					bProcessRequest = false;
+					bKeepReading = false;
+					continue;
+				}
+			}
+
+			if (nMessageSize + NRead > nMessageBufferSize)
+			{
+				char * pchTmp = new char[nMessageBufferSize + BUF_SIZE];
+				memcpy(pchTmp, pchMessageBuffer, nMessageSize);
+				nMessageBufferSize += BUF_SIZE;
+
+				std::swap(pchTmp, pchMessageBuffer);
+				delete [] pchTmp;
+			}
+
+			memcpy(pchMessageBuffer + nMessageSize, buffer, NRead );
+			nMessageSize += NRead;
+		}
+
 	}
-	catch (std::exception ex)
+	catch (const std::exception & ex)
 	{
-		std::cout << "read() raised exception. what(): " << ex.what() << std::endl;
+		std::cout << "HandleRequest(). recv() raised exception. what(): " << ex.what() << std::endl;
+		delete [] pchMessageBuffer;
+		close (sock);
 		return;
 	}
 
-	if (NRead == -1)
+	if (!bProcessRequest)
 	{
-		std::cout << "read() failed. errno: " << errno << std::endl;
+		std::cout << "HandleRequest(). recv() failed" << std::endl;
+		delete [] pchMessageBuffer;
+		close (sock);
 		return;
 	}
 
-	std::cout << "read() ok. NRead: " << NRead << std::endl;
+	if (nMessageSize <= 0)
+	{
+		std::cout << "HandleRequest(). The message is empty" << std::endl;
+		delete [] pchMessageBuffer;
+		close (sock);
+		return;
+	}
 
-	requestHandler(buffer, NRead);
-	//auto f = std::async(std::launch::async, requestHandler, buffer, NRead);
+	std::cout << "HandleRequest(). recv() ok. NRead: " << nMessageSize << std::endl;
+
+	pchMessageBuffer[nMessageSize] = 0;
+
+	requestHandler(sock, pchMessageBuffer, nMessageSize);
 	std::cout << "requestHandler() returned" << std::endl;
+
+	close (sock);
+	delete [] pchMessageBuffer;
 }
