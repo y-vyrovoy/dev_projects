@@ -20,21 +20,24 @@ void timespec_diff(const struct timespec *start,
     return;
 }
 
-int main(int argc, char** argv) {
 
-    std::cout << "Urururuuuu!" << std::endl;
+void testServer()
+{
+	std::cout << "testServer()" << std::endl;
 
-/*
     cServer serv;
     if (serv.Init() < 0)
     {
     	std::cout << "Server could not initialize" << std::endl;
-    	return 0;
     }
-    serv.Listen(true);
-*/
+    serv.StartServer();
+}
 
-    const char * pchMessage[] = {
+void testParser()
+{
+	std::cout << "testParser()" << std::endl;
+
+	const char * pchMessage[] = {
 									"GET /params/params?200 HTTP/1.1",
 									"PUT /params/params?200 HTTP/1.1",
 									"HEAD /params/params?200 HTTP/1.1",
@@ -77,7 +80,11 @@ int main(int argc, char** argv) {
 	timespec_diff(&timeJobStart, &timeEnd, &timeDiff);
 	std::cout << "Time: " << timeDiff.tv_sec << " s " << timeDiff.tv_nsec << " ns. " << j << " cycles" << std::endl;
 	std::cout << "Average cycle body duration: " << (timeDiff.tv_sec * 1000000000 + timeDiff.tv_nsec)/j << "ns" << std::endl;
-
-    return 0;
 }
 
+
+int main(int argc, char** argv)
+{
+	testServer();
+	return 0;
+}
