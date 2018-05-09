@@ -1,9 +1,13 @@
 #include "cServer.h"
 #include <iostream>
 
+#include <fstream>
+#include <memory>
+
 
 cServer::cServer()
 {
+	m_pListener = std::make_unique<cSocketListener>();
 }
 
 cServer::~cServer()
@@ -13,7 +17,7 @@ cServer::~cServer()
 
 int cServer::Init()
 {
-	SL_INIT_RESPONCE nRetVal = m_Listener.Init();
+	SL_INIT_RESPONCE nRetVal = m_pListener->Init();
 
 	if (nRetVal == SL_INIT_RESPONCE::INIT_OK)
 	{
@@ -29,11 +33,27 @@ int cServer::Init()
 
 void cServer::StartServer()
 {
-	m_Listener.StartListener(true);
+
+	auto lambda = [this](const char * pBuffer, const int & nSize)
+					{
+						std::cout << "Request:" << std::endl
+									<< pBuffer << std::endl;
+
+						std::ofstream ofs;
+						ofs.open("request.txt");
+						ofs << pBuffer;
+						ofs.close();
+
+						REQUEST_DATA reqData;
+						m_requestProcessor.ProcessRequest(pBuffer, nSize, reqData);
+					};
+
+
+	m_pListener->StartListener(lambda);
 }
 
 void cServer::CloseServer()
 {
-	m_Listener.StopListener();
+	m_pListener->StopListener();
 }
 

@@ -15,15 +15,16 @@ public:
 
 	SL_INIT_RESPONCE Init();
     void StopListener();
-    void StartListener(bool bNewThread);
+    void StartListener(std::function<void(const char *, const int &)> requestHandler);
 
 
 private:
     int m_socketListen;
     std::atomic<bool> m_bListen;
 
-    void WaitAndHandleConnections(std::function<void(const int, const char *, const int &)> requestHandler);
-    static void HandleRequest(int sock, std::function<void(const int, const char *, const int &)> requestHandler);
+    void WaitAndHandleConnections(std::function<void(const char *, const int &)> requestHandler);
+    static void HandleRequest(int sock, std::function<void(const char *, const int &)> requestHandler);
+    static int SendResponce(int sock, const char * pchMessageBuffer, const int & nMessageSize, std::function<void(const char *, const int &)> requestHandler);
 
     void LoadDefaultResponce();
 };

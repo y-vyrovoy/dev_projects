@@ -1,8 +1,11 @@
-#include <iostream>
 #include "cServer.h"
-#include "cRequestProcessor.h"
 
+#include <iostream>
 #include <string.h>
+#include <fstream>
+#include <memory>
+
+#include "cRequestProcessor.h"
 
 
 void timespec_diff(const struct timespec *start,
@@ -37,6 +40,32 @@ void testParser()
 {
 	std::cout << "testParser()" << std::endl;
 
+	std::ifstream ifs;
+	ifs.open("request.txt", std::ios::in | std::ios::ate | std::ios::binary);
+	int nFileSize = ifs.tellg();
+
+
+	char * pB = new char[nFileSize];
+	auto del = [](char * p){delete [] p;};
+	std::unique_ptr<char[], decltype(del)> pBuffer = std::unique_ptr<char[], decltype(del)>(pB, del);
+
+	ifs.seekg (0, std::ios::beg);
+	ifs.read (pB, nFileSize);
+	ifs.close();
+
+	std::cout << " -------- FILE -------- " << std::endl;
+	std::cout << pB << std::endl;
+	std::cout << " -------- FILE -------- " << std::endl;
+	std::cout << std::endl;
+
+	cRequestProcessor pr;
+	REQUEST_DATA reqData;
+	pr.ProcessRequest(pB, nFileSize, reqData);
+
+
+
+
+/*
 	const char * pchMessage[] = {
 									"GET /params/params?200 HTTP/1.1",
 									"PUT /params/params?200 HTTP/1.1",
@@ -48,6 +77,7 @@ void testParser()
 									"OPTIONS / HTTP/1.1",
 									"asd"
 								};
+
     int NMethods = sizeof(pchMessage) / sizeof(pchMessage[0]);
 
     std::cout << "sizeof(pchMessage) = " << NMethods << std::endl;
@@ -59,8 +89,9 @@ void testParser()
 		cRequestProcessor pr;
 		pr.ProcessRequest(static_cast<const char *>(pchMessage[i]), strlen(pchMessage[i]), requestData);
 	}
+*/
 
-
+/*
     cRequestProcessor pr;
 
     struct timespec timeJobStart;
@@ -80,11 +111,12 @@ void testParser()
 	timespec_diff(&timeJobStart, &timeEnd, &timeDiff);
 	std::cout << "Time: " << timeDiff.tv_sec << " s " << timeDiff.tv_nsec << " ns. " << j << " cycles" << std::endl;
 	std::cout << "Average cycle body duration: " << (timeDiff.tv_sec * 1000000000 + timeDiff.tv_nsec)/j << "ns" << std::endl;
+*/
 }
 
 
 int main(int argc, char** argv)
 {
-	testServer();
+	testParser();
 	return 0;
 }

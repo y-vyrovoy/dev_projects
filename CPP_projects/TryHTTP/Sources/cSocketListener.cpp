@@ -12,7 +12,6 @@
 #include <future>
 #include <thread>
 #include <chrono>
-#include <fstream>
 
 #define DEFAULT_HTTP_PORT 5080
 #define BUF_SIZE 1024
@@ -80,6 +79,7 @@ SL_INIT_RESPONCE cSocketListener::Init()
 
 void cSocketListener::LoadDefaultResponce()
 {
+/*
 	std::ifstream ifResponce;
 	std::string sLine;
 	try
@@ -96,6 +96,7 @@ void cSocketListener::LoadDefaultResponce()
 		std::cout << "Can't open responce.html" << std::endl;
 	}
 	ifResponce.close();
+*/
 }
 
 void cSocketListener::StopListener()
@@ -104,30 +105,14 @@ void cSocketListener::StopListener()
 	cSocketListener(m_socketListen);
 }
 
-void cSocketListener::StartListener(bool bNewThread)
+void cSocketListener::StartListener(std::function<void(const char *, const int &)> requestHandler)
 {
 	m_bListen = true;
 
-	auto lambda = [](int sock, const char * pBuffer, const int & nSize)
-					{
-						std::cout << "Request:" << std::endl;
-						if (m_sAnswer.size() > 0)
-						{
-							send(sock, m_sAnswer.c_str(), m_sAnswer.size(), 0);
-						}
-
-						std::cout << pBuffer << std::endl;
-
-						std::ofstream ofs;
-						ofs.open("request.txt");
-						ofs << pBuffer;
-						ofs.close();
-					};
-
-	WaitAndHandleConnections(lambda);
+	WaitAndHandleConnections(requestHandler);
 }
 
-void cSocketListener::WaitAndHandleConnections(std::function<void(const int, const char *, const int &)> requestHandler)
+void cSocketListener::WaitAndHandleConnections(std::function<void(const char *, const int &)> requestHandler)
 {
 	struct sockaddr_in addrClient;
 	while (m_bListen.load())
@@ -215,7 +200,7 @@ void cSocketListener::WaitAndHandleConnections(std::function<void(const int, con
 	}
 }
 
-void cSocketListener::HandleRequest(int sock, std::function<void(const int, const char *, const int &)> requestHandler)
+void cSocketListener::HandleRequest(int sock, std::function<void(const char *, const int &)> requestHandler)
 {
 	std::cout << "HandleRequest()" << std::endl;
 
@@ -225,14 +210,13 @@ void cSocketListener::HandleRequest(int sock, std::function<void(const int, cons
 	int nMessageBufferSize = BUF_SIZE;
 	char * pchMessageBuffer = new char[nMessageBufferSize];
 
-	int nMessageSize = 0;
-
-	bool bProcessRequest = true;
-
 	try
 	{
-		int NRead;
+		int nMessageSize = 0;
+		bool bProcessRequest = true;
 		bool bKeepReading = true;
+
+		int NRead;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
@@ -281,38 +265,44 @@ void cSocketListener::HandleRequest(int sock, std::function<void(const int, cons
 			nMessageSize += NRead;
 		}
 
+		if (!bProcessRequest)
+		{
+			std::cout << "HandleRequest(). recv() failed" << std::endl;
+			delete [] pchMessageBuffer;
+			close (sock);
+			return;
+		}
+
+		if (nMessageSize <= 0)
+		{
+			std::cout << "HandleRequest(). The message is empty" << std::endl;
+			delete [] pchMessageBuffer;
+			close (sock);
+			return;
+		}
+
+		std::cout << "HandleRequest(). recv() ok. NRead: " << nMessageSize << std::endl;
+
+		pchMessageBuffer[nMessageSize] = 0;
+
+		SendResponce(sock, pchMessageBuffer, nMessageSize, requestHandler);
+		std::cout << "requestHandler() returned" << std::endl;
+
+		close (sock);
+		delete [] pchMessageBuffer;
 	}
 	catch (const std::exception & ex)
 	{
-		std::cout << "HandleRequest(). recv() raised exception. what(): " << ex.what() << std::endl;
+		std::cout << "HandleRequest() raised exception. what(): " << ex.what() << std::endl;
 		delete [] pchMessageBuffer;
 		close (sock);
 		return;
 	}
 
-	if (!bProcessRequest)
-	{
-		std::cout << "HandleRequest(). recv() failed" << std::endl;
-		delete [] pchMessageBuffer;
-		close (sock);
-		return;
-	}
+}
 
-	if (nMessageSize <= 0)
-	{
-		std::cout << "HandleRequest(). The message is empty" << std::endl;
-		delete [] pchMessageBuffer;
-		close (sock);
-		return;
-	}
-
-	std::cout << "HandleRequest(). recv() ok. NRead: " << nMessageSize << std::endl;
-
-	pchMessageBuffer[nMessageSize] = 0;
-
-	requestHandler(sock, pchMessageBuffer, nMessageSize);
-	std::cout << "requestHandler() returned" << std::endl;
-
-	close (sock);
-	delete [] pchMessageBuffer;
+int cSocketListener::SendResponce(int sock, const char * pchMessageBuffer, const int & nMessageSize, std::function<void(const char *, const int &)> requestHandler)
+{
+	requestHandler(pchMessageBuffer, nMessageSize);
+	return 0;
 }

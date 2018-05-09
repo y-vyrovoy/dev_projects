@@ -1,14 +1,8 @@
-/*
- * cRequestProcessor.h
- *
- *  Created on: May 3, 2018
- *      Author: yura
- */
-
 #ifndef SOURCES_CREQUESTPROCESSOR_H_
 #define SOURCES_CREQUESTPROCESSOR_H_
 
 #include <string>
+#include <map>
 
 enum class HTTP_METHOD{ERR_METHOD, GET, PUT, HEAD, POST, TRACE, DELETE, CONNECT, OPTIONS};
 
@@ -18,6 +12,7 @@ struct REQUEST_DATA
 	std::string sParameters;
 	int nVersionMajor;
 	int nVersionMinor;
+	std::map<std::string, std::string> params;
 };
 
 class cRequestProcessor {
@@ -26,6 +21,8 @@ public:
 	virtual ~cRequestProcessor();
 
 	void ProcessRequest(const char * pchMessageBuffer, const int & NSize, REQUEST_DATA & requestData) const;
+	int ParseFirstLine(const char * pchMessageBuffer, const int & NSize, REQUEST_DATA & requestData) const;
+	int ParseParams(const char * pchMessageBuffer, const int & NSize, REQUEST_DATA & requestData) const;
 
 private:
 	void PrintRequest(const REQUEST_DATA & requestData) const;

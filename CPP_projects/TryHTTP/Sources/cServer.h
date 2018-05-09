@@ -1,20 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   cServer.h
- * Author: yura
- *
- * Created on April 24, 2018, 12:00 PM
- */
-
 #ifndef CSERVER_H
 #define	CSERVER_H
 
 #include "cSocketListener.h"
+#include "cRequestProcessor.h"
 
 class cServer
 {
@@ -29,8 +17,8 @@ public:
 
 private:
 
-    cSocketListener m_Listener;
-
+    std::unique_ptr<cSocketListener> m_pListener;
+    cRequestProcessor m_requestProcessor;
 };
 
 #endif	/* CSERVER_H */
