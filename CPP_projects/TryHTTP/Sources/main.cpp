@@ -4,6 +4,8 @@
 #include <string.h>
 #include <fstream>
 #include <memory>
+#include <vector>
+
 
 #include "cRequestProcessor.h"
 
@@ -26,7 +28,7 @@ void timespec_diff(const struct timespec *start,
 
 void testServer()
 {
-	std::cout << "testServer()" << std::endl;
+    std::cout << "testServer()" << std::endl;
 
     cServer serv;
     if (serv.Init() < 0)
@@ -40,29 +42,49 @@ void testParser()
 {
 	std::cout << "testParser()" << std::endl;
 
-	std::ifstream ifs;
-	ifs.open("request.txt", std::ios::in | std::ios::ate | std::ios::binary);
-	int nFileSize = ifs.tellg();
+        try
+        {
+            std::ifstream ifs;
+            ifs.open("request.txt", std::ios::in | std::ios::ate | std::ios::binary);
+            int nFileSize = ifs.tellg();
+            ifs.seekg(0, ifs.beg);
 
+            if (nFileSize <= 0)
+            {
+                std::cout << "File length is " << nFileSize << std::endl;
+                //return;
+            }
 
-	char * pB = new char[nFileSize];
-	auto del = [](char * p){delete [] p;};
-	std::unique_ptr<char[], decltype(del)> pBuffer = std::unique_ptr<char[], decltype(del)>(pB, del);
+            
+            std::vector<char> vecBuffer(nFileSize);
 
-	ifs.seekg (0, std::ios::beg);
-	ifs.read (pB, nFileSize);
-	ifs.close();
+/*            
+            char * pB = new char[nFileSize];
+            auto del = [](char * p){delete [] p;};
+            std::unique_ptr<char[], decltype(del)> pBuffer = std::unique_ptr<char[], decltype(del)>(pB, del);
+*/
+            
+            ifs.seekg (0, std::ios::beg);
+            ifs.read (vecBuffer.data(), nFileSize);
+            ifs.close();
 
-	std::cout << " -------- FILE -------- " << std::endl;
-	std::cout << pB << std::endl;
-	std::cout << " -------- FILE -------- " << std::endl;
-	std::cout << std::endl;
+            
+            
+            std::cout << " -------- FILE -------- " << std::endl;
+            std::cout << vecBuffer.data() << std::endl;
+            std::cout << " -------- FILE -------- " << std::endl;
+            std::cout << std::endl;
 
-	cRequestProcessor pr;
-	REQUEST_DATA reqData;
-	pr.ProcessRequest(pB, nFileSize, reqData);
+            cRequestProcessor pr;
+            REQUEST_DATA reqData;
+            pr.ProcessRequest(vecBuffer, reqData);
 
-
+        }
+        catch (std::exception ex)
+        {
+            std::cout << ex.what() << std::endl;
+        }
+        
 
 
 /*
@@ -117,6 +139,8 @@ void testParser()
 
 int main(int argc, char** argv)
 {
-	testParser();
-	return 0;
+    //testParser();
+    testServer();
+    
+    return 0;
 }
