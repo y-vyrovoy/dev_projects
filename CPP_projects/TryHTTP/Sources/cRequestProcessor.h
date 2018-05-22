@@ -21,7 +21,7 @@ public:
     cRequestProcessor();
     virtual ~cRequestProcessor();
 
-    void ProcessRequest(std::vector<char> vecMessageBuffer, /*const char * pchMessageBuffer, const int & NSize, */ REQUEST_DATA & requestData) const;
+    void ProcessRequest(std::vector<char> vecMessageBuffer, REQUEST_DATA & requestData) const;
     int ParseFirstLine(const char * pchMessageBuffer, const int & NSize, REQUEST_DATA & requestData) const;
     int ParseParams(const char * pchMessageBuffer, const int & NSize, REQUEST_DATA & requestData) const;
 

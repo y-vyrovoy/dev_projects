@@ -23,8 +23,6 @@ private:
     cRequestProcessor m_requestProcessor;
 
     void InitFakeResponse();
-    //std::unique_ptr<char[], void(char*)> m_pResponseBuffer;
-    //char * m_pResponseBuffer;
     std::vector<char> m_vecResponceBuffer;
 };
 

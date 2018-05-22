@@ -33,24 +33,21 @@
 
 cRequestProcessor::cRequestProcessor()
 {
-	// TODO Auto-generated constructor stub
-
+    // TODO Auto-generated constructor stub
 }
 
 cRequestProcessor::~cRequestProcessor()
 {
-	// TODO Auto-generated destructor stub
+    // TODO Auto-generated destructor stub
 }
 
 void cRequestProcessor::ProcessRequest(std::vector<char> vecMessageBuffer,
-                                        //const char * pchMessageBuffer, 
-                                        //const int & NSize, 
                                         REQUEST_DATA & requestData) const
 {
 	int nParamsStart = ParseFirstLine(&vecMessageBuffer[0], vecMessageBuffer.size(), requestData);
 	if ( nParamsStart <= 0)
 	{
-		return;
+            return;
 	}
 
 	int nRetVal = ParseParams(static_cast<const char *>(&vecMessageBuffer[nParamsStart]),
@@ -336,7 +333,6 @@ void cRequestProcessor::PrintRequest(const REQUEST_DATA & requestData) const
 
     std::cout << std::endl;
 }
-
 
 inline char cRequestProcessor::GetDigit(char chSymbol) const
 {

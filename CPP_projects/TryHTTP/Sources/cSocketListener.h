@@ -15,17 +15,17 @@ public:
 
     SL_INIT_RESPONSE Init();
     void StopListener();
-    void StartListener(std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)> requestHandler);
+    void StartListener(std::function<std::vector<char>(const std::vector<char>&)> requestHandler);
 
 
 private:
     int m_socketListen;
     std::atomic<bool> m_bListen;
 
-    void WaitAndHandleConnections(std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)> requestHandler);
+    void WaitAndHandleConnections(std::function<std::vector<char>(const std::vector<char>&)> requestHandler);
     
-    static void HandleRequest(int sock, std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)> requestHandler);    
-    static int SendResponse(const int, std::vector<char>, /*const char *, const int &,*/ std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)>);
+    static void HandleRequest(int sock, std::function<std::vector<char>(const std::vector<char>&)> requestHandler);    
+    static int SendResponse(const int, std::vector<char>, std::function<std::vector<char>(const std::vector<char>&)>);
 };
 
 

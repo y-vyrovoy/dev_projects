@@ -1,6 +1,5 @@
 #include "cServer.h"
 #include <iostream>
-
 #include <fstream>
 #include <memory>
 #include <cstring>
@@ -37,9 +36,7 @@ void cServer::StartServer()
 {
     InitFakeResponse();
     
-    auto lambda = [this](const std::vector<char> & vecMessageBuffer,
-                            //const char * pBuffer, const int & nSize, 
-                            char * pchResponseBuffer, int & nResponseSize)
+    auto lambda = [this](const std::vector<char> & vecMessageBuffer)
                         {
                             std::cout << "Request:" << std::endl
                                         << vecMessageBuffer.data() << std::endl;
@@ -54,10 +51,7 @@ void cServer::StartServer()
                             // !!!! ProcessRequest() should create response
                             m_requestProcessor.ProcessRequest(vecMessageBuffer, reqData);
                             
-                            int nSend = std::min(nResponseSize, static_cast<int>( m_vecResponceBuffer.size()));
-                            memcpy(pchResponseBuffer, m_vecResponceBuffer.data(), nSend);
-                            nResponseSize = nSend;
-                            
+                            return m_vecResponceBuffer;                            
     };
 
     m_pListener->StartListener(lambda);
@@ -66,11 +60,6 @@ void cServer::StartServer()
 void cServer::CloseServer()
 {
     m_pListener->StopListener();
-}
-
-void delDel(char * p)
-{
-    delete [] p;
 }
 
 void cServer::InitFakeResponse()

@@ -29,7 +29,6 @@ cSocketListener::~cSocketListener()
     StopListener();
 }
 
-
 SL_INIT_RESPONSE cSocketListener::Init()
 {
     int nRetVal = 0;
@@ -59,8 +58,6 @@ SL_INIT_RESPONSE cSocketListener::Init()
     addrServer.sin_port = htons(DEFAULT_HTTP_PORT);
     addrServer.sin_addr.s_addr = INADDR_ANY;
 
-
-
     nRetVal = bind(m_socketListen, (const struct sockaddr* )&addrServer, sizeof(addrServer));
     if (nRetVal < 0)
     {
@@ -80,14 +77,14 @@ void cSocketListener::StopListener()
     cSocketListener(m_socketListen);
 }
 
-void cSocketListener::StartListener(std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)> requestHandler)
+void cSocketListener::StartListener(std::function<std::vector<char>(const std::vector<char> &)> requestHandler)
 {
     m_bListen.store(true);
 
     WaitAndHandleConnections(requestHandler);
 }
 
-void cSocketListener::WaitAndHandleConnections(std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)> requestHandler)
+void cSocketListener::WaitAndHandleConnections(std::function<std::vector<char>(const std::vector<char> &)> requestHandler)
 {
     struct sockaddr_in addrClient;
     while (m_bListen.load())
@@ -177,7 +174,7 @@ void cSocketListener::WaitAndHandleConnections(std::function<void(std::vector<ch
 }
 
 void cSocketListener::HandleRequest(int sock, 
-                                    std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)> requestHandler)
+                                    std::function<std::vector<char>(const std::vector<char>&)> requestHandler)
 {
     std::cout << "HandleRequest()" << std::endl;
 
@@ -202,7 +199,6 @@ void cSocketListener::HandleRequest(int sock,
 
         while (bKeepReading)
         {
-            //NRead = recv(sock, &buffer, BUF_SIZE, MSG_DONTWAIT);
             NRead = recv(sock, &vecBuffer[nCurrentPosition], vecBuffer.size() - nCurrentPosition, MSG_DONTWAIT);
 
             if (NRead > 0)
@@ -236,17 +232,8 @@ void cSocketListener::HandleRequest(int sock,
             {
                 vecBuffer.resize(vecBuffer.size() + BUF_SIZE);
                 std::cout << "buffer resize -> " << vecBuffer.size() << std::endl;
-/*                
-               char * pchTmp = new char[nMessageBufferSize + BUF_SIZE];
-                memcpy(pchTmp, pchMessageBuffer, nMessageSize);
-                nMessageBufferSize += BUF_SIZE;
-
-                std::swap(pchTmp, pchMessageBuffer);
-                delete [] pchTmp;
- */
             }
 
-            //memcpy(pchMessageBuffer + nMessageSize, buffer, NRead );
             nCurrentPosition += NRead;
             nMessageSize += NRead;
         }
@@ -269,8 +256,6 @@ void cSocketListener::HandleRequest(int sock,
 
         std::cout << "HandleRequest(). recv() ok. NRead: " << nMessageSize << std::endl;
 
-        //pchMessageBuffer[nMessageSize] = 0;
-
         SendResponse(sock, vecBuffer, requestHandler);
         std::cout << "requestHandler() returned" << std::endl;
 
@@ -288,23 +273,17 @@ void cSocketListener::HandleRequest(int sock,
 
 int cSocketListener::SendResponse(const int sock, 
                                     std::vector<char> vecMessageBuffer,
-                                    //const char * pchMessageBuffer, 
-                                    //const int & nMessageSize, 
-                                    std::function<void(std::vector<char>, /*const char *, const int &,*/ char*, int&)> requestHandler)
+                                    std::function<std::vector<char>(const std::vector<char>&)> requestHandler)
 {
-    int nResponseSize = 1024;
-    char * pchBufferResponse = new char[nResponseSize];
-
     try
     {
-        requestHandler(vecMessageBuffer, /*pchMessageBuffer, nMessageSize, */pchBufferResponse, nResponseSize);
-        send(sock, pchBufferResponse, nResponseSize, MSG_CONFIRM);
+        std::vector<char> verResponce = requestHandler(vecMessageBuffer);
+        send(sock, verResponce.data(), verResponce.size(), MSG_CONFIRM);
     }
     catch(const std::exception & ex)
     {
        std::cout << "SendResponse() error: " << ex.what() << std::endl;
     }
     
-    delete [] pchBufferResponse;
     return 0;
 }
