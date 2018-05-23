@@ -14,6 +14,8 @@
 #include <chrono>
 #include <vector>
 
+#include "LogMacro.h"
+
 #define DEFAULT_HTTP_PORT 5080
 #define BUF_SIZE 1024
 
@@ -31,12 +33,14 @@ cSocketListener::~cSocketListener()
 
 SL_INIT_RESPONSE cSocketListener::Init()
 {
+    COUT_LOG << std::endl;
+    
     int nRetVal = 0;
 
     m_socketListen = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socketListen < 0)
     {
-        std::cout << "Error: socket() failed. errno = " << errno << std::endl;
+        COUT_LOG << "Error: socket() failed. errno = " << errno << std::endl;
     	return SL_INIT_RESPONSE::INIT_ERR_SOCKET;
     }
 
@@ -44,7 +48,7 @@ SL_INIT_RESPONSE cSocketListener::Init()
     nRetVal = setsockopt(m_socketListen, SOL_SOCKET, SO_REUSEADDR, &trueFlag, sizeof(int));
     if (nRetVal < 0)
     {
-    	std::cout << "setsockopt() failed. errno: " << errno << std::endl;
+    	COUT_LOG << "setsockopt() failed. errno: " << errno << std::endl;
     	close(m_socketListen);
     	return SL_INIT_RESPONSE::INIT_ERR_SOCKOPT;
     }
@@ -61,31 +65,36 @@ SL_INIT_RESPONSE cSocketListener::Init()
     nRetVal = bind(m_socketListen, (const struct sockaddr* )&addrServer, sizeof(addrServer));
     if (nRetVal < 0)
     {
-    	std::cout << "bind() failed. errno: " << errno << std::endl;
+    	COUT_LOG << "bind() failed. errno: " << errno << std::endl;
     	close(m_socketListen);
     	return SL_INIT_RESPONSE::INIT_ERR_BIND;
     }
 
-    std::cout << "bind() ok" << std::endl;
+    COUT_LOG << "bind() ok" << std::endl;
 
     return SL_INIT_RESPONSE::INIT_OK;
 }
 
 void cSocketListener::StopListener()
 {
+    COUT_LOG << std::endl;
+    
     m_bListen.store(false);
     cSocketListener(m_socketListen);
 }
 
-void cSocketListener::StartListener(std::function<std::vector<char>(const std::vector<char> &)> requestHandler)
+void cSocketListener::StartListener(SockListenerCallback requestHandler)
 {
+    COUT_LOG << std::endl;
     m_bListen.store(true);
 
     WaitAndHandleConnections(requestHandler);
 }
 
-void cSocketListener::WaitAndHandleConnections(std::function<std::vector<char>(const std::vector<char> &)> requestHandler)
+void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandler)
 {
+    COUT_LOG << std::endl;
+    
     struct sockaddr_in addrClient;
     while (m_bListen.load())
     {
@@ -98,9 +107,9 @@ void cSocketListener::WaitAndHandleConnections(std::function<std::vector<char>(c
         nRetVal = listen(m_socketListen, SOMAXCONN);
         if (nRetVal == -1)
         {
-            std::cout << "listen() returned " << nRetVal << ", errno: " << errno << std::endl;
+            COUT_LOG << "listen() returned " << nRetVal << ", errno: " << errno << std::endl;
         }
-        std::cout << "listen() ok" << std::endl;
+        COUT_LOG << "listen() ok" << std::endl;
 
 
         struct timeval timeout;
@@ -120,30 +129,30 @@ void cSocketListener::WaitAndHandleConnections(std::function<std::vector<char>(c
 
         if (nRetVal == -1)
         {
-            std::cout << "select() failed. ";
+            COUT_LOG << "select() failed. ";
             switch(nRetVal)
             {
                 case EBADF:
-                    std::cout << "EBADF. One of the file descriptor sets specified an invalid file descriptor." << std::endl;
+                    COUT_LOG << "EBADF. One of the file descriptor sets specified an invalid file descriptor." << std::endl;
                     break;
 
                 case EINTR:
-                    std::cout << "EINTR. The operation was interrupted by a signal" << std::endl;
+                    COUT_LOG << "EINTR. The operation was interrupted by a signal" << std::endl;
                     break;
 
                 case EINVAL:
-                    std::cout << "EINVAL. The timeout argument is invalid; one of the components is negative or too large." << std::endl;
+                    COUT_LOG << "EINVAL. The timeout argument is invalid; one of the components is negative or too large." << std::endl;
                     break;
             }
             continue;
         }
         else if (nRetVal == 0)
         {
-            std::cout << "select() timeout" << std::endl;
+            COUT_LOG << "select() timeout" << std::endl;
             continue;
         }
 
-        std::cout << "select() got ready connection" << std::endl;
+        COUT_LOG << "select() got ready connection" << std::endl;
 
         if (FD_ISSET(m_socketListen, &set))
         {
@@ -156,27 +165,26 @@ void cSocketListener::WaitAndHandleConnections(std::function<std::vector<char>(c
                 switch (errno)
                 {
                     case EAGAIN:
-                        std::cout << "accept() returned -1. errno = EAGAIN" << std::endl;
+                        COUT_LOG << "accept() returned -1. errno = EAGAIN" << std::endl;
                         break;
 
                     default:
-                        std::cout << "accept() returned -1. errno: " << errno << std::endl;
+                        COUT_LOG << "accept() returned -1. errno: " << errno << std::endl;
                         break;
                 }
                 continue;
             }
 
-            std::cout << "accept() ok. socket: " << clientSocket << std::endl;
+            COUT_LOG << "accept() ok. socket: " << clientSocket << std::endl;
 
             auto fut = std::async(std::launch::async, HandleRequest, clientSocket, requestHandler);
         }
     }
 }
 
-void cSocketListener::HandleRequest(int sock, 
-                                    std::function<std::vector<char>(const std::vector<char>&)> requestHandler)
+void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandler)
 {
-    std::cout << "HandleRequest()" << std::endl;
+    COUT_LOG << std::endl;
 
     char buffer[BUF_SIZE];
     bzero(&buffer, BUF_SIZE);
@@ -203,11 +211,11 @@ void cSocketListener::HandleRequest(int sock,
 
             if (NRead > 0)
             {
-                std::cout << "NRead = " << NRead << std::endl;
+                COUT_LOG << "NRead = " << NRead << std::endl;
             }
             else if (NRead == 0)
             {
-                std::cout << "HandleRequest(). NRead == 0" << std::endl;
+                COUT_LOG << "NRead == 0" << std::endl;
                 bKeepReading = false;
                 continue;
             }
@@ -215,13 +223,13 @@ void cSocketListener::HandleRequest(int sock,
             {
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                 {
-                    std::cout << "HandleRequest(). NRead == -1 errno == EAGAIN" << std::endl;
+                    COUT_LOG << "NRead == -1 errno == EAGAIN" << std::endl;
                     bKeepReading = false;
                     continue;
                 }
                 else
                 {
-                    std::cout << "HandleRequest(). recv() error. errno: " << errno << std::endl;
+                    COUT_LOG << "recv() error. errno: " << errno << std::endl;
                     bProcessRequest = false;
                     bKeepReading = false;
                     continue;
@@ -231,7 +239,7 @@ void cSocketListener::HandleRequest(int sock,
             if (nCurrentPosition + NRead >= vecBuffer.size())
             {
                 vecBuffer.resize(vecBuffer.size() + BUF_SIZE);
-                std::cout << "buffer resize -> " << vecBuffer.size() << std::endl;
+                COUT_LOG << "buffer resize -> " << vecBuffer.size() << std::endl;
             }
 
             nCurrentPosition += NRead;
@@ -240,7 +248,7 @@ void cSocketListener::HandleRequest(int sock,
 
         if (!bProcessRequest)
         {
-            std::cout << "HandleRequest(). recv() failed" << std::endl;
+            COUT_LOG << "recv() failed" << std::endl;
             delete [] pchMessageBuffer;
             close (sock);
             return;
@@ -248,23 +256,22 @@ void cSocketListener::HandleRequest(int sock,
 
         if (nMessageSize <= 0)
         {
-            std::cout << "HandleRequest(). The message is empty" << std::endl;
+            COUT_LOG << "The message is empty" << std::endl;
             delete [] pchMessageBuffer;
             close (sock);
             return;
         }
 
-        std::cout << "HandleRequest(). recv() ok. NRead: " << nMessageSize << std::endl;
+        COUT_LOG << "recv() ok. NRead: " << nMessageSize << std::endl;
 
         SendResponse(sock, vecBuffer, requestHandler);
-        std::cout << "requestHandler() returned" << std::endl;
 
         close (sock);
         delete [] pchMessageBuffer;
     }
     catch (const std::exception & ex)
     {
-        std::cout << "HandleRequest() raised exception. what(): " << ex.what() << std::endl;
+        COUT_LOG << "Exception. what(): " << ex.what() << std::endl;
         delete [] pchMessageBuffer;
         close (sock);
         return;
@@ -273,8 +280,10 @@ void cSocketListener::HandleRequest(int sock,
 
 int cSocketListener::SendResponse(const int sock, 
                                     std::vector<char> vecMessageBuffer,
-                                    std::function<std::vector<char>(const std::vector<char>&)> requestHandler)
+                                    SockListenerCallback requestHandler)
 {
+    COUT_LOG << std::endl;
+    
     try
     {
         std::vector<char> verResponce = requestHandler(vecMessageBuffer);
@@ -282,7 +291,7 @@ int cSocketListener::SendResponse(const int sock,
     }
     catch(const std::exception & ex)
     {
-       std::cout << "SendResponse() error: " << ex.what() << std::endl;
+       COUT_LOG << "Exception: " << ex.what() << std::endl;
     }
     
     return 0;

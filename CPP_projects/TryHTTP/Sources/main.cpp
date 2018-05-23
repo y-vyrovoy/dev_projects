@@ -6,8 +6,8 @@
 #include <memory>
 #include <vector>
 
-
-#include "cRequestProcessor.h"
+#include "LogMacro.h"
+#include "cHTTPRequestParser.h"
 
 
 void timespec_diff(const struct timespec *start,
@@ -28,7 +28,7 @@ void timespec_diff(const struct timespec *start,
 
 void testServer()
 {
-    std::cout << "testServer()" << std::endl;
+    COUT_LOG << std::endl;
 
     cServer serv;
     if (serv.Init() < 0)
@@ -40,7 +40,7 @@ void testServer()
 
 void testParser()
 {
-	std::cout << "testParser()" << std::endl;
+	COUT_LOG << std::endl;
 
         try
         {
@@ -75,7 +75,7 @@ void testParser()
             std::cout << " -------- FILE -------- " << std::endl;
             std::cout << std::endl;
 
-            cRequestProcessor pr;
+            cHTTPRequestParser pr;
             REQUEST_DATA reqData;
             pr.ProcessRequest(vecBuffer, reqData);
 

@@ -6,9 +6,12 @@
 #include <algorithm>
 #include <vector>
 
+#include "LogMacro.h"
+#include "cRequestProcessor.h"
+
 cServer::cServer()
 {
-    m_pListener = std::make_unique<cSocketListener>();
+    
 }
 
 cServer::~cServer()
@@ -18,15 +21,15 @@ cServer::~cServer()
 
 int cServer::Init()
 {
-    SL_INIT_RESPONSE nRetVal = m_pListener->Init();
+    SL_INIT_RESPONSE nRetVal = m_sockListener.Init();
 
     if (nRetVal == SL_INIT_RESPONSE::INIT_OK)
     {
-        std::cout << "Socket listener was initialized successfully" << std::endl;
+        COUT_LOG << "Socket listener was initialized successfully" << std::endl;
     }
     else
     {
-        std::cout << "Socket listener was not initialized" << std::endl;
+        COUT_LOG << "Socket listener was not initialized" << std::endl;
     }
 
     return 0;
@@ -34,8 +37,6 @@ int cServer::Init()
 
 void cServer::StartServer()
 {
-    InitFakeResponse();
-    
     auto lambda = [this](const std::vector<char> & vecMessageBuffer)
                         {
                             std::cout << "Request:" << std::endl
@@ -49,48 +50,22 @@ void cServer::StartServer()
                             REQUEST_DATA reqData;
                             
                             // !!!! ProcessRequest() should create response
-                            m_requestProcessor.ProcessRequest(vecMessageBuffer, reqData);
+                            if (m_requestParser.ProcessRequest(vecMessageBuffer, reqData) == 0)
+                            {
+                                std::vector<char> vecResponse;
+                                m_requestProcessor.GetResponse(reqData, vecResponse);
+                                return vecResponse;
+                            }
                             
-                            return m_vecResponceBuffer;                            
+                            std::vector<char> vecReturn(0); 
+                            return vecReturn;
+                                
     };
 
-    m_pListener->StartListener(lambda);
+    m_sockListener.StartListener(lambda);
 }
 
 void cServer::CloseServer()
 {
-    m_pListener->StopListener();
-}
-
-void cServer::InitFakeResponse()
-{
-    try
-    {
-        std::ifstream ifs;
-        ifs.open("response.txt", std::ios::in | std::ios::ate | std::ios::binary);
-        int nFileSize = ifs.tellg();
-        ifs.seekg(0, ifs.beg);
-
-        if (nFileSize <= 0)
-        {
-            std::cout << "File length is " << nFileSize << std::endl;
-            return;
-        }
-
-        m_vecResponceBuffer.resize(nFileSize);
-        
-
-        ifs.seekg (0, std::ios::beg);
-        ifs.read (m_vecResponceBuffer.data(), nFileSize);
-        ifs.close();
-        
-        std::cout << " -------- response.txt -------- " << std::endl;
-        std::cout << m_vecResponceBuffer.data() << std::endl;
-        std::cout << " -------- response.txt -------- " << std::endl;
-        std::cout << std::endl;        
-    }
-    catch (const std::exception & ex)
-    {
-        std::cout << "InitFakeResponse() error: " << ex.what() << std::endl; 
-    }
+    m_sockListener.StopListener();
 }
