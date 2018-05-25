@@ -5,6 +5,8 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include <map>
+#include <thread>
 
 enum class SL_INIT_RESPONSE {INIT_OK, INIT_ERR_SOCKET, INIT_ERR_SOCKOPT, INIT_ERR_BIND};
 using SockListenerCallback = std::function<std::vector<char>(const std::vector<char>&)>;
@@ -20,13 +22,18 @@ public:
 
 
 private:
+    std::thread m_ListenerThread;
+    std::map<int, struct timespec> m_mapUsedSockets;
+    
     int m_socketListen;
     std::atomic<bool> m_bListen;
 
     void WaitAndHandleConnections(SockListenerCallback requestHandler);
     
-    static void HandleRequest(int sock, SockListenerCallback requestHandler);    
-    static int SendResponse(const int, std::vector<char>, SockListenerCallback);
+    void HandleRequest(int sock, SockListenerCallback requestHandler);    
+    int SendResponse(const int, std::vector<char>, SockListenerCallback);
+    
+    void TickSocket(int sock);
 };
 
 

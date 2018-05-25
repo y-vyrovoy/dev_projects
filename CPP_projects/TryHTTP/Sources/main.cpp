@@ -5,26 +5,12 @@
 #include <fstream>
 #include <memory>
 #include <vector>
+#include <map>
+#include <string>
 
 #include "LogMacro.h"
 #include "cHTTPRequestParser.h"
-
-
-void timespec_diff(const struct timespec *start,
-					const struct timespec *stop,
-					struct timespec *result)
-{
-    if ((stop->tv_nsec - start->tv_nsec) < 0) {
-        result->tv_sec = stop->tv_sec - start->tv_sec - 1;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000;
-    } else {
-        result->tv_sec = stop->tv_sec - start->tv_sec;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec;
-    }
-
-    return;
-}
-
+#include "TimeLib.h"
 
 void testServer()
 {
@@ -36,6 +22,18 @@ void testServer()
     	std::cout << "Server could not initialize" << std::endl;
     }
     serv.StartServer();
+    
+    while(true)
+    {
+        std::string cmd;
+        std::cin >> cmd;
+        
+        if (cmd == "exit")
+        {
+            serv.CloseServer();
+            return;
+        }
+    }
 }
 
 void testParser()
@@ -117,7 +115,7 @@ void testParser()
     cRequestProcessor pr;
 
     struct timespec timeJobStart;
-	struct timespec timeEnd;
+    struct timespec timeEnd;
     struct timespec timeDiff;
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timeJobStart);
@@ -130,9 +128,9 @@ void testParser()
     }
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timeEnd);
-	timespec_diff(&timeJobStart, &timeEnd, &timeDiff);
-	std::cout << "Time: " << timeDiff.tv_sec << " s " << timeDiff.tv_nsec << " ns. " << j << " cycles" << std::endl;
-	std::cout << "Average cycle body duration: " << (timeDiff.tv_sec * 1000000000 + timeDiff.tv_nsec)/j << "ns" << std::endl;
+    timespec_diff(&timeJobStart, &timeEnd, &timeDiff);
+    std::cout << "Time: " << timeDiff.tv_sec << " s " << timeDiff.tv_nsec << " ns. " << j << " cycles" << std::endl;
+    std::cout << "Average cycle body duration: " << (timeDiff.tv_sec * 1000000000 + timeDiff.tv_nsec)/j << "ns" << std::endl;
 */
 }
 
@@ -140,7 +138,18 @@ void testParser()
 int main(int argc, char** argv)
 {
     //testParser();
-    testServer();
+    //testServer();
+    
+    struct timespec timeDiff;
+    
+    std::map<int, struct timespec> m;
+    
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[0]);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[1]);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[2]);
+    
+    std::cout << timespec_diff_ns(&m[0], &m[1])<< " ns" << std::endl;
+    std::cout << timespec_diff_ns(&m[1], &m[2])<< " ns" << std::endl;
     
     return 0;
 }

@@ -16,7 +16,7 @@ cServer::cServer()
 
 cServer::~cServer()
 {
-    CloseServer();   
+    
 }
 
 int cServer::Init()

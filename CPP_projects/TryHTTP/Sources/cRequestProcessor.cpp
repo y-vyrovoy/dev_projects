@@ -27,7 +27,7 @@ void cRequestProcessor::InitFakeResponse()
     try
     {
         std::ifstream ifs;
-        ifs.open("response.txt", std::ios::in | std::ios::ate | std::ios::binary);
+        ifs.open("response.html", std::ios::in | std::ios::ate | std::ios::binary);
         int nFileSize = ifs.tellg();
         ifs.seekg(0, ifs.beg);
 
@@ -44,10 +44,11 @@ void cRequestProcessor::InitFakeResponse()
         ifs.read (m_vecResponceBuffer.data(), nFileSize);
         ifs.close();
         
-        std::cout << " -------- response.txt -------- " << std::endl;
-        std::cout << m_vecResponceBuffer.data() << std::endl;
-        std::cout << " -------- response.txt -------- " << std::endl;
-        std::cout << std::endl;        
+//        std::cout << " -------- response.txt -------- " << std::endl;
+//        std::cout << m_vecResponceBuffer.data() << std::endl;
+//        std::cout << " -------- response.txt -------- " << std::endl;
+//        std::cout << std::endl;        
+        
     }
     catch (const std::exception & ex)
     {

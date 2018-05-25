@@ -12,7 +12,7 @@
 #include <future>
 #include <thread>
 #include <chrono>
-#include <vector>
+
 
 #include "LogMacro.h"
 
@@ -28,7 +28,7 @@ cSocketListener::cSocketListener()
 
 cSocketListener::~cSocketListener()
 {
-    StopListener();
+    
 }
 
 SL_INIT_RESPONSE cSocketListener::Init()
@@ -75,20 +75,23 @@ SL_INIT_RESPONSE cSocketListener::Init()
     return SL_INIT_RESPONSE::INIT_OK;
 }
 
-void cSocketListener::StopListener()
-{
-    COUT_LOG << std::endl;
-    
-    m_bListen.store(false);
-    cSocketListener(m_socketListen);
-}
-
 void cSocketListener::StartListener(SockListenerCallback requestHandler)
 {
     COUT_LOG << std::endl;
     m_bListen.store(true);
 
-    WaitAndHandleConnections(requestHandler);
+    auto lambda = [this, requestHandler](){WaitAndHandleConnections(requestHandler);};
+    std::thread t(lambda);
+    
+    m_ListenerThread.swap (t);
+}
+
+void cSocketListener::StopListener()
+{
+    COUT_LOG << std::endl;
+  
+    m_bListen.store(false);
+    m_ListenerThread.join();
 }
 
 void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandler)
@@ -96,9 +99,9 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
     COUT_LOG << std::endl;
     
     struct sockaddr_in addrClient;
-    while (m_bListen.load())
+    
+    while (m_bListen)
     {
-
         bzero((char*)&addrClient, sizeof(addrClient));
         unsigned int addrSize = sizeof(addrClient);
 
@@ -157,8 +160,8 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
         if (FD_ISSET(m_socketListen, &set))
         {
             int clientSocket = accept(m_socketListen,
-                                    (struct sockaddr*)&addrClient,
-                                    &addrSize);
+                                        (struct sockaddr*)&addrClient,
+                                        &addrSize);
 
             if (clientSocket < 0)
             {
@@ -177,7 +180,8 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
 
             COUT_LOG << "accept() ok. socket: " << clientSocket << std::endl;
 
-            auto fut = std::async(std::launch::async, HandleRequest, clientSocket, requestHandler);
+            auto lambda = [this, &clientSocket, &requestHandler](){HandleRequest(clientSocket, requestHandler);};
+            auto fut = std::async(std::launch::async, lambda);
         }
     }
 }
@@ -185,12 +189,6 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
 void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandler)
 {
     COUT_LOG << std::endl;
-
-    char buffer[BUF_SIZE];
-    bzero(&buffer, BUF_SIZE);
-
-    int nMessageBufferSize = BUF_SIZE;
-    char * pchMessageBuffer = new char[nMessageBufferSize];
 
     std::vector<char> vecBuffer(BUF_SIZE);
     
@@ -235,6 +233,10 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
                     continue;
                 }
             }
+            else
+            {
+                COUT_LOG << "The message is empty" << std::endl;
+            }
 
             if (nCurrentPosition + NRead >= vecBuffer.size())
             {
@@ -246,18 +248,8 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
             nMessageSize += NRead;
         }
 
-        if (!bProcessRequest)
+        if (!bProcessRequest) || (nMessageSize <= 0)
         {
-            COUT_LOG << "recv() failed" << std::endl;
-            delete [] pchMessageBuffer;
-            close (sock);
-            return;
-        }
-
-        if (nMessageSize <= 0)
-        {
-            COUT_LOG << "The message is empty" << std::endl;
-            delete [] pchMessageBuffer;
             close (sock);
             return;
         }
@@ -265,14 +257,10 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
         COUT_LOG << "recv() ok. NRead: " << nMessageSize << std::endl;
 
         SendResponse(sock, vecBuffer, requestHandler);
-
-        close (sock);
-        delete [] pchMessageBuffer;
     }
     catch (const std::exception & ex)
     {
         COUT_LOG << "Exception. what(): " << ex.what() << std::endl;
-        delete [] pchMessageBuffer;
         close (sock);
         return;
     }
@@ -288,6 +276,7 @@ int cSocketListener::SendResponse(const int sock,
     {
         std::vector<char> verResponce = requestHandler(vecMessageBuffer);
         send(sock, verResponce.data(), verResponce.size(), MSG_CONFIRM);
+        TickSocket(sock);
     }
     catch(const std::exception & ex)
     {
@@ -295,4 +284,9 @@ int cSocketListener::SendResponse(const int sock,
     }
     
     return 0;
+}
+
+void cSocketListener::TickSocket(int sock)
+{
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m_mapUsedSockets[sock]);
 }
