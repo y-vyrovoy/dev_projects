@@ -4,29 +4,17 @@
 #include <string.h>
 #include <fstream>
 #include <memory>
+#include <vector>
+#include <map>
+#include <string>
 
-#include "cRequestProcessor.h"
-
-
-void timespec_diff(const struct timespec *start,
-					const struct timespec *stop,
-					struct timespec *result)
-{
-    if ((stop->tv_nsec - start->tv_nsec) < 0) {
-        result->tv_sec = stop->tv_sec - start->tv_sec - 1;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec + 1000000000;
-    } else {
-        result->tv_sec = stop->tv_sec - start->tv_sec;
-        result->tv_nsec = stop->tv_nsec - start->tv_nsec;
-    }
-
-    return;
-}
-
+#include "LogMacro.h"
+#include "cHTTPRequestParser.h"
+#include "TimeLib.h"
 
 void testServer()
 {
-	std::cout << "testServer()" << std::endl;
+    COUT_LOG << std::endl;
 
     cServer serv;
     if (serv.Init() < 0)
@@ -34,35 +22,67 @@ void testServer()
     	std::cout << "Server could not initialize" << std::endl;
     }
     serv.StartServer();
+    
+    while(true)
+    {
+        std::string cmd;
+        std::cin >> cmd;
+        
+        if (cmd == "exit")
+        {
+            serv.CloseServer();
+            return;
+        }
+    }
 }
 
 void testParser()
 {
-	std::cout << "testParser()" << std::endl;
+	COUT_LOG << std::endl;
 
-	std::ifstream ifs;
-	ifs.open("request.txt", std::ios::in | std::ios::ate | std::ios::binary);
-	int nFileSize = ifs.tellg();
+        try
+        {
+            std::ifstream ifs;
+            ifs.open("request.txt", std::ios::in | std::ios::ate | std::ios::binary);
+            int nFileSize = ifs.tellg();
+            ifs.seekg(0, ifs.beg);
 
+            if (nFileSize <= 0)
+            {
+                std::cout << "File length is " << nFileSize << std::endl;
+                //return;
+            }
 
-	char * pB = new char[nFileSize];
-	auto del = [](char * p){delete [] p;};
-	std::unique_ptr<char[], decltype(del)> pBuffer = std::unique_ptr<char[], decltype(del)>(pB, del);
+            
+            std::vector<char> vecBuffer(nFileSize);
 
-	ifs.seekg (0, std::ios::beg);
-	ifs.read (pB, nFileSize);
-	ifs.close();
+/*            
+            char * pB = new char[nFileSize];
+            auto del = [](char * p){delete [] p;};
+            std::unique_ptr<char[], decltype(del)> pBuffer = std::unique_ptr<char[], decltype(del)>(pB, del);
+*/
+            
+            ifs.seekg (0, std::ios::beg);
+            ifs.read (vecBuffer.data(), nFileSize);
+            ifs.close();
 
-	std::cout << " -------- FILE -------- " << std::endl;
-	std::cout << pB << std::endl;
-	std::cout << " -------- FILE -------- " << std::endl;
-	std::cout << std::endl;
+            
+            
+            std::cout << " -------- FILE -------- " << std::endl;
+            std::cout << vecBuffer.data() << std::endl;
+            std::cout << " -------- FILE -------- " << std::endl;
+            std::cout << std::endl;
 
-	cRequestProcessor pr;
-	REQUEST_DATA reqData;
-	pr.ProcessRequest(pB, nFileSize, reqData);
+            cHTTPRequestParser pr;
+            REQUEST_DATA reqData;
+            pr.ProcessRequest(vecBuffer, reqData);
 
-
+        }
+        catch (std::exception ex)
+        {
+            std::cout << ex.what() << std::endl;
+        }
+        
 
 
 /*
@@ -95,7 +115,7 @@ void testParser()
     cRequestProcessor pr;
 
     struct timespec timeJobStart;
-	struct timespec timeEnd;
+    struct timespec timeEnd;
     struct timespec timeDiff;
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timeJobStart);
@@ -108,15 +128,28 @@ void testParser()
     }
 
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timeEnd);
-	timespec_diff(&timeJobStart, &timeEnd, &timeDiff);
-	std::cout << "Time: " << timeDiff.tv_sec << " s " << timeDiff.tv_nsec << " ns. " << j << " cycles" << std::endl;
-	std::cout << "Average cycle body duration: " << (timeDiff.tv_sec * 1000000000 + timeDiff.tv_nsec)/j << "ns" << std::endl;
+    timespec_diff(&timeJobStart, &timeEnd, &timeDiff);
+    std::cout << "Time: " << timeDiff.tv_sec << " s " << timeDiff.tv_nsec << " ns. " << j << " cycles" << std::endl;
+    std::cout << "Average cycle body duration: " << (timeDiff.tv_sec * 1000000000 + timeDiff.tv_nsec)/j << "ns" << std::endl;
 */
 }
 
 
 int main(int argc, char** argv)
 {
-	testParser();
-	return 0;
+    //testParser();
+    //testServer();
+    
+    struct timespec timeDiff;
+    
+    std::map<int, struct timespec> m;
+    
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[0]);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[1]);
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[2]);
+    
+    std::cout << timespec_diff_ns(&m[0], &m[1])<< " ns" << std::endl;
+    std::cout << timespec_diff_ns(&m[1], &m[2])<< " ns" << std::endl;
+    
+    return 0;
 }

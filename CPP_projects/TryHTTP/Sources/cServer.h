@@ -1,7 +1,10 @@
 #ifndef CSERVER_H
 #define	CSERVER_H
 
+#include <vector>
+
 #include "cSocketListener.h"
+#include "cHTTPRequestParser.h"
 #include "cRequestProcessor.h"
 
 class cServer
@@ -17,7 +20,8 @@ public:
 
 private:
 
-    std::unique_ptr<cSocketListener> m_pListener;
+    cSocketListener m_sockListener;
+    cHTTPRequestParser m_requestParser;
     cRequestProcessor m_requestProcessor;
 };
 

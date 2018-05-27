@@ -1,59 +1,71 @@
 #include "cServer.h"
 #include <iostream>
-
 #include <fstream>
 #include <memory>
+#include <cstring>
+#include <algorithm>
+#include <vector>
 
+#include "LogMacro.h"
+#include "cRequestProcessor.h"
 
 cServer::cServer()
 {
-	m_pListener = std::make_unique<cSocketListener>();
+    
 }
 
 cServer::~cServer()
 {
-	CloseServer();
+    
 }
 
 int cServer::Init()
 {
-	SL_INIT_RESPONCE nRetVal = m_pListener->Init();
+    SL_INIT_RESPONSE nRetVal = m_sockListener.Init();
 
-	if (nRetVal == SL_INIT_RESPONCE::INIT_OK)
-	{
-		std::cout << "Socket listener was initialized successfully" << std::endl;
-	}
-	else
-	{
-		std::cout << "Socket listener was not initialized" << std::endl;
-	}
+    if (nRetVal == SL_INIT_RESPONSE::INIT_OK)
+    {
+        COUT_LOG << "Socket listener was initialized successfully" << std::endl;
+    }
+    else
+    {
+        COUT_LOG << "Socket listener was not initialized" << std::endl;
+    }
 
     return 0;
 }
 
 void cServer::StartServer()
 {
+    auto lambda = [this](const std::vector<char> & vecMessageBuffer)
+                        {
+                            std::cout << "Request:" << std::endl
+                                        << vecMessageBuffer.data() << std::endl;
 
-	auto lambda = [this](const char * pBuffer, const int & nSize)
-					{
-						std::cout << "Request:" << std::endl
-									<< pBuffer << std::endl;
+                            std::ofstream ofs;
+                            ofs.open("request.txt");
+                            ofs << vecMessageBuffer.data();
+                            ofs.close();
 
-						std::ofstream ofs;
-						ofs.open("request.txt");
-						ofs << pBuffer;
-						ofs.close();
+                            REQUEST_DATA reqData;
+                            
+                            // !!!! ProcessRequest() should create response
+                            if (m_requestParser.ProcessRequest(vecMessageBuffer, reqData) == 0)
+                            {
+                                std::vector<char> vecResponse;
+                                m_requestProcessor.GetResponse(reqData, vecResponse);
+                                return vecResponse;
+                            }
+                            
+                            std::vector<char> vecReturn(0); 
+                            return vecReturn;
+                                
+    };
 
-						REQUEST_DATA reqData;
-						m_requestProcessor.ProcessRequest(pBuffer, nSize, reqData);
-					};
-
-
-	m_pListener->StartListener(lambda);
+    m_sockListener.StartListener(lambda);
 }
 
 void cServer::CloseServer()
 {
-	m_pListener->StopListener();
+    m_sockListener.StopListener();
 }
-
