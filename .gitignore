@@ -1,3 +1,5 @@
+.gitignore
+
 #ignoring giant VS folders and databases
 .vs/
 Backup*/
@@ -12,9 +14,11 @@ build/
 
 #ignoring android compiled files
 *.apk
-nbproject/private/
+nbproject/
 
 #ignoring all projects. Only mentioned here
 java_projects/
 **/Android_Projects
 /.metadata/
+
+temp_projects/
