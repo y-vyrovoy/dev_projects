@@ -14,7 +14,8 @@ cRequestProcessor::~cRequestProcessor()
 {
 }
 
-int cRequestProcessor::GetResponse(const REQUEST_DATA & requestData, std::vector<char> & vecResponse)
+int cRequestProcessor::GetResponse(const REQUEST_PARAMS & requestData, 
+                                    std::vector<char> & vecResponse)
 {
     vecResponse = m_vecResponceBuffer;
     return 0;
@@ -27,7 +28,7 @@ void cRequestProcessor::InitFakeResponse()
     try
     {
         std::ifstream ifs;
-        ifs.open("response.html", std::ios::in | std::ios::ate | std::ios::binary);
+        ifs.open("logs/response.html", std::ios::in | std::ios::ate | std::ios::binary);
         int nFileSize = ifs.tellg();
         ifs.seekg(0, ifs.beg);
 

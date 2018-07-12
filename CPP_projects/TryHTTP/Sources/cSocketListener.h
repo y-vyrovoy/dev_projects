@@ -8,18 +8,23 @@
 #include <map>
 #include <thread>
 
-enum class SL_INIT_RESPONSE {INIT_OK, INIT_ERR_SOCKET, INIT_ERR_SOCKOPT, INIT_ERR_BIND};
-using SockListenerCallback = std::function<std::vector<char>(const std::vector<char>&)>;
+#include "RequestDataTypes.h"
+
+
+using SockListenerCallback = std::function<void(const REQEST_DATA & reqData)>;
 
 class cSocketListener {
 public:
+
+    enum class enInitRet {INIT_OK, INIT_ERR_SOCKET, INIT_ERR_SOCKOPT, INIT_ERR_BIND};
+
     cSocketListener();
     virtual ~cSocketListener();
 
-    SL_INIT_RESPONSE Init();
+    enInitRet Init();
     void StopListener();
     void StartListener(SockListenerCallback requestHandler);
-
+    int SendResponse(const REQUEST_PARAMS &, std::vector<char>);
 
 private:
     std::thread m_ListenerThread;
@@ -31,7 +36,7 @@ private:
     void WaitAndHandleConnections(SockListenerCallback requestHandler);
     
     void HandleRequest(int sock, SockListenerCallback requestHandler);    
-    int SendResponse(const int, std::vector<char>, SockListenerCallback);
+    
     
     void TickSocket(int sock);
 };

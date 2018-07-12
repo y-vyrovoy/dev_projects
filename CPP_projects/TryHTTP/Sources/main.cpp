@@ -56,11 +56,6 @@ void testParser()
             
             std::vector<char> vecBuffer(nFileSize);
 
-/*            
-            char * pB = new char[nFileSize];
-            auto del = [](char * p){delete [] p;};
-            std::unique_ptr<char[], decltype(del)> pBuffer = std::unique_ptr<char[], decltype(del)>(pB, del);
-*/
             
             ifs.seekg (0, std::ios::beg);
             ifs.read (vecBuffer.data(), nFileSize);
@@ -74,8 +69,11 @@ void testParser()
             std::cout << std::endl;
 
             cHTTPRequestParser pr;
-            REQUEST_DATA reqData;
-            pr.ProcessRequest(vecBuffer, reqData);
+            REQEST_DATA reqData;
+            reqData.vecRequestBuffer.swap(vecBuffer);
+            
+            REQUEST_PARAMS reqParams;
+            pr.ProcessRequest(reqData, reqParams);
 
         }
         catch (std::exception ex)
@@ -138,18 +136,20 @@ void testParser()
 int main(int argc, char** argv)
 {
     //testParser();
-    //testServer();
-    
-    struct timespec timeDiff;
-    
-    std::map<int, struct timespec> m;
-    
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[0]);
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[1]);
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[2]);
-    
-    std::cout << timespec_diff_ns(&m[0], &m[1])<< " ns" << std::endl;
-    std::cout << timespec_diff_ns(&m[1], &m[2])<< " ns" << std::endl;
+    testServer();
     
     return 0;
 }
+
+
+
+//    struct timespec timeDiff;
+//    
+//    std::map<int, struct timespec> m;
+//    
+//    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[0]);
+//    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[1]);
+//    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &m[2]);
+//    
+//    std::cout << timespec_diff_ns(&m[0], &m[1])<< " ns" << std::endl;
+//    std::cout << timespec_diff_ns(&m[1], &m[2])<< " ns" << std::endl;

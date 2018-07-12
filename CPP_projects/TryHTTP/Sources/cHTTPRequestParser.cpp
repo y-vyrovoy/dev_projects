@@ -36,19 +36,24 @@ cHTTPRequestParser::~cHTTPRequestParser()
     // TODO Auto-generated destructor stub
 }
 
-int cHTTPRequestParser::ProcessRequest(std::vector<char> vecMessageBuffer,
-                                        REQUEST_DATA & requestData) const
+int cHTTPRequestParser::ProcessRequest(const REQEST_DATA & reqData,
+                                        REQUEST_PARAMS & reqParams) const
 {
-    int nParamsStart = ParseFirstLine(&vecMessageBuffer[0], vecMessageBuffer.size(), requestData);
+    reqParams.sock = reqData.sock;
+    
+    int nParamsStart = ParseFirstLine(&reqData.vecRequestBuffer[0], 
+                                        reqData.vecRequestBuffer.size(), 
+                                        reqParams);
+    
     if ( nParamsStart <= 0)
     {
         COUT_LOG << ": " << "ParseFirstLine() failed" << std::endl;
         return 1;
     }
 
-    int nRetVal = ParseParams(static_cast<const char *>(&vecMessageBuffer[nParamsStart]),
-                                static_cast<const int &>(vecMessageBuffer.size() - nParamsStart - 1),
-                                requestData);
+    int nRetVal = ParseParams(static_cast<const char *>(&reqData.vecRequestBuffer[nParamsStart]),
+                                static_cast<const int &>(reqData.vecRequestBuffer.size() - nParamsStart - 1),
+                                reqParams);
 
 
     if (nRetVal != 0)
@@ -59,15 +64,21 @@ int cHTTPRequestParser::ProcessRequest(std::vector<char> vecMessageBuffer,
 
     std::cout << "ParseParams() succeeded" << std::endl;
     std::cout << "Dump" << std::endl;
-    PrintRequest(requestData);
+    PrintRequest(reqParams);
 
     return 0;
 }
 
 int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
                                         const int & NSize,
-                                        REQUEST_DATA & requestData) const
+                                        REQUEST_PARAMS & requestData) const
 {
+    if (NSize <= 0)
+    {
+        COUT_LOG << "Empty request buffer" << std::endl;
+        return HTTP_PARSER_RET_CODES::RET_EMPTY_REQUEST;
+    }
+    
     int nStart = 0;
     int nEnd = 0;
 
@@ -88,7 +99,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
     if (pchMessageBuffer[nEnd] != ' ')
     {
         COUT_LOG << "Incorrect request header format" << std::endl;
-        return -1;
+        return HTTP_PARSER_RET_CODES::RET_WRONG_FORMAT;
     }
 
     if (nEnd - nStart == 3)
@@ -141,7 +152,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
     else
     {
         COUT_LOG << "Unknown HTTP method" << std::endl;
-        return -2;
+        return HTTP_PARSER_RET_CODES::RET_UKNOWN_METHOD;
     }
 
 
@@ -151,7 +162,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
     if (nStart >= NSize || pchMessageBuffer[nStart] != '/')
     {
         COUT_LOG << "No parameters section in request header" << std::endl;
-        return -3;
+        return HTTP_PARSER_RET_CODES::RET_NO_PARAMS_SECTION;
     }
 
     nEnd = nStart;
@@ -178,7 +189,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
     if ( (nStart > nEnd - 8) || (memcmp(&pchMessageBuffer[nStart], "HTTP/", 5) != 0) )
     {
         COUT_LOG << "No HTTP/ section in request header" << std::endl;
-        return -4;
+        return HTTP_PARSER_RET_CODES::RET_NO_HTTP_SECTION;
     }
 
     nStart += 5;
@@ -191,7 +202,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
         if (chDigit < 0)
         {
             COUT_LOG << "Incorrect HTTP version" << std::endl;
-            return -5;
+            return HTTP_PARSER_RET_CODES::RET_INCORRECT_PROTOCOL_VERSION;
         }
         requestData.nVersionMajor = requestData.nVersionMajor * 10 + chDigit;
         nStart++;
@@ -200,7 +211,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
     if (pchMessageBuffer[nStart] != '.')
     {
         COUT_LOG << "Incorrect HTTP version" << std::endl;
-        return -6;
+        return HTTP_PARSER_RET_CODES::RET_INCORRECT_PROTOCOL_VERSION;
     }
 
     nStart++;
@@ -212,7 +223,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
         if (chDigit < 0)
         {
             COUT_LOG << "Incorrect HTTP version" << std::endl;
-            return -7;
+            return HTTP_PARSER_RET_CODES::RET_INCORRECT_PROTOCOL_VERSION;
         }
         requestData.nVersionMinor = requestData.nVersionMinor * 10 + chDigit;
         nStart++;
@@ -223,7 +234,7 @@ int cHTTPRequestParser::ParseFirstLine(const char * pchMessageBuffer,
     return nEnd + 2;
 }
 
-int cHTTPRequestParser::ParseParams(const char * pchMessageBuffer, const int & NSize, REQUEST_DATA & requestData) const
+int cHTTPRequestParser::ParseParams(const char * pchMessageBuffer, const int & NSize, REQUEST_PARAMS & requestData) const
 {
     COUT_LOG << std::endl;
     
@@ -275,7 +286,7 @@ int cHTTPRequestParser::ParseParams(const char * pchMessageBuffer, const int & N
     return 0;
 }
 
-void cHTTPRequestParser::PrintRequest(const REQUEST_DATA & requestData) const
+void cHTTPRequestParser::PrintRequest(const REQUEST_PARAMS & requestData) const
 {
     COUT_LOG << std::endl;
 

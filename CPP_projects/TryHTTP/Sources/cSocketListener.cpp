@@ -15,6 +15,7 @@
 
 
 #include "LogMacro.h"
+#include "RequestDataTypes.h"
 
 #define DEFAULT_HTTP_PORT 5080
 #define BUF_SIZE 1024
@@ -31,7 +32,7 @@ cSocketListener::~cSocketListener()
     
 }
 
-SL_INIT_RESPONSE cSocketListener::Init()
+cSocketListener::enInitRet cSocketListener::Init()
 {
     COUT_LOG << std::endl;
     
@@ -41,7 +42,7 @@ SL_INIT_RESPONSE cSocketListener::Init()
     if (m_socketListen < 0)
     {
         COUT_LOG << "Error: socket() failed. errno = " << errno << std::endl;
-    	return SL_INIT_RESPONSE::INIT_ERR_SOCKET;
+    	return enInitRet::INIT_ERR_SOCKET;
     }
 
     const int trueFlag = 1;
@@ -50,7 +51,7 @@ SL_INIT_RESPONSE cSocketListener::Init()
     {
     	COUT_LOG << "setsockopt() failed. errno: " << errno << std::endl;
     	close(m_socketListen);
-    	return SL_INIT_RESPONSE::INIT_ERR_SOCKOPT;
+    	return enInitRet::INIT_ERR_SOCKOPT;
     }
 
     std::cout << "socket() ok. listenSocket:" << m_socketListen << std::endl;
@@ -67,12 +68,12 @@ SL_INIT_RESPONSE cSocketListener::Init()
     {
     	COUT_LOG << "bind() failed. errno: " << errno << std::endl;
     	close(m_socketListen);
-    	return SL_INIT_RESPONSE::INIT_ERR_BIND;
+    	return enInitRet::INIT_ERR_BIND;
     }
 
     COUT_LOG << "bind() ok" << std::endl;
 
-    return SL_INIT_RESPONSE::INIT_OK;
+    return enInitRet::INIT_OK;
 }
 
 void cSocketListener::StartListener(SockListenerCallback requestHandler)
@@ -90,6 +91,7 @@ void cSocketListener::StopListener()
 {
     COUT_LOG << std::endl;
   
+    close(m_socketListen);
     m_bListen.store(false);
     m_ListenerThread.join();
 }
@@ -189,8 +191,10 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
 void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandler)
 {
     COUT_LOG << std::endl;
-
-    std::vector<char> vecBuffer(BUF_SIZE);
+ 
+    REQEST_DATA reqData;
+    reqData.sock = sock;
+    reqData.vecRequestBuffer.resize(BUF_SIZE);
     
     try
     {
@@ -205,7 +209,10 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
 
         while (bKeepReading)
         {
-            NRead = recv(sock, &vecBuffer[nCurrentPosition], vecBuffer.size() - nCurrentPosition, MSG_DONTWAIT);
+            NRead = recv(sock, 
+                            &(reqData.vecRequestBuffer[nCurrentPosition]), 
+                            reqData.vecRequestBuffer.size() - nCurrentPosition, 
+                            MSG_DONTWAIT);
 
             if (NRead > 0)
             {
@@ -238,17 +245,17 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
                 COUT_LOG << "The message is empty" << std::endl;
             }
 
-            if (nCurrentPosition + NRead >= vecBuffer.size())
+            if (nCurrentPosition + NRead >= reqData.vecRequestBuffer.capacity())
             {
-                vecBuffer.resize(vecBuffer.size() + BUF_SIZE);
-                COUT_LOG << "buffer resize -> " << vecBuffer.size() << std::endl;
+                reqData.vecRequestBuffer.resize(reqData.vecRequestBuffer.capacity() + BUF_SIZE);
+                COUT_LOG << "buffer resize -> " << reqData.vecRequestBuffer.capacity() << std::endl;
             }
 
             nCurrentPosition += NRead;
             nMessageSize += NRead;
         }
 
-        if (!bProcessRequest) || (nMessageSize <= 0)
+        if (!bProcessRequest || nMessageSize <= 0)
         {
             close (sock);
             return;
@@ -256,27 +263,29 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
 
         COUT_LOG << "recv() ok. NRead: " << nMessageSize << std::endl;
 
-        SendResponse(sock, vecBuffer, requestHandler);
+        
+        requestHandler(reqData);
+        
+        //SendResponse(sock, vecBuffer, requestHandler);
     }
     catch (const std::exception & ex)
     {
         COUT_LOG << "Exception. what(): " << ex.what() << std::endl;
-        close (sock);
+        //close (sock);
         return;
     }
 }
 
-int cSocketListener::SendResponse(const int sock, 
-                                    std::vector<char> vecMessageBuffer,
-                                    SockListenerCallback requestHandler)
+int cSocketListener::SendResponse(const REQUEST_PARAMS & reqParams, 
+                                    std::vector<char> verResponce)
 {
     COUT_LOG << std::endl;
     
     try
     {
-        std::vector<char> verResponce = requestHandler(vecMessageBuffer);
-        send(sock, verResponce.data(), verResponce.size(), MSG_CONFIRM);
-        TickSocket(sock);
+        send(reqParams.sock, verResponce.data(), verResponce.size(), MSG_CONFIRM);
+        close(reqParams.sock);
+        //TickSocket(reqParams.sock);
     }
     catch(const std::exception & ex)
     {

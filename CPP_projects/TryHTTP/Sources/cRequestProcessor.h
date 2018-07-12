@@ -13,7 +13,7 @@ public:
     cRequestProcessor();
     virtual ~cRequestProcessor();
 
-    int GetResponse(const REQUEST_DATA &, std::vector<char>&);
+    int GetResponse(const REQUEST_PARAMS &, std::vector<char>&);
 private:
     
     void InitFakeResponse();
