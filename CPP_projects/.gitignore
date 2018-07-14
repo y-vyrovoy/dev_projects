@@ -1,9 +1,14 @@
 Debug/
 Release/
+
 .cproject/
 .settings/
 .project/
 .cproject
 .settings
 .project
-nbproject/
+
+dist/
+build/
+
+.dep.inc

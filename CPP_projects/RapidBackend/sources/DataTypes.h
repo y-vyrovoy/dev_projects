@@ -1,12 +1,5 @@
-/* 
- * File:   Interfaces.h
- * Author: yura
- *
- * Created on July 11, 2018, 11:44 PM
- */
 
-#ifndef DATATYPES_H
-#define DATATYPES_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -20,7 +13,3 @@ struct RequestData
     std::string address;
     std::map<int, std::string> paramsMap;    
 };
-
-
-#endif /* DATATYPES_H */
-

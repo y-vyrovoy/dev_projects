@@ -1,13 +1,4 @@
-/* 
- * File:   Interfaces.h
- * Author: yura
- *
- * Created on July 12, 2018, 7:51 PM
- */
-
-#ifndef INTERFACES_H
-#define INTERFACES_H
-
+#pragma once
 
 class ConnectionManager
 {
@@ -24,6 +15,3 @@ public:
     void setOnRequestCallback(const std::function<void(const std::string&)> &);
 
 };
-
-#endif /* INTERFACES_H */
-

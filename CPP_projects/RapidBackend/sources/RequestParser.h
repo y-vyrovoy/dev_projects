@@ -1,9 +1,3 @@
-/* 
- * File:   RequestParser.h
- * Author: yura
- *
- * Created on July 12, 2018, 9:48 AM
- */
 
 #ifndef REQUESTPARSER_H
 #define REQUESTPARSER_H

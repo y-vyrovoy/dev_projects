@@ -1,12 +1,5 @@
-/* 
- * File:   ConnectionManager.h
- * Author: yura
- *
- * Created on July 12, 2018, 9:27 AM
- */
 
-#ifndef CONNECTIONMANAGER_H
-#define CONNECTIONMANAGER_H
+#pragma once
 
 #include "BlockingQueue.h"
 
@@ -28,6 +21,4 @@ private:
     
      std::function<void(const std::string&)> m_onRequestCallback;
 };
-
-#endif /* CONNECTIONMANAGER_H */
 
