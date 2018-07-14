@@ -1,11 +1,4 @@
-/* 
- * File:   main.cpp
- * Author: yura
- *
- * Created on July 9, 2018, 11:06 AM
- */
-
-#include <cstdlib>
+#include "stdafx.h"
 
 #include "ServerFrame.h"
 

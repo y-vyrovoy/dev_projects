@@ -1,9 +1,4 @@
-/* 
- * File:   ConnectionManager.cpp
- * Author: yura
- * 
- * Created on July 12, 2018, 9:27 AM
- */
+#include "stdafx.h"
 
 #include "TCPConnectionManager.h"
 

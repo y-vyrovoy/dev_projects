@@ -1,10 +1,4 @@
-
-/* 
- * File:   ServerFrame.cpp
- * Author: yura
- * 
- * Created on July 9, 2018, 11:10 AM
- */
+#include "stdafx.h"
 
 #include "ServerFrame.h"
 
@@ -36,6 +30,8 @@ int ServerFrame::StartServer()
         //std::exception ex("Server already runs. Only one running instance is allowed");
         throw "Server already runs. Only one running instance is allowed";//ex;
     }
+
+	return 0;	
 }
     
 void ServerFrame::StopServer()

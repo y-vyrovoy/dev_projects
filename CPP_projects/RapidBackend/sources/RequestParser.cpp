@@ -1,9 +1,4 @@
-/* 
- * File:   RequestParser.cpp
- * Author: yura
- * 
- * Created on July 12, 2018, 9:48 AM
- */
+#include "stdafx.h"
 
 #include "RequestParser.h"
 
