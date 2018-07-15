@@ -11,5 +11,5 @@ struct RequestData
     int sock;
     HTTP_METHOD http_method;
     std::string address;
-    std::map<int, std::string> paramsMap;    
+    std::map<std::string, std::string> paramsMap;
 };

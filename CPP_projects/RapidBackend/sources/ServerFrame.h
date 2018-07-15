@@ -14,14 +14,15 @@ class ServerFrame
 public:
 
     ServerFrame();
+	~ServerFrame();
+
+
     ServerFrame( const ServerFrame& orig ) = delete;
     ServerFrame( ServerFrame&& orig ) = delete;
     
     ServerFrame & operator= ( const ServerFrame& orig ) = delete;
     ServerFrame & operator= ( ServerFrame&& orig ) = delete;
-    
-    ~ServerFrame();
-
+   
     
     int StartServer();
     void StopServer();
@@ -32,9 +33,11 @@ public:
     
 private:
     static std::atomic<bool> m_isServerRunning;
+	std::atomic<bool> m_isInitialized;
     
-    std::unique_ptr<TCPConnectionManager> m_connectionManager;
-    std::unique_ptr<RequestParser> m_requestParser;
+    std::unique_ptr<IConnectionManager> m_connectionManager;
+    std::unique_ptr<IRequestParser> m_requestParser;
     std::unique_ptr<BlockingQueue<RequestData>> m_requestQueue;
     
 };
+

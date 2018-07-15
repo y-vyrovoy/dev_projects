@@ -9,7 +9,14 @@ int main(int argc, char** argv)
     server.Initialize();
     server.StartServer();
     
-    
+	for (std::string s; std::cin >> s; )
+	{
+		if (s == "exit")
+			break;
+	}
+
+	server.StopServer();
+
     return 0;
 }
 

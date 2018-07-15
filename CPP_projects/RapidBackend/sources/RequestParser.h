@@ -1,21 +1,34 @@
 
-#ifndef REQUESTPARSER_H
-#define REQUESTPARSER_H
+#pragma once
 
 #include <string>
 
+#include "Interfaces.h"
 #include "DataTypes.h"
 
-class RequestParser
+class RequestParser : public IRequestParser
 {
 public:
     RequestParser();
     ~RequestParser();
 
-    void Parse(std::string request, RequestData * requestDataResult);
-private:
+    void Parse(const std::string & request, RequestData * requestDataResult) const;
 
 };
 
-#endif /* REQUESTPARSER_H */
 
+
+// ***********************************************************************
+//	
+//	Fake interface implementation for testing and architecture development
+//
+// ***********************************************************************
+
+class FakeRequestParser : public IRequestParser
+{
+public:
+	FakeRequestParser() {};
+	~FakeRequestParser() {};
+
+	void Parse(const std::string & request, RequestData * requestDataResult) const;
+};

@@ -4,9 +4,9 @@
 // are changed infrequently
 //
 
-#ifdef _WIN32
-
 #pragma once
+
+#ifdef _WIN32
 
 #include "targetver.h"
 #include <stdio.h>
