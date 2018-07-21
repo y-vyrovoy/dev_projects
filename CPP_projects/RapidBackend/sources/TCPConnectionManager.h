@@ -18,6 +18,15 @@ public:
 
 	void start() override;
 	void stop() override;
+
+	void sendResponse(std::unique_ptr<ResponseData> ) override;
+
+private:
+	void threadJob();
+
+private:
+	std::thread m_workThread;
+	std::atomic<bool> m_forceStopThread;
 };
 
 
@@ -36,6 +45,8 @@ public:
 	void start() override;
 	void stop() override;
 
+	void sendResponse(std::unique_ptr<ResponseData>) override;
+	
 private:
 	void threadJob();
 

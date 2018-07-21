@@ -6,7 +6,8 @@
 
 #include "TCPConnectionManager.h"
 #include "RequestParser.h"
-#include "BlockingQueue.h"
+#include "RequestQueueManager.h"
+#include "RequestHandler.h"
 #include "DataTypes.h"
 
 class ServerFrame
@@ -29,15 +30,16 @@ public:
     
     void Initialize();
     void onRequest(const std::string & request);
+	void onResponse(std::unique_ptr<ResponseData> response);
     
     
 private:
     static std::atomic<bool> m_isServerRunning;
 	std::atomic<bool> m_isInitialized;
     
-    std::unique_ptr<IConnectionManager> m_connectionManager;
+    std::shared_ptr<IConnectionManager> m_connectionManager;
     std::unique_ptr<IRequestParser> m_requestParser;
-    std::unique_ptr<BlockingQueue<RequestData>> m_requestQueue;
-    
+    std::shared_ptr<RequestQueueManager> m_queueManager;
+	std::unique_ptr<RequestHandler> m_requestManager;
 };
 

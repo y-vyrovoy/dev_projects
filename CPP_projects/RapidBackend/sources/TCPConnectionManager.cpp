@@ -18,14 +18,37 @@ TCPConnectionManager::~TCPConnectionManager()
 
 void TCPConnectionManager::start()
 {
-
+	m_forceStopThread = false;
+	std::thread t([this]() { threadJob(); });
+	m_workThread.swap(t);
 }
 
 void TCPConnectionManager::stop()
 {
-
+	m_forceStopThread = true;
+	m_workThread.join();
 }
 
+void TCPConnectionManager::threadJob()
+{
+	static const char * pNof = __FUNCTION__;
+	static int cnt = 0;
+
+	while (!m_forceStopThread)
+	{
+		std::string message;
+
+		// Here we receive the message and 
+
+		m_onRequestCallback(message);
+	}
+}
+
+void TCPConnectionManager::sendResponse(std::unique_ptr<ResponseData> response)
+{
+	static const char * pNof = __FUNCTION__;
+
+}
 
 
 // ***********************************************************************
@@ -50,6 +73,7 @@ void FakeConnectionManager::stop()
 void FakeConnectionManager::threadJob()
 {
 	static const char * pNof = __FUNCTION__;
+
 	static int cnt = 0;
 
 	while ( !m_forceStopThread )
@@ -63,3 +87,9 @@ void FakeConnectionManager::threadJob()
 	}
 }
 
+void FakeConnectionManager::sendResponse(std::unique_ptr<ResponseData> response)
+{
+	static const char * pNof = __FUNCTION__;
+
+	DebugLog << pNof << "Response #" << response->id << " Message: " << response->data.data() << std::endl;
+}

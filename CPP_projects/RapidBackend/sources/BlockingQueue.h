@@ -1,5 +1,4 @@
-#ifndef CBLOCKINGQUEUE_H
-#define CBLOCKINGQUEUE_H
+#pragma once
 
 #include <mutex>
 #include <deque>
@@ -7,6 +6,10 @@
 #include <thread>
 #include <iostream>
 #include <chrono>
+#include <atomic>
+
+#include "Logger.h"
+
 using namespace std::chrono_literals;
 
 class cTerminationException : public std::exception
@@ -41,7 +44,7 @@ public:
         
         if (m_bForceStop)
         {
-            std::cout << __func__ << " Throwing cTerminationException" << std::endl;
+			DebugLog << __func__ << " Throwing cTerminationException" << std::endl;
             throw cTerminationException();
         }
             
@@ -62,15 +65,16 @@ public:
         return !m_bForceStop;
     }
     
+	size_t size()
+	{
+		return m_deque.size();
+	}
+
 private:
     std::mutex m_mut;
     std::deque<T> m_deque;
     std::condition_variable m_cv;
     
-    bool m_bForceStop;
+    std::atomic<bool> m_bForceStop;
         
 };
-
-
-#endif /* CBLOCKINGQUEUE_H */
-

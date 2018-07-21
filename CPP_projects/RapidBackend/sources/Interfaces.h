@@ -21,6 +21,7 @@ public:
 	virtual void stop() = 0;
     
 	virtual void setOnRequestCallback( const std::function<void(const std::string&)> & cb ) { m_onRequestCallback = cb; }
+	virtual void sendResponse( std::unique_ptr<ResponseData> ) = 0;
 
 protected:
 

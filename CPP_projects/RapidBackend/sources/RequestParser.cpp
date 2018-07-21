@@ -1,7 +1,10 @@
 #include "stdafx.h"
 
 #include "RequestParser.h"
+
 #include <iostream>
+
+#include "Logger.h"
 
 RequestParser::RequestParser()
 {
@@ -15,7 +18,7 @@ void RequestParser::Parse( const std::string & request, RequestData * requestDat
 {
 	static const char * pNof = __FUNCTION__;
 
-	std::cout << pNof << ": " << request << std::endl;
+	DebugLog << pNof << ": " << request << std::endl;
 }
 
 
@@ -26,17 +29,17 @@ void RequestParser::Parse( const std::string & request, RequestData * requestDat
 //
 // ***********************************************************************
 
+static unsigned int cnt = 0;
 
 void FakeRequestParser::Parse(const std::string & request, RequestData * requestDataResult) const
 {
 	static const char * pNof = __FUNCTION__;
 
-	std::cout << pNof << ": " << request << std::endl;
+	DebugLog << pNof << ": " << request << std::endl;
 
 	requestDataResult->http_method = HTTP_METHOD::ERR_METHOD;
-	requestDataResult->sock = 666;
+	requestDataResult->id = cnt++;
 	requestDataResult->address = "http://ololo.com";
 	requestDataResult->paramsMap["param1"] = "Fishes";
 	requestDataResult->paramsMap["param2"] = "Birds";
-	
 }

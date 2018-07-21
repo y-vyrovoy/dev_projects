@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Interfaces.h"
+#include "Logger.h"
 
 std::atomic<bool> ServerFrame::m_isServerRunning;
 
@@ -21,9 +22,11 @@ void ServerFrame::Initialize()
 {
     m_connectionManager.reset(new FakeConnectionManager);
     m_requestParser.reset(new FakeRequestParser);
-    m_requestQueue.reset(new BlockingQueue<RequestData>);
+    m_queueManager.reset(new RequestQueueManager);
+	m_requestManager.reset(new RequestHandler);
     
     m_connectionManager->setOnRequestCallback( [this](const std::string& param){onRequest(param);} );
+	m_requestManager->Init(m_queueManager, [this](std::unique_ptr<ResponseData> response) {onResponse( std::move(response) );});
 
 	m_isServerRunning = false;
 	m_isInitialized = true;
@@ -38,9 +41,10 @@ int ServerFrame::StartServer()
 
     if ( m_isServerRunning )
     {
-        throw std::runtime_error( "Server already runs. Only one running instance is allowed" );
+        throw std::runtime_error( "Server is already running. Single instance is allowed" );
     }
 
+	m_requestManager->start();
 	m_connectionManager->start();
 
 	return 0;	
@@ -48,6 +52,7 @@ int ServerFrame::StartServer()
     
 void ServerFrame::StopServer()
 {   
+	m_requestManager->stop();
 	m_connectionManager->stop();
     m_isServerRunning = false;
 }
@@ -59,10 +64,23 @@ void ServerFrame::onRequest(const std::string & request)
 	try
 	{
 		RequestData requestData;
+
 		m_requestParser->Parse(request, &requestData);
+		
+		m_queueManager->pushRequest(requestData);
 	}
 	catch (std::exception & ex)
 	{
-		std::cout << ex.what() << std::endl;
+		DebugLog << ex.what() << std::endl;
 	}
+}
+
+void ServerFrame::onResponse(std::unique_ptr<ResponseData> response)
+{
+	static const char * pNof = __FUNCTION__;
+
+	//std::string s();
+
+	
+	m_connectionManager->sendResponse(std::move(response));
 }
