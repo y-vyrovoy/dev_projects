@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "BlockingQueue.h"
@@ -6,51 +5,59 @@
 #include <functional>
 #include <thread>
 #include <atomic>
+#include <chrono>
 
 #include "DataTypes.h"
 #include "Interfaces.h"
+#include "SockTypes.h"
+#include "ResponseDispatcher.h"
 
-class TCPConnectionManager : public IConnectionManager
+using HiResTime = std::chrono::high_resolution_clock::time_point;
+
+
+class TCPConnectionManager
 {
+
 public:
 	TCPConnectionManager();
 	~TCPConnectionManager();
 
-	void start() override;
-	void stop() override;
+	TCPConnectionManager(const TCPConnectionManager &) = delete;
+	TCPConnectionManager(TCPConnectionManager &&) = delete;
+	TCPConnectionManager & operator= (const TCPConnectionManager &) = delete;
+	TCPConnectionManager & operator= (TCPConnectionManager &&) = delete;
 
-	void sendResponse(std::unique_ptr<ResponseData> ) override;
+	void Init();
+
+	void setOnRequestCallback(const std::function<void(const std::string&)> & cb) { m_onRequestCallback = cb; }
+
+	void start();
+
+	void stop();
+
+	void registerResponse( ResponsePtr );
+
+
 
 private:
-	void threadJob();
+
+
+	void waitForRequestJob();
+
+	unsigned int registerRequest( SOCKET sock );
+
 
 private:
+
+	static RequestIdType m_nextRequestID;
+
+	std::function<void(const std::string&)> m_onRequestCallback;
+
+	std::unique_ptr< ResponseDispatcher > m_responseDispatcher;
+
 	std::thread m_workThread;
+
 	std::atomic<bool> m_forceStopThread;
-};
 
-
-// ***********************************************************************
-//	
-//	Fake interface implementation for testing and architecture development
-//
-// ***********************************************************************
-
-class FakeConnectionManager : public IConnectionManager
-{
-public:
-	FakeConnectionManager() {};
-	~FakeConnectionManager() {};
-
-	void start() override;
-	void stop() override;
-
-	void sendResponse(std::unique_ptr<ResponseData>) override;
-	
-private:
-	void threadJob();
-
-private:
-	std::thread m_workThread;
-	std::atomic<bool> m_forceStopThread;
+	std::mutex m_getIdMtx;
 };

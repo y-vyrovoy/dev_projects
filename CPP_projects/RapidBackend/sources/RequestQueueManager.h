@@ -16,6 +16,6 @@ public:
 	size_t size() { return m_requestQueue.size(); };
 
 private:
-	BlockingQueue<RequestData> m_requestQueue;
+	BlockingQueue< std::unique_ptr<RequestData> > m_requestQueue;
 };
 

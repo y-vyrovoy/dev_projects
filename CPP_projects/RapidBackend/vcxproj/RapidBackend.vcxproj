@@ -150,6 +150,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\Logger.h" />
+    <ClInclude Include="..\sources\ResponseDispatcher.h" />
+    <ClInclude Include="..\sources\SockTypes.h" />
     <ClInclude Include="..\sources\stdafx.h" />
     <ClInclude Include="../targetver.h" />
     <ClInclude Include="..\sources\Interfaces.h" />
@@ -157,13 +159,13 @@
     <ClInclude Include="..\sources\BlockingQueue.h" />
     <ClInclude Include="..\sources\DataTypes.h" />
     <ClInclude Include="..\sources\RequestParser.h" />
-    <ClInclude Include="..\sources\ServerFrame.h" />
+    <ClInclude Include="..\sources\ServerFramework.h" />
     <ClInclude Include="..\sources\TCPConnectionManager.h" />
-    <ClInclude Include="..\sources\RequestQueueManager.h" />
     <ClInclude Include="..\sources\RequestHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\Logger.cpp" />
+    <ClCompile Include="..\sources\ResponseDispatcher.cpp" />
     <ClCompile Include="..\sources\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -171,11 +173,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\sources\main.cpp" />
-    <ClCompile Include="..\sources\RequestQueueManager.cpp" />
     <ClCompile Include="..\sources\RequestHandler.cpp" />
     <ClInclude Include="..\sources\RBClassFactory.cpp" />
     <ClCompile Include="..\sources\RequestParser.cpp" />
-    <ClCompile Include="..\sources\ServerFrame.cpp" />
+    <ClCompile Include="..\sources\ServerFramework.cpp" />
     <ClCompile Include="..\sources\TCPConnectionManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

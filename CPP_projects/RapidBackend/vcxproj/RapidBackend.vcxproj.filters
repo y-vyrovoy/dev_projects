@@ -30,9 +30,6 @@
     <ClInclude Include="..\sources\RequestParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\ServerFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\TCPConnectionManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -45,13 +42,19 @@
     <ClInclude Include="..\sources\RBClassFactory.cpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\RequestQueueManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\RequestHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\SockTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\ServerFramework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\ResponseDispatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,22 +65,22 @@
     <ClCompile Include="..\sources\RequestParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\ServerFrame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\TCPConnectionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\RequestQueueManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\RequestHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\ServerFramework.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\ResponseDispatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

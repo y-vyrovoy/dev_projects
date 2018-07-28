@@ -3,10 +3,12 @@
 #include <utility>
 #include <algorithm>
 #include <chrono>
-
 #include <sstream>
 
 #include "TCPConnectionManager.h"
+#include "Logger.h"
+
+unsigned int TCPConnectionManager::m_nextRequestID;
 
 TCPConnectionManager::TCPConnectionManager()
 {
@@ -16,10 +18,15 @@ TCPConnectionManager::~TCPConnectionManager()
 {
 }
 
+void TCPConnectionManager::Init( )
+{
+	m_responseDispatcher.reset( new ResponseDispatcher );
+}
+
 void TCPConnectionManager::start()
 {
 	m_forceStopThread = false;
-	std::thread t([this]() { threadJob(); });
+	std::thread t([this]() { waitForRequestJob(); });
 	m_workThread.swap(t);
 }
 
@@ -29,67 +36,45 @@ void TCPConnectionManager::stop()
 	m_workThread.join();
 }
 
-void TCPConnectionManager::threadJob()
+void TCPConnectionManager::waitForRequestJob()
 {
 	static const char * pNof = __FUNCTION__;
-	static int cnt = 0;
 
-	while (!m_forceStopThread)
+	try
 	{
-		std::string message;
+		while (!m_forceStopThread)
+		{
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 
-		// Here we receive the message and 
+			/// TODO: Here we get data from TCP connection, and send the string with the request to CB
 
-		m_onRequestCallback(message);
+			unsigned int id = registerRequest(INVALID_SOCKET);
+
+			std::stringstream message;
+			message << "The message #" << (id);
+
+			m_onRequestCallback(message.str());
+		}
+	}
+	catch (std::exception ex)
+	{
+		DebugLog << "Exception. error: " << ex.what() << std::endl;
 	}
 }
 
-void TCPConnectionManager::sendResponse(std::unique_ptr<ResponseData> response)
+inline unsigned int TCPConnectionManager::registerRequest( SOCKET sock )
 {
 	static const char * pNof = __FUNCTION__;
 
+	std::unique_lock<std::mutex> lck( m_getIdMtx );
+
+	m_responseDispatcher->registerRequest(m_nextRequestID, sock);
+	return m_nextRequestID++;
 }
 
-
-// ***********************************************************************
-//	
-//	Fake interface implementation for testing and architecture development
-//
-// ***********************************************************************
-
-void FakeConnectionManager::start()
-{
-	m_forceStopThread = false;
-	std::thread t( [this]() { threadJob(); } );
-	m_workThread.swap( t );
-}
-
-void FakeConnectionManager::stop()
-{
-	m_forceStopThread = true;
-	m_workThread.join();
-}
-
-void FakeConnectionManager::threadJob()
+void TCPConnectionManager::registerResponse( ResponsePtr response )
 {
 	static const char * pNof = __FUNCTION__;
 
-	static int cnt = 0;
-
-	while ( !m_forceStopThread )
-	{
-		std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
-		
-		std::stringstream message;
-		message << "The message #" << cnt++;
-
-		m_onRequestCallback( message.str() );
-	}
-}
-
-void FakeConnectionManager::sendResponse(std::unique_ptr<ResponseData> response)
-{
-	static const char * pNof = __FUNCTION__;
-
-	DebugLog << pNof << "Response #" << response->id << " Message: " << response->data.data() << std::endl;
+	m_responseDispatcher->registerResponse( std::move(response) );
 }

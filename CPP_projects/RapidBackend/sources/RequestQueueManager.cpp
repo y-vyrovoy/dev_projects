@@ -11,11 +11,11 @@ RequestQueueManager::~RequestQueueManager()
 {
 }
 
-void RequestQueueManager::pushRequest(const RequestData & request)
+void RequestQueueManager::pushRequest(const RequestData & response)
 {
 	static const char * pNof = __FUNCTION__ ": ";
 
-	m_requestQueue.push(request);
+	m_requestQueue.push(response);
 }
 
 RequestData RequestQueueManager::pullRequest()
