@@ -1,6 +1,5 @@
 #pragma once
 
-#include "RequestQueueManager.h"
 #include "DataTypes.h"
 
 

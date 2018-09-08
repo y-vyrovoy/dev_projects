@@ -19,8 +19,8 @@ class TCPConnectionManager
 {
 
 public:
-	TCPConnectionManager();
-	~TCPConnectionManager();
+	TCPConnectionManager() {};
+	~TCPConnectionManager() {};
 
 	TCPConnectionManager(const TCPConnectionManager &) = delete;
 	TCPConnectionManager(TCPConnectionManager &&) = delete;

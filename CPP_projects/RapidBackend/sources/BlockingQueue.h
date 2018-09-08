@@ -46,7 +46,7 @@ public:
         
         if (m_bForceStop)
         {
-			DebugLog << __func__ << " Throwing cTerminationException" << std::endl;
+			DEBUG_LOG << " Throwing cTerminationException" << std::endl;
             throw cTerminationException();
         }
             

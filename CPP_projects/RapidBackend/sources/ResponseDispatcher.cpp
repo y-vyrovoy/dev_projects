@@ -3,32 +3,20 @@
 
 #include<sstream>
 
-
-ResponseDispatcher::ResponseDispatcher()
-{
-}
-
-
-ResponseDispatcher::~ResponseDispatcher()
-{
-}
+#include "MessageException.h"
 
 void ResponseDispatcher::registerRequest( RequestIdType id, SOCKET sock )
 {
-	static char pNof[] = __FUNCTION__ ": ";
-
 	if (m_id2SocketMap.find(id) != m_id2SocketMap.end())
 	{
-		std::stringstream error;
-		error << pNof << "Request id duplication #" << id;
-		throw std::runtime_error( error.str() );
+		THROW_MESSAGE << "Request id duplication #" << id;
 	}
 
-	std::unique_lock<std::mutex> lck;
+	std::unique_lock<std::mutex> lck( m_Mtx );
 
 	m_id2SocketMap[id] = sock;
 
-	std::list<RequestIdType> & list = m_topQueue[sock];
+	std::list<RequestIdType> & list = m_requestsChains[sock];
 
 	auto itFirstSmaller = std::lower_bound( list.begin(), list.end(), id );
 	list.insert(itFirstSmaller, id);
@@ -40,104 +28,86 @@ void ResponseDispatcher::registerResponse( ResponsePtr response )
 
 	RequestIdType id = response->id;
 
-	std::unique_lock<std::mutex> lck;
+	std::unique_lock<std::mutex> lck( m_Mtx );
 
-	if (m_storedResponses.find(id) != m_storedResponses.end())
+	if (m_responses.find(id) != m_responses.end())
 	{
-		std::stringstream error;
-		error << pNof << "Duplicating response id #" << id;
-		throw std::runtime_error(error.str());
+		THROW_MESSAGE << "Duplicating response id #" << id;
 	}
 
 	auto itID = m_id2SocketMap.find(id);
 	if ( itID == m_id2SocketMap.end() )
 	{
-		std::stringstream error;
-		error << pNof << "Can't find socket for the response id #" << id;
-		throw std::runtime_error( error.str() );
+		THROW_MESSAGE << "Can't find socket for the response id #" << id;
 	}
 	
 	SOCKET sock = itID->second;
 
-	m_storedResponses[id] = std::move(response);
+	m_responses[id] = std::move(response);
 
-	putTopResponseToQueue(sock);
+	putTopOfChainToQueue(sock);
 }
 
 SOCKET ResponseDispatcher::getSocket(RequestIdType id) const
 {
-	static char pNof[] = __FUNCTION__ ": ";
-
 	auto it = m_id2SocketMap.find(id);
 	if ( it == m_id2SocketMap.end() )
 	{
-		std::stringstream error;
-		error << pNof << "Can't find socket for the response id #" << id;
-		throw std::runtime_error(error.str());
+		THROW_MESSAGE << "Can't find socket for the response id #" << id;
 	}
 
 	return it->second;
 }
 
-void ResponseDispatcher::putTopResponseToQueue(SOCKET sock)
+void ResponseDispatcher::putTopOfChainToQueue(SOCKET sock)
 {
-	static char pNof[] = __FUNCTION__ ": ";
+	std::unique_lock<std::mutex> lck( m_Mtx );
 
-	std::unique_lock<std::mutex> lck;
-
-	auto itSock = m_topQueue.find(sock);
-	if (itSock == m_topQueue.end() )
+	auto itSock = m_requestsChains.find(sock);
+	if (itSock == m_requestsChains.end() )
 	{
-		std::stringstream error;
-		error << pNof << "Can't find socket #" << sock;
-		throw std::runtime_error(error.str());
+		THROW_MESSAGE << "Can't find socket #" << sock;
 	}
 
 	RequestIdType topId = itSock->second.front();
 
-	if ( !m_topResponces.contains(topId) )
+	if ( !m_responseQueue.contains(topId) )
 	{
-		m_topResponces.push(topId);
+		m_responseQueue.push(topId);
 	}
 }
 
 ResponseData * ResponseDispatcher::pullResponse()
 {
-	RequestIdType id = m_topResponces.pull();
-	return m_storedResponses[id].get();
+	RequestIdType id = m_responseQueue.pull();
+	return m_responses[id].get();
 }
 
 void ResponseDispatcher::removeResponse( RequestIdType id )
 {
-	static char pNof[] = __FUNCTION__ ": ";
-
-	std::unique_lock<std::mutex> lck;
+	std::unique_lock<std::mutex> lck( m_Mtx );
 
 	auto itID = m_id2SocketMap.find(id);
 	if (itID == m_id2SocketMap.end() )
 	{
-		std::stringstream error;
-		error << pNof << "Can't find socket for the response id #" << id;
-		throw std::runtime_error(error.str());
+		THROW_MESSAGE << "Can't find socket for the response id #" << id;
 	}
 
 	SOCKET sock = itID->second;
 
-	auto itSock = m_topQueue.find(sock);
-	if ( itSock == m_topQueue.end() )
+	auto itSock = m_requestsChains.find(sock);
+	if ( itSock == m_requestsChains.end() )
 	{
-		std::stringstream error;
-		error << pNof << "Can't find socket #" << sock;
-		throw std::runtime_error(error.str());
+		THROW_MESSAGE << "Can't find socket #" << sock;
 	}
 
 	itSock->second.remove(id);
 
-	m_storedResponses.erase( m_storedResponses.find(id) );
+	m_responses.erase( m_responses.find(id) );
 
 	m_id2SocketMap.erase( m_id2SocketMap.find(id) );
 
-	putTopResponseToQueue( sock );
+	putTopOfChainToQueue( sock );
 }
 
 
@@ -151,7 +121,7 @@ void ResponseDispatcher::Dump()
 		std::cout << std::endl;
 	};
 
-	std::for_each(m_topQueue.begin(), m_topQueue.end(), printList);
+	std::for_each(m_requestsChains.begin(), m_requestsChains.end(), printList);
 	std::cout << std::endl;
 
 
@@ -164,13 +134,13 @@ void ResponseDispatcher::Dump()
 
 
 	std::cout << "Stored responses: ";
-	std::for_each(m_storedResponses.begin(),
-					m_storedResponses.end(),
+	std::for_each(m_responses.begin(),
+					m_responses.end(),
 					[&](const auto & t) {std::cout << t.first << " "; });
 	std::cout << std::endl;
 
 
-	std::cout << "Top responses: " << m_topResponces.Dump() << std::endl << std::endl;
+	std::cout << "Top responses: " << m_responseQueue.Dump() << std::endl << std::endl;
 	std::cout << " ======================== " << std::endl << std::endl;
 
 }

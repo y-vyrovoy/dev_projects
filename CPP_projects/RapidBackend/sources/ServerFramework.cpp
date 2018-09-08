@@ -6,6 +6,7 @@
 
 #include "Interfaces.h"
 #include "Logger.h"
+#include "MessageException.h"
 
 std::atomic<bool> ServerFramework::m_isServerRunning;
 
@@ -24,8 +25,6 @@ void ServerFramework::Initialize()
     m_requestParser.reset( new FakeRequestParser );
 	m_requestQueue.reset( new RequestQueue );
 	m_requestManager.reset( new RequestHandler );
-	
-	
 
 	m_connectionManager->Init( );
 
@@ -40,12 +39,12 @@ int ServerFramework::StartServer()
 {
 	if ( !m_isInitialized )
 	{
-		throw std::runtime_error( "Server is notinitialized" );
+		THROW_MESSAGE << "Server is notinitialized";
 	}
 
     if ( m_isServerRunning )
     {
-        throw std::runtime_error( "Server is already running. Single instance is allowed" );
+        THROW_MESSAGE << "Server is already running. Single instance is allowed";
     }
 
 	m_requestManager->start();
@@ -63,8 +62,6 @@ void ServerFramework::StopServer()
 
 void ServerFramework::onRequest(const std::string & request)
 {
-	static const char * pNof = __FUNCTION__;
-
 	try
 	{
 		std::unique_ptr<RequestData> requestDataPtr(new RequestData);
@@ -75,7 +72,7 @@ void ServerFramework::onRequest(const std::string & request)
 	}
 	catch (std::exception & ex)
 	{
-		DebugLog << ex.what() << std::endl;
+		DEBUG_LOG << ex.what() << std::endl;
 	}
 }
 
@@ -83,8 +80,6 @@ void ServerFramework::onRequest(const std::string & request)
 
 void ServerFramework::onResponse(std::unique_ptr<ResponseData> response)
 {
-	static const char * pNof = __FUNCTION__;
-
 	//std::string s();
 
 	

@@ -7,7 +7,6 @@
 #include "DataTypes.h"
 #include "TCPConnectionManager.h"
 #include "RequestParser.h"
-#include "RequestQueueManager.h"
 #include "RequestHandler.h"
 #include "ResponseDispatcher.h"
 

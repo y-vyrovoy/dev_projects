@@ -54,5 +54,9 @@ Logger& operator<<(Logger & log, StandardEndLine pf)
 	return log;
 }
 
+extern Logger DebugLogger;
+	
+#define DEBUG_LOG \
+	DebugLogger << __func__ << ": " 
 
-extern Logger DebugLog;
+

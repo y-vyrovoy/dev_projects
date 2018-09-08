@@ -150,12 +150,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\Logger.h" />
+    <ClInclude Include="..\sources\MessageException.h" />
     <ClInclude Include="..\sources\ResponseDispatcher.h" />
     <ClInclude Include="..\sources\SockTypes.h" />
     <ClInclude Include="..\sources\stdafx.h" />
     <ClInclude Include="../targetver.h" />
     <ClInclude Include="..\sources\Interfaces.h" />
-    <ClInclude Include="..\sources\RBClassFactory.h" />
     <ClInclude Include="..\sources\BlockingQueue.h" />
     <ClInclude Include="..\sources\DataTypes.h" />
     <ClInclude Include="..\sources\RequestParser.h" />
@@ -165,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\Logger.cpp" />
+    <ClCompile Include="..\sources\MessageException.cpp" />
     <ClCompile Include="..\sources\ResponseDispatcher.cpp" />
     <ClCompile Include="..\sources\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -174,7 +175,6 @@
     </ClCompile>
     <ClCompile Include="..\sources\main.cpp" />
     <ClCompile Include="..\sources\RequestHandler.cpp" />
-    <ClInclude Include="..\sources\RBClassFactory.cpp" />
     <ClCompile Include="..\sources\RequestParser.cpp" />
     <ClCompile Include="..\sources\ServerFramework.cpp" />
     <ClCompile Include="..\sources\TCPConnectionManager.cpp" />

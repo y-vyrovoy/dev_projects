@@ -2,10 +2,31 @@
 
 #include "ServerFramework.h"
 
-
+#include "MessageException.h"
 
 int main(int argc, char** argv)
 {
+
+	std::string s{ "exception message" };
+
+	MessageException ex1 ( std::move(s) );
+	MessageException ex2 = ex1 ;
+
+	try
+	{
+
+		std::cout << "ex2: " << ex2.what() << std::endl;
+
+		throw ex2;
+	}
+	catch ( std::exception & ex )
+	{
+		std::cout << "Exception: " << ex.what() << std::endl;
+	}
+
+
+	return 0;
+
 	ResponseDispatcher disp;
 
 	disp.registerRequest(0, 0);
@@ -58,7 +79,7 @@ int main(int argc, char** argv)
 		std::cout << "-----------------------" << std::endl << std::endl;
 		disp.Dump();
 
-		disp.putTopResponseToQueue( disp.getSocket(0) );
+		disp.putTopOfChainToQueue( disp.getSocket(0) );
 		std::cout << "putTopResponseToQueue(0)" << std::endl;
 		std::cout << "-----------------------" << std::endl << std::endl;
 		disp.Dump();

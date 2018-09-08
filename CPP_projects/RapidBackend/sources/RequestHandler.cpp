@@ -33,15 +33,13 @@ void RequestHandler::stop()
 
 void RequestHandler::threadJob()
 {
-	static const char * pNof = __FUNCTION__ ": ";
-
 	while (true)
 	{
 		try {
 
 			// Waitinig for the next request from the queue
 			RequestPtr request = m_queueManager->pull();
-			DebugLog << pNof << "Starting request processing: id=" << request->id << std::endl;
+			DEBUG_LOG << "Starting request processing: id=" << request->id << std::endl;
 
 
 			//Here's the next request - let's send new response
@@ -60,12 +58,12 @@ void RequestHandler::threadJob()
 		}
 		catch (cTerminationException exTerm)
 		{
-			DebugLog << pNof << "terminating job" << std::endl;
+			DEBUG_LOG << "terminating job" << std::endl;
 			return;
 		}
 		catch (std::exception ex)
 		{
-			DebugLog << pNof << "Exception: "<< ex.what() << std::endl;
+			DEBUG_LOG << "Exception: "<< ex.what() << std::endl;
 			return;
 		}
 

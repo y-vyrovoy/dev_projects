@@ -10,14 +10,6 @@
 
 unsigned int TCPConnectionManager::m_nextRequestID;
 
-TCPConnectionManager::TCPConnectionManager()
-{
-}
-
-TCPConnectionManager::~TCPConnectionManager()
-{
-}
-
 void TCPConnectionManager::Init( )
 {
 	m_responseDispatcher.reset( new ResponseDispatcher );
@@ -38,8 +30,6 @@ void TCPConnectionManager::stop()
 
 void TCPConnectionManager::waitForRequestJob()
 {
-	static const char * pNof = __FUNCTION__;
-
 	try
 	{
 		while (!m_forceStopThread)
@@ -58,7 +48,7 @@ void TCPConnectionManager::waitForRequestJob()
 	}
 	catch (std::exception ex)
 	{
-		DebugLog << "Exception. error: " << ex.what() << std::endl;
+		DEBUG_LOG << "Exception. error: " << ex.what() << std::endl;
 	}
 }
 

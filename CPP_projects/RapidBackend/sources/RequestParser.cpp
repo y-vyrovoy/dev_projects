@@ -16,9 +16,7 @@ RequestParser::~RequestParser()
 
 void RequestParser::Parse( const std::string & request, RequestData * requestDataResult ) const
 {
-	static const char * pNof = __FUNCTION__;
-
-	DebugLog << pNof << ": " << request << std::endl;
+	DEBUG_LOG << ": " << request << std::endl;
 }
 
 
@@ -33,9 +31,7 @@ static unsigned int cnt = 0;
 
 void FakeRequestParser::Parse(const std::string & request, RequestData * requestDataResult) const
 {
-	static const char * pNof = __FUNCTION__;
-
-	DebugLog << pNof << ": " << request << std::endl;
+	DEBUG_LOG << ": " << request << std::endl;
 
 	requestDataResult->http_method = HTTP_METHOD::ERR_METHOD;
 	requestDataResult->id = cnt++;
