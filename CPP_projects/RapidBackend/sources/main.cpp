@@ -6,37 +6,16 @@
 
 int main(int argc, char** argv)
 {
-
-	std::string s{ "exception message" };
-
-	MessageException ex1 ( std::move(s) );
-	MessageException ex2 = ex1 ;
-
-	try
-	{
-
-		std::cout << "ex2: " << ex2.what() << std::endl;
-
-		throw ex2;
-	}
-	catch ( std::exception & ex )
-	{
-		std::cout << "Exception: " << ex.what() << std::endl;
-	}
-
-
-	return 0;
-
 	ResponseDispatcher disp;
 
-	disp.registerRequest(0, 0);
-	disp.registerRequest(1, 1);
-	disp.registerRequest(2, 2);
-	disp.registerRequest(3, 0);
-	disp.registerRequest(4, 1);
-	disp.registerRequest(5, 2);
-	disp.registerRequest(6, 0);
-	disp.registerRequest(7, 1);
+	disp.registerRequest(0);
+	disp.registerRequest(1);
+	disp.registerRequest(2);
+	disp.registerRequest(0);
+	disp.registerRequest(1);
+	disp.registerRequest(2);
+	disp.registerRequest(0);
+	disp.registerRequest(1);
 
 	disp.Dump();
 
@@ -74,7 +53,7 @@ int main(int argc, char** argv)
 		disp.Dump();
 
 
-		ResponseData * p = disp.pullResponse();
+		ResponseData * p = disp.getTopResponse();
 		std::cout << "Pull response" << std::endl;
 		std::cout << "-----------------------" << std::endl << std::endl;
 		disp.Dump();
@@ -84,7 +63,7 @@ int main(int argc, char** argv)
 		std::cout << "-----------------------" << std::endl << std::endl;
 		disp.Dump();
 
-		disp.pullResponse();
+		disp.getTopResponse();
 		disp.removeResponse(0);
 		std::cout << "pullResponse() -> removeResponse(0)" << std::endl;
 		std::cout << "-----------------------" << std::endl << std::endl;

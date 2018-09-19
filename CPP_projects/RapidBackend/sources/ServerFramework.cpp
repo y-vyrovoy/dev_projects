@@ -76,8 +76,6 @@ void ServerFramework::onRequest(const std::string & request)
 	}
 }
 
-
-
 void ServerFramework::onResponse(std::unique_ptr<ResponseData> response)
 {
 	//std::string s();

@@ -8,7 +8,7 @@
 #include "TCPConnectionManager.h"
 #include "Logger.h"
 
-unsigned int TCPConnectionManager::m_nextRequestID;
+
 
 void TCPConnectionManager::Init( )
 {
@@ -38,12 +38,8 @@ void TCPConnectionManager::waitForRequestJob()
 
 			/// TODO: Here we get data from TCP connection, and send the string with the request to CB
 
-			unsigned int id = registerRequest(INVALID_SOCKET);
-
-			std::stringstream message;
-			message << "The message #" << (id);
-
-			m_onRequestCallback(message.str());
+			registerRequest(INVALID_SOCKET);
+			m_onRequestCallback( "New test request" );
 		}
 	}
 	catch (std::exception ex)
@@ -52,14 +48,13 @@ void TCPConnectionManager::waitForRequestJob()
 	}
 }
 
-inline unsigned int TCPConnectionManager::registerRequest( SOCKET sock )
+void TCPConnectionManager::registerRequest( SOCKET sock )
 {
 	static const char * pNof = __FUNCTION__;
 
 	std::unique_lock<std::mutex> lck( m_getIdMtx );
 
-	m_responseDispatcher->registerRequest(m_nextRequestID, sock);
-	return m_nextRequestID++;
+	m_responseDispatcher->registerRequest( sock );
 }
 
 void TCPConnectionManager::registerResponse( ResponsePtr response )

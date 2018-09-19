@@ -41,15 +41,12 @@ public:
 
 private:
 
-
 	void waitForRequestJob();
 
-	unsigned int registerRequest( SOCKET sock );
+	void registerRequest( SOCKET sock );
 
 
 private:
-
-	static RequestIdType m_nextRequestID;
 
 	std::function<void(const std::string&)> m_onRequestCallback;
 

@@ -14,10 +14,10 @@ public:
 	ResponseDispatcher() {};
 	~ResponseDispatcher() {};
 
-	void registerRequest( RequestIdType, SOCKET );
+	void registerRequest( SOCKET );
 	void registerResponse( ResponsePtr );
 
-	ResponseData * pullResponse();
+	ResponseData * getTopResponse();
 
 	void removeResponse(RequestIdType);
 
@@ -28,12 +28,14 @@ public:
 	SOCKET getSocket(RequestIdType) const;
 
 private:
-	std::map< RequestIdType, SOCKET >				m_id2SocketMap;
+	std::map< RequestIdType, SOCKET >				m_requestId2SocketMap;
 	std::map< RequestIdType, ResponsePtr >			m_responses;
 	std::map< SOCKET, std::list<RequestIdType> >	m_requestsChains;
 	
 	BlockingQueue<RequestIdType>					m_responseQueue;
 
-	// TODO:: try to use set of mutexes
-	std::mutex m_Mtx;
+	static RequestIdType m_nextRequestID;
+
+	std::mutex m_requestMutex;
+	std::mutex m_responseMutex;
 };
