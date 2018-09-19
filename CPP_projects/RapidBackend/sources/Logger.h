@@ -8,7 +8,7 @@
 typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
 
 // this is the function signature of std::endl
-typedef CoutType& (*StandardEndLine)(CoutType&);
+typedef CoutType& ( *StandardEndLine )( CoutType& );
 
 class Logger
 {
@@ -27,32 +27,30 @@ private:
 
 public:
 
-	template <typename T>
-	friend Logger & operator << (Logger & log, const T & param);
-	friend Logger& operator << (Logger & log, StandardEndLine pf);
+    template <typename T>
+    Logger & operator << ( const T & param ) 
+    {
+        std::lock_guard<std::mutex> lock(Logger::m_coutMutex);
+
+        std::cout << param;
+        return *this;
+    }
+
+
+    Logger & operator << ( StandardEndLine pf )
+    {
+        std::lock_guard<std::mutex> lock(Logger::m_coutMutex);
+
+        pf(std::cout);
+        return *this;
+    }
 
 private:
 	static std::mutex m_coutMutex;
 };
 
 
-template <typename T>
-Logger & operator << ( Logger & log, const T & param) 
-{
-	std::lock_guard<std::mutex> lock(Logger::m_coutMutex);
 
-	std::cout << param;
-	return log;
-};
-
-
-Logger& operator<<(Logger & log, StandardEndLine pf)
-{
-	std::lock_guard<std::mutex> lock(Logger::m_coutMutex);
-	
-	pf(std::cout);
-	return log;
-}
 
 extern Logger DebugLogger;
 	
