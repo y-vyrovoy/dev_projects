@@ -16,10 +16,10 @@ using RequestIdType = unsigned int;
 struct RequestData
 {
     // id should be set by ConnectionManager
-	// id is used to match request and response
-	RequestIdType id;
+    // id is used to match request and response
+    RequestIdType id;
 
-	HTTP_METHOD http_method;
+    HTTP_METHOD http_method;
     std::string address;
     std::map<std::string, std::string> paramsMap;
 };

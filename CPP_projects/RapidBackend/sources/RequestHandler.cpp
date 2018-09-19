@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "RequestHandler.h"
 
+#include <cstring>
+
 #include "Logger.h"
 
 RequestHandler::RequestHandler()
@@ -51,7 +53,7 @@ void RequestHandler::threadJob()
 			
 			const static char * pchMessage = "Default response message";
 			
-			memcpy(response->data.data(), pchMessage, std::min(response->data.size(), strlen(pchMessage) + 1) );
+			memcpy(response->data.data(), pchMessage, std::min(response->data.size(), std::strlen(pchMessage) + 1) );
 
 			m_responseCallback( std::move(response) );
 			

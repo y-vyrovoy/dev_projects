@@ -8,6 +8,7 @@
 #include <chrono>
 #include <atomic>
 #include <sstream>
+#include <algorithm>
 
 #include "Logger.h"
 

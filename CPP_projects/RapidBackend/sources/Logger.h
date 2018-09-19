@@ -28,8 +28,8 @@ private:
 public:
 
 	template <typename T>
-	friend static Logger & operator << (Logger & log, const T & param);
-	friend static Logger& operator << (Logger & log, StandardEndLine pf);
+	friend Logger & operator << (Logger & log, const T & param);
+	friend Logger& operator << (Logger & log, StandardEndLine pf);
 
 private:
 	static std::mutex m_coutMutex;
@@ -58,5 +58,4 @@ extern Logger DebugLogger;
 	
 #define DEBUG_LOG \
 	DebugLogger << __func__ << ": " 
-
 

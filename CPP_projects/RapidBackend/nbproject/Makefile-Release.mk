@@ -35,8 +35,12 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/sources/Logger.o \
+	${OBJECTDIR}/sources/MessageException.o \
+	${OBJECTDIR}/sources/RequestHandler.o \
 	${OBJECTDIR}/sources/RequestParser.o \
-	${OBJECTDIR}/sources/ServerFrame.o \
+	${OBJECTDIR}/sources/ResponseDispatcher.o \
+	${OBJECTDIR}/sources/ServerFramework.o \
 	${OBJECTDIR}/sources/TCPConnectionManager.o \
 	${OBJECTDIR}/sources/main.o \
 	${OBJECTDIR}/sources/stdafx.o
@@ -66,15 +70,35 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rapidbackend: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/rapidbackend ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/sources/Logger.o: sources/Logger.cpp
+	${MKDIR} -p ${OBJECTDIR}/sources
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sources/Logger.o sources/Logger.cpp
+
+${OBJECTDIR}/sources/MessageException.o: sources/MessageException.cpp
+	${MKDIR} -p ${OBJECTDIR}/sources
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sources/MessageException.o sources/MessageException.cpp
+
+${OBJECTDIR}/sources/RequestHandler.o: sources/RequestHandler.cpp
+	${MKDIR} -p ${OBJECTDIR}/sources
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sources/RequestHandler.o sources/RequestHandler.cpp
+
 ${OBJECTDIR}/sources/RequestParser.o: sources/RequestParser.cpp
 	${MKDIR} -p ${OBJECTDIR}/sources
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sources/RequestParser.o sources/RequestParser.cpp
 
-${OBJECTDIR}/sources/ServerFrame.o: sources/ServerFrame.cpp
+${OBJECTDIR}/sources/ResponseDispatcher.o: sources/ResponseDispatcher.cpp
 	${MKDIR} -p ${OBJECTDIR}/sources
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sources/ServerFrame.o sources/ServerFrame.cpp
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sources/ResponseDispatcher.o sources/ResponseDispatcher.cpp
+
+${OBJECTDIR}/sources/ServerFramework.o: sources/ServerFramework.cpp
+	${MKDIR} -p ${OBJECTDIR}/sources
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/sources/ServerFramework.o sources/ServerFramework.cpp
 
 ${OBJECTDIR}/sources/TCPConnectionManager.o: sources/TCPConnectionManager.cpp
 	${MKDIR} -p ${OBJECTDIR}/sources
