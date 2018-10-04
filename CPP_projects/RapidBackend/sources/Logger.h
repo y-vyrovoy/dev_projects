@@ -4,6 +4,9 @@
 #include <ostream>
 #include <mutex>
 
+#include <chrono>
+using namespace std::chrono_literals;
+
 // this is the type of std::cout
 typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
 
@@ -30,7 +33,7 @@ public:
     template <typename T>
     Logger & operator << ( const T & param ) 
     {
-        std::lock_guard<std::mutex> lock(Logger::m_coutMutex);
+        std::unique_lock<std::mutex> lock(m_coutMutex);
 
         std::cout << param;
         return *this;
@@ -39,14 +42,14 @@ public:
 
     Logger & operator << ( StandardEndLine pf )
     {
-        std::lock_guard<std::mutex> lock(Logger::m_coutMutex);
+        std::unique_lock<std::mutex> lock(m_coutMutex);
 
         pf(std::cout);
         return *this;
     }
 
 private:
-	static std::mutex m_coutMutex;
+	std::mutex m_coutMutex;
 };
 
 

@@ -15,7 +15,6 @@ using RequestIdType = unsigned int;
 
 struct RequestData
 {
-    // id should be set by ConnectionManager
     // id is used to match request and response
     RequestIdType id;
 

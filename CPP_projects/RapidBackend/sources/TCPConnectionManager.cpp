@@ -54,7 +54,7 @@ void TCPConnectionManager::registerRequest( SOCKET sock )
 
 	std::unique_lock<std::mutex> lck( m_getIdMtx );
 
-	m_responseDispatcher->registerRequest( sock );
+	//m_responseDispatcher->registerRequest( sock );
 }
 
 void TCPConnectionManager::registerResponse( ResponsePtr response )

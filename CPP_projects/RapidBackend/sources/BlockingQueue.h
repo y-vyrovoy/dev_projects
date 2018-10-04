@@ -33,8 +33,8 @@ public:
 	void push(U && param)
 	{
 		{
-			std::unique_lock<std::mutex> lock(m_mut);
-			m_deque.push_front(std::forward<T>(param));
+			std::unique_lock<std::mutex> lock( m_mut );
+			m_deque.push_front( std::forward<T>( param ) );
 		}
 
 		m_cv.notify_all();
@@ -42,16 +42,18 @@ public:
 
     T pull()
     {
-        std::unique_lock<std::mutex> lock(m_mut);
-        m_cv.wait(lock, [this](){return !m_deque.empty() || m_bForceStop;});
+		std::unique_lock<std::mutex> lock( m_mut );
+
+		m_cv.wait( lock, [this] () {return !m_deque.empty() || m_bForceStop; } );
         
-        if (m_bForceStop)
+        if ( m_bForceStop )
         {
 			DEBUG_LOG << " Throwing cTerminationException" << std::endl;
             throw cTerminationException();
         }
             
-        T ret(std::move(m_deque.back()));
+		
+		T ret{ std::move( m_deque.back() ) };
         m_deque.pop_back();
         
         return ret;
@@ -78,12 +80,29 @@ public:
 		return !( std::find(m_deque.begin(), m_deque.end(), param) == m_deque.end() );
 	}
 
+	void remove( T item )
+	{
+		std::unique_lock<std::mutex> lock(m_mut);
 
+		auto it = std::find( m_deque.begin(), m_deque.end(), item );
+		if( it != m_deque.end() )
+		{
+			m_deque.erase( it );
+		}
+		
+	}
 
 	std::string Dump()
 	{
 		std::stringstream ss;
-		std::for_each(m_deque.begin(), m_deque.end(), [&](const T & i) { ss << i << " "; } );
+		ss << "[BlockingQueue] ";
+
+		for ( auto it = m_deque.begin(); it != m_deque.end(); it++ )
+		{
+			T temp = *it;
+			ss << temp << " ";
+		}
+
 		return ss.str();
 	}
 
@@ -94,26 +113,3 @@ private:
     
     std::atomic<bool> m_bForceStop;
 };
-
-
-
-/*
-void push(const T & param)
-{
-	{
-		std::unique_lock<std::mutex> lock(m_mut);
-		m_deque.push_front(param);
-	}
-	m_cv.notify_all();
-}
-
-void push(T && param)
-{
-	{
-		std::unique_lock<std::mutex> lock(m_mut);
-		m_deque.push_front( std::move(param) );
-	}
-	m_cv.notify_all();
-}
-
-*/
