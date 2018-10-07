@@ -46,7 +46,6 @@ RequestData * ResponseDispatcher::syncGetAndPumpTopRequest()
 	}
 
 	RequestIdType id;
-	RequestData * pData;
 
 	try
 	{
@@ -55,40 +54,40 @@ RequestData * ResponseDispatcher::syncGetAndPumpTopRequest()
 		auto it = m_requests.find( id );
 		if ( it == m_requests.end() )
 		{
-			return nullptr;
+			THROW_MESSAGE << "Failed to find request id #" << id << " while waiting queue contains it";
 		}
 
-		pData = it->second.get();
+		RequestData * pData = it->second.get();
 
 		m_sentRequests.push_back( id );
 		m_waitingRequests.pop_front();
+
+		return pData;
 	}
 	catch ( ... )
 	{
-		if( m_sentRequests.back() == id )
+		auto itWait = std::find( m_waitingRequests.begin(), m_waitingRequests.end(), id );
+		if ( itWait == m_waitingRequests.end() )
 		{
-			m_sentRequests.pop_back();
+			m_waitingRequests.push_front( id );
+		}
+
+		auto itSent = std::find( m_sentRequests.begin(), m_sentRequests.end(), id );
+		if ( itSent != m_sentRequests.end() )
+		{
+			m_sentRequests.erase( itSent );
 		}
 		throw;
 	}
 
-	return pData;
+	return nullptr;
 }
 
-/// THREAD SAFE.
-/// Moving top request from Waiting to Sent queue and returninig its raw pointer.
-/// If no requests are available returns nullptr
-RequestData * ResponseDispatcher::getNextRequest()
-{
-	std::unique_lock<std::mutex> lock( m_requestMutex );
-
-	return syncGetAndPumpTopRequest();
-}
 
 /// THREAD SAFE.
 /// Moving top request from Waiting to Sent map and returninig its raw pointer.
 /// If no requests are available waits until request will come
-RequestData * ResponseDispatcher::getNextRequestAndWait()
+RequestData * ResponseDispatcher::getNextRequest()
 {
 	std::unique_lock<std::mutex> lock( m_requestMutex );
 	m_cvRequest.wait( lock, [this] () {return !m_waitingRequests.empty() || m_bForceStop; } );

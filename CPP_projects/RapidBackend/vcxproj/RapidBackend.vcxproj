@@ -162,6 +162,7 @@
     <ClInclude Include="..\sources\ServerFramework.h" />
     <ClInclude Include="..\sources\TCPConnectionManager.h" />
     <ClInclude Include="..\sources\RequestHandler.h" />
+    <ClInclude Include="..\sources\WaitSentQueue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\Logger.cpp" />

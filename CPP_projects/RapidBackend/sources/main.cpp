@@ -8,6 +8,8 @@
 #include "MessageException.h"
 #include "ResponseDispatcher.h"
 
+#include "WaitSentQueue.h"
+
 #define N_SOCKETS 3
 
 ResponseDispatcher g_dispatcher;
@@ -72,7 +74,7 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 		size_t oldS = g_dispatcher.sentRequestCount();
 
 
-		RequestData * request = g_dispatcher.getNextRequestAndWait();
+		RequestData * request = g_dispatcher.getNextRequest();
 		if( !request )
 		{
 			continue;
@@ -375,11 +377,39 @@ void testOne()
 
 }
 
+void testWaitSentMap()
+{
+	WaitSentQueue<int> m;
+
+	m.push( 12 );
+	m.push( 1 );
+	m.push( 105 );
+
+	int a = 19;
+	m.push( a );
+
+
+	try
+	{
+		int t = m.moveNextToSent();
+		m.moveToWaiting( t );
+
+		t = m.moveNextToSent();
+		m.remove( t );
+	}
+	catch ( std::exception & ex )
+	{
+		std::cout << "Exception: " << ex.what() << std::endl;
+	}
+		
+}
+
 int main( int argc, char** argv )
 {
 	//testOne();
 	//testSync();
-	testAsync();
+	//testAsync();
+	testWaitSentMap();
 }
 
 //int main(int argc, char** argv)

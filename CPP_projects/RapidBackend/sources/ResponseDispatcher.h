@@ -29,8 +29,6 @@ public:
 
 	RequestData * getNextRequest();
 
-	RequestData * getNextRequestAndWait();
-
 
 
 	void registerResponse( ResponsePtr );

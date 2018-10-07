@@ -54,6 +54,9 @@
     <ClInclude Include="..\sources\MessageException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\WaitSentQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\main.cpp">
