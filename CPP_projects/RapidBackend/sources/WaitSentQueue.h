@@ -5,12 +5,17 @@
 #include <memory>							// std::unique_ptr
 #include <algorithm>						// std::find_if
 
+#include <string>							// std::string
+#include <sstream>							// std::stringstream
+
 #include "MessageException.h"
 
 template <typename T>
 class WaitSentQueue
 {
 public:
+	using TQueue = std::deque< std::unique_ptr<T> >;
+
 	WaitSentQueue() = default;
 
 	WaitSentQueue(WaitSentQueue&&) = delete;
@@ -35,11 +40,25 @@ public:
 	bool isSent(T const& item) const;
 	bool isWaitingOrSent(T const& item) const;
 
+	size_t waitingSize() const { return m_waitingQueue.size(); };
+	size_t sentSize() const { return m_sentQueue.size(); };
+
+	bool waitingEmpty() const { return m_waitingQueue.empty(); };
+	bool sentEmpty() const { return m_sentQueue.empty(); };
+
+	auto waitingBegin() { return m_waitingQueue.begin(); };
+	auto waitingEnd() { return m_waitingQueue.end(); };
+
+	auto sentBegin() { return m_sentQueue.begin(); };
+	auto sentEnd() { return m_sentQueue.end(); };
+	
+public:
+	std::string Dump();
 	
 
 private:
-	std::deque< std::unique_ptr<T> >		m_waitingRequests;
-	std::deque< std::unique_ptr<T> >		m_sentRequests;
+	TQueue	m_waitingQueue;
+	TQueue	m_sentQueue;
 
 };
 
@@ -47,37 +66,37 @@ template <typename T>
 template <typename U>
 void WaitSentQueue<T>::push( U && item )
 {
-	m_waitingRequests.emplace_back( std::make_unique<T>( std::forward<T>( item ) ) );
+	m_waitingQueue.emplace_back( std::make_unique<T>( std::forward<T>( item ) ) );
 }
 
 template <typename T>
 T& WaitSentQueue<T>::moveNextToSent()
 {
 
-	if ( m_waitingRequests.empty() )
+	if ( m_waitingQueue.empty() )
 	{
 		THROW_MESSAGE << "Waiting queue is empty";
 	}
 
-	m_sentRequests.emplace_back( std::move( m_waitingRequests.front() ) );
-	m_waitingRequests.pop_front();
+	m_sentQueue.emplace_back( std::move( m_waitingQueue.front() ) );
+	m_waitingQueue.pop_front();
 
-	return *m_sentRequests.back();
+	return *m_sentQueue.back();
 }
 
 template <typename T>
 void WaitSentQueue<T>::moveToWaiting( T const & item )
 {
 	auto pred = [&] (std::unique_ptr<T> const& p) { return *p == item; };
-	auto it = std::find_if( m_sentRequests.begin(), m_sentRequests.end(), pred );
+	auto it = std::find_if( m_sentQueue.begin(), m_sentQueue.end(), pred );
 
-	if ( it == m_sentRequests.end() )
+	if ( it == m_sentQueue.end() )
 	{
 		THROW_MESSAGE << "Item " << item << " was not scheduled";
 	}
 
-	m_waitingRequests.emplace_back( std::move( *it ) );
-	m_sentRequests.erase( it );
+	m_waitingQueue.emplace_back( std::move( *it ) );
+	m_sentQueue.erase( it );
 }
 
 template <typename T>
@@ -87,18 +106,18 @@ bool WaitSentQueue<T>::remove( T const & item )
 
 	auto pred = [&] (std::unique_ptr<T> const& p) { return *p == item; };
 
-	auto itWait = std::find_if( m_waitingRequests.begin(), m_waitingRequests.end(), pred );
-	if ( itWait != m_waitingRequests.end() )
+	auto itWait = std::find_if( m_waitingQueue.begin(), m_waitingQueue.end(), pred );
+	if ( itWait != m_waitingQueue.end() )
 	{
-		m_waitingRequests.erase( itWait );
+		m_waitingQueue.erase( itWait );
 		bRet = true;
 	}
 
-	auto itSent = std::find_if( m_sentRequests.begin(), m_sentRequests.end(), pred );
+	auto itSent = std::find_if( m_sentQueue.begin(), m_sentQueue.end(), pred );
 
-	if ( itSent != m_sentRequests.end() )
+	if ( itSent != m_sentQueue.end() )
 	{
-		m_sentRequests.erase( itSent );
+		m_sentQueue.erase( itSent );
 		bRet = true;
 	}
 
@@ -108,51 +127,66 @@ bool WaitSentQueue<T>::remove( T const & item )
 template <typename T>
 bool WaitSentQueue<T>::isWaitingEmpty() const
 {
-	return m_waitingRequests.empty();
+	return m_waitingQueue.empty();
 }
 
 template <typename T>
 bool WaitSentQueue<T>::isSentEmpty() const
 {
-	return m_sentRequests.empty();
+	return m_sentQueue.empty();
 }
 
 template <typename T>
 bool WaitSentQueue<T>::isEmpty() const
 {
-	return m_waitingRequests.empty() || m_sentRequests.empty();
+	return m_waitingQueue.empty() || m_sentQueue.empty();
 }
 
 template <typename T>
-bool  WaitSentQueue<T>::isWaiting( T const& item ) const
+bool WaitSentQueue<T>::isWaiting( T const& item ) const
 {
 	auto pred = [&] (std::unique_ptr<T> const& p) { return *p == item; };
 
-	auto itWait = std::find_if( m_waitingRequests.begin(), m_waitingRequests.end(), pred );
-	if ( itWait != m_waitingRequests.end() )
-	{
-		return true;
-	}
+	auto itWait = std::find_if( m_waitingQueue.begin(), m_waitingQueue.end(), pred );
 
-	return false;
+	return itWait != m_waitingQueue.end();
 }
 
 template <typename T>
-bool  WaitSentQueue<T>::isSent( T const& item ) const
+bool WaitSentQueue<T>::isSent( T const& item ) const
 {
 	auto pred = [&] (std::unique_ptr<T> const& p) { return *p == item; };
 
-	auto itSent = std::find_if( m_sentRequests.begin(), m_sentRequests.end(), pred );
-	if ( itSent != m_sentRequests.end() )
-	{
-		return true;
-	}
+	auto itSent = std::find_if( m_sentQueue.begin(), m_sentQueue.end(), pred );
 
-	return false;
+	return  itSent != m_sentQueue.end();
 }
 
 template <typename T>
-bool  WaitSentQueue<T>::isWaitingOrSent(T const& item) const
+bool WaitSentQueue<T>::isWaitingOrSent(T const& item) const
 {
 	return isWaiting( item ) || isSent( item );
+}
+
+
+template <typename T>
+std::string WaitSentQueue<T>::Dump()
+{
+	std::stringstream ss;
+
+	ss << "W:[ ";
+	for( auto &item : m_waitingQueue )
+	{
+		ss << *item << " ";
+	}
+	ss << "] ";
+
+	ss << "S:[ ";
+	for( auto &item : m_sentQueue )
+	{
+		ss << *item << " ";
+	}
+	ss << "]";
+
+	return ss.str();
 }

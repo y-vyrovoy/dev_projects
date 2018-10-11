@@ -26,9 +26,8 @@ RequestIdType ResponseDispatcher::registerRequest( SOCKET sock, RequestPtr reque
 
 	// adding to requests map and waiting queue
 	m_requests[id] = std::move( request );
-	m_waitingRequests.push_back( id );
-	
-	
+	m_requestWaitSentQueue.push( id );
+
     // updating response chain
     m_requestsChains[sock].push_back( id );
 
@@ -40,57 +39,31 @@ RequestIdType ResponseDispatcher::registerRequest( SOCKET sock, RequestPtr reque
 // private. METHOD IS NOT THREAD SAFE
 RequestData * ResponseDispatcher::syncGetAndPumpTopRequest()
 {
-	if ( m_waitingRequests.empty() )
+	if ( m_requestWaitSentQueue.isWaitingEmpty() )
 	{
 		return nullptr;
 	}
 
-	RequestIdType id;
+	RequestIdType id = m_requestWaitSentQueue.moveNextToSent();
 
-	try
+	auto it = m_requests.find( id );
+	if ( it == m_requests.end() )
 	{
-		id = m_waitingRequests.front();
-
-		auto it = m_requests.find( id );
-		if ( it == m_requests.end() )
-		{
-			THROW_MESSAGE << "Failed to find request id #" << id << " while waiting queue contains it";
-		}
-
-		RequestData * pData = it->second.get();
-
-		m_sentRequests.push_back( id );
-		m_waitingRequests.pop_front();
-
-		return pData;
-	}
-	catch ( ... )
-	{
-		auto itWait = std::find( m_waitingRequests.begin(), m_waitingRequests.end(), id );
-		if ( itWait == m_waitingRequests.end() )
-		{
-			m_waitingRequests.push_front( id );
-		}
-
-		auto itSent = std::find( m_sentRequests.begin(), m_sentRequests.end(), id );
-		if ( itSent != m_sentRequests.end() )
-		{
-			m_sentRequests.erase( itSent );
-		}
-		throw;
+		THROW_MESSAGE << "Failed to find request id #" << id << " while waiting queue contains it";
 	}
 
-	return nullptr;
+	return it->second.get();
+	
 }
 
 
 /// THREAD SAFE.
 /// Moving top request from Waiting to Sent map and returninig its raw pointer.
 /// If no requests are available waits until request will come
-RequestData * ResponseDispatcher::getNextRequest()
+RequestData * ResponseDispatcher::scheduleNextRequest()
 {
 	std::unique_lock<std::mutex> lock( m_requestMutex );
-	m_cvRequest.wait( lock, [this] () {return !m_waitingRequests.empty() || m_bForceStop; } );
+	m_cvRequest.wait( lock, [this] () {return !m_requestWaitSentQueue.waitingEmpty() || m_bForceStop; } );
 
     if ( m_bForceStop )
     {
@@ -101,46 +74,13 @@ RequestData * ResponseDispatcher::getNextRequest()
 	return syncGetAndPumpTopRequest();
 }
 
+
 /// THREAD SAFE.
 void ResponseDispatcher::rescheduleRequest( RequestIdType id )
 {
 	std::unique_lock<std::mutex> lck( m_requestMutex );
 
-	m_waitingRequests.push_back( id );
-	
-
-	auto it = std::find( m_sentRequests.begin(), m_sentRequests.end(), id );
-	if ( it != m_sentRequests.end() )
-	{
-		m_sentRequests.erase( it );
-	}
-	
-}
-
-/// public. THREAD SAFE.
-void ResponseDispatcher::removeRequest( RequestIdType id )
-{
-	std::unique_lock<std::mutex> lck( m_requestMutex );
-
-	syncRemoveRequestFromWaitSentMap( id );
-	syncRemoveRequestFromChain( id );
-	synRemoveId2SocketMapping( id );
-}
-
-/// private. NOT THREAD SAFE
-void ResponseDispatcher::syncRemoveRequestFromWaitSentMap( RequestIdType id )
-{
-	auto itSent = std::find( m_sentRequests.begin(), m_sentRequests.end(), id );
-	if ( itSent != m_sentRequests.end() )
-	{
-		m_sentRequests.erase( itSent );
-	}
-
-	auto itWait = std::find( m_waitingRequests.begin(), m_waitingRequests.end(), id );
-	if ( itWait != m_waitingRequests.end() )
-	{
-		m_waitingRequests.erase( itWait );
-	}
+	m_requestWaitSentQueue.moveToWaiting( id );	
 }
 
 /// private. NOT THREAD SAFE
@@ -149,7 +89,9 @@ void ResponseDispatcher::syncRemoveRequestFromChain( RequestIdType id )
     auto itID = m_requestId2SocketMap.find( id );
     if ( itID == m_requestId2SocketMap.end() )
     {
-        THROW_MESSAGE << "Can't find socket for the response id #" << id;
+		//TODO: log
+        //THROW_MESSAGE << "Can't find socket for the response id #" << id;
+		return;
     }
 
     SOCKET sock = itID->second;
@@ -157,7 +99,9 @@ void ResponseDispatcher::syncRemoveRequestFromChain( RequestIdType id )
     auto itSock = m_requestsChains.find( sock );
     if ( itSock == m_requestsChains.end() )
     {
-        THROW_MESSAGE << "Can't find chain for socket #" << sock;
+		//TODO : log
+        //THROW_MESSAGE << "Can't find chain for socket #" << sock;
+		return;
     }
 
     itSock->second.remove( id );
@@ -165,14 +109,11 @@ void ResponseDispatcher::syncRemoveRequestFromChain( RequestIdType id )
 
 enRequestState ResponseDispatcher::isRequestSent( RequestIdType id )
 {
-	auto itWait = std::find( m_waitingRequests.begin(), m_waitingRequests.end(), id );
-	if ( itWait != m_waitingRequests.end() )
+	if ( m_requestWaitSentQueue.isWaiting( id ) )
 	{
 		return enRequestState::REQ_WAITS;
-	}
-
-	auto itSent = std::find( m_sentRequests.begin(), m_sentRequests.end(), id );
-	if ( itSent != m_sentRequests.end() )
+	} 
+	else if ( m_requestWaitSentQueue.isSent( id ) )
 	{
 		return enRequestState::REQ_SENT;
 	}
@@ -180,12 +121,14 @@ enRequestState ResponseDispatcher::isRequestSent( RequestIdType id )
 	return enRequestState::REQ_UNKNOWN;
 }
 
+
+
 void ResponseDispatcher::registerResponse( ResponsePtr response )
 {
     RequestIdType id = response->id;
 
-    std::unique_lock<std::mutex> lck( m_responseMutex );
-
+	std::unique_lock<std::mutex> lck( m_responseMutex );
+	
     if ( m_responses.find( id ) != m_responses.end() )
     {
         THROW_MESSAGE << "Duplicating response id #" << id;
@@ -197,46 +140,39 @@ void ResponseDispatcher::registerResponse( ResponsePtr response )
         THROW_MESSAGE << "Can't find socket for the response id #" << id;
     }
 
-    SOCKET sock = it->second;
-
 	m_responses[id] = std::move( response );
 
     // if request is the first in chain it should be placed to general response queue 
-    putTopResponseToQueue(sock);
+    SOCKET sock = it->second;
+	syncPutTopResponseToQueue( sock );
 }
 
-SOCKET ResponseDispatcher::getSocket( RequestIdType id ) const
+/// NOT thread safe
+void ResponseDispatcher::syncPutTopResponseToQueue( SOCKET sock )
 {
-    auto it = m_requestId2SocketMap.find(id);
-    if ( it == m_requestId2SocketMap.end() )
+	auto itSock = m_requestsChains.find( sock );
+    if ( itSock == m_requestsChains.end() || sock == INVALID_SOCKET )
     {
-        THROW_MESSAGE << "Can't find socket for the RequestId #" << id;
-    }
-
-    return it->second;
-}
-
-/// THREAD SAFE
-void ResponseDispatcher::putTopResponseToQueue( SOCKET sock )
-{
-    auto itSock = m_requestsChains.find( sock );
-    if (itSock == m_requestsChains.end() )
-    {
-        THROW_MESSAGE << "Can't find socket #" << sock;
+		// TODO: log
+		return;
     }
 
     RequestIdType topId = itSock->second.front();
 
-    if ( m_responses.find( topId ) != m_responses.end() && !m_responseQueue.contains( topId ) )
+    if ( !m_responseWaitSentQueue.isWaiting( topId ) && !m_responseWaitSentQueue.isSent( topId ) )
     {
-		m_responseQueue.push( topId );
+		m_responseWaitSentQueue.push( topId );
+		m_cvResponse.notify_all();
     }
 }
 
 /// THREAD SAFE
 ResponseData * ResponseDispatcher::pullResponse()
 {
-    RequestIdType id = m_responseQueue.pull();
+	std::unique_lock<std::mutex> lock( m_responseMutex );
+	m_cvResponse.wait( lock, [this] () { return !m_responseWaitSentQueue.waitingEmpty() || m_bForceStop; } );
+
+	RequestIdType id = m_responseWaitSentQueue.moveNextToSent();
 
 	auto it = m_responses.find( id );
 	if ( it != m_responses.end() )
@@ -249,27 +185,25 @@ ResponseData * ResponseDispatcher::pullResponse()
 	}
 }
 
-/// IS NOT THREAD SAFE
-void ResponseDispatcher::syncRemoveResponse( RequestIdType id )
-{
-    SOCKET sock = m_requestId2SocketMap[id];
 
-    m_responses.erase( m_responses.find( id ) );
-	m_responseQueue.remove( id );
-
-    if ( sock != INVALID_SOCKET )
-    {
-		putTopResponseToQueue( sock );
-    }
-
-}
 
 /// THREAD SAFE
 void ResponseDispatcher::removeResponse( RequestIdType id )
 {
     std::unique_lock<std::mutex> lck( m_responseMutex );
 
-	syncRemoveResponse( id );
+	m_responseWaitSentQueue.remove( id );
+}
+
+SOCKET ResponseDispatcher::getSocket( RequestIdType id ) const
+{
+    auto it = m_requestId2SocketMap.find(id);
+    if ( it == m_requestId2SocketMap.end() )
+    {
+		return INVALID_SOCKET;
+    }
+
+    return it->second;
 }
 
 void ResponseDispatcher::removeSocket( SOCKET sock )
@@ -295,7 +229,7 @@ void ResponseDispatcher::removeSocket( SOCKET sock )
 	for(auto id : listRequestIds)
 	{ 
 		m_responses.erase( m_responses.find( id ) );
-		m_responseQueue.remove( id );
+		m_responseWaitSentQueue.remove( id );
 	}
 		
 	listRequestIds.clear();
@@ -304,28 +238,30 @@ void ResponseDispatcher::removeSocket( SOCKET sock )
 	// Removing socket's requests 
 	for ( RequestIdType id : itSocket->second )
 	{
-		syncRemoveRequestFromWaitSentMap( id );
+		m_requestWaitSentQueue.remove( id );
 		syncRemoveRequestFromChain( id );
-		synRemoveId2SocketMapping( id );
+		m_requestId2SocketMap.erase( m_requestId2SocketMap.find( id ) );
 		m_requests.erase( id );
 	}
 
 	m_requestsChains.erase( itSocket );
 }
 
-/// private. NOT THREAD SAFE
-void ResponseDispatcher::synRemoveId2SocketMapping( RequestIdType id )
+
+void ResponseDispatcher::remove( RequestIdType id )
 {
+	std::unique_lock<std::mutex> lckRequest( m_requestMutex );
+	std::unique_lock<std::mutex> lckResponse( m_responseMutex );
+
+	m_responseWaitSentQueue.remove( id );
+	m_responses.erase( m_responses.find( id ) );
+
+	m_requestWaitSentQueue.remove( id );
+	syncRemoveRequestFromChain( id );
 	m_requestId2SocketMap.erase( m_requestId2SocketMap.find( id ) );
-}
+	m_requests.erase( m_requests.find( id ) );
 
-
-
-void ResponseDispatcher::removeRequestAndResponse( RequestIdType id )
-{
-	removeResponse( id );
-
-	removeRequest( id );
+	syncPutTopResponseToQueue( getSocket( id ) );
 }
 
 
@@ -359,15 +295,15 @@ void ResponseDispatcher::Dump()
     std::cout << std::endl;
 
 	std::cout << "waiting requests:";
-	std::for_each(m_waitingRequests.begin(),
-                    m_waitingRequests.end(),
-                    [&](const auto & t) {std::cout << " " << t; });
+	std::for_each(m_requestWaitSentQueue.waitingBegin(),
+                    m_requestWaitSentQueue.waitingEnd(),
+                    [&](const auto & t) {std::cout << " " << *t; });
     std::cout << std::endl << std:: endl;
 
 	std::cout << "sent requests:";
-	std::for_each(m_sentRequests.begin(),
-                    m_sentRequests.end(),
-                    [&](const auto & t) {std::cout << " " << t; });
+	std::for_each(m_requestWaitSentQueue.sentBegin(),
+                    m_requestWaitSentQueue.sentEnd(),
+                    [&](const auto & t) {std::cout << " " << *t; });
     std::cout << std::endl << std::endl;
 
 
@@ -385,7 +321,7 @@ void ResponseDispatcher::Dump()
     std::cout << std::endl;
 
 
-    std::cout << "Top responses: " << m_responseQueue.Dump() << std::endl << std::endl;
+    std::cout << "Top responses: " << m_responseWaitSentQueue.Dump() << std::endl << std::endl;
     std::cout << " ================================================================================================ " << std::endl << std::endl;
 
 }

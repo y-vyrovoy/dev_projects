@@ -35,7 +35,7 @@ RequestPtr getRequest( unsigned int id )
 	return request;
 }
 
-void pushRequestThreadFunc()
+void pushRequestThreadFunc(const std::chrono::milliseconds & sleepDuration)
 {
 	while ( !g_stop )
 	{
@@ -50,7 +50,7 @@ void pushRequestThreadFunc()
 		{
 			std::unique_lock<std::mutex> lock( g_coutMutex );
 			std::cout << " [th id " << std::this_thread::get_id() << " RegReq ]:"
-						<< " REQ:" 
+						<< " REQ:"	
 						<< " register"
 						<< " adr: " << tempAddr
 						<< " W [" << oldW << " -> " << g_dispatcher.waitingRequestCount() << "]"
@@ -58,7 +58,7 @@ void pushRequestThreadFunc()
 						<< std::endl;
 		}
    
-		std::this_thread::sleep_for( 20ms );
+		std::this_thread::sleep_for( sleepDuration );
 	}
 }
 
@@ -74,7 +74,7 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 		size_t oldS = g_dispatcher.sentRequestCount();
 
 
-		RequestData * request = g_dispatcher.getNextRequest();
+		RequestData * request = g_dispatcher.scheduleNextRequest();
 		if( !request )
 		{
 			continue;
@@ -129,15 +129,17 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 	}
 }
 
-
-void pullResponseThreadFunc()
+static unsigned int g_pullRespCount = 0;
+void pullResponseThreadFunc(  const std::chrono::milliseconds & sleepDuration  )
 {
+	unsigned int funcId = g_pullRespCount++;
+
 	while( !g_stop )
 	{
 		{
 			std::unique_lock<std::mutex> lock( g_coutMutex );
 
-			std::cout << " [th id " << std::this_thread::get_id() << " pullResp ]:"
+			std::cout << " [th id " << std::this_thread::get_id() << " pullResp_"<< funcId << " ]:"
 				<< " RESP: Waiting for response"
 				<< std::endl;
 		}
@@ -160,6 +162,9 @@ void pullResponseThreadFunc()
 						<< std::endl;
 		}
 
+		g_dispatcher.remove( id );
+
+		std::this_thread::sleep_for( sleepDuration );
 
 	}
 }
@@ -168,12 +173,14 @@ void testAsync()
 {
 	g_stop = false;
 	
-	std::thread thReqIn1( pushRequestThreadFunc );
+	std::thread thReqIn1( pushRequestThreadFunc, 190ms );
 
-	std::thread thReqOut1( pullRequestsThreadFunc, 50ms );
-	std::thread thReqOut2( pullRequestsThreadFunc, 35ms );
+	std::thread thReqOut1( pullRequestsThreadFunc, 320ms );
+	std::thread thReqOut2( pullRequestsThreadFunc, 370ms );
+	std::thread thReqOut3( pullRequestsThreadFunc, 350ms );
 	
-	std::thread thRespOut1( pullResponseThreadFunc );
+	std::thread thRespOut1( pullResponseThreadFunc, 500ms );
+	std::thread thRespOut2( pullResponseThreadFunc, 520ms );
 	   
 	for (std::string s; std::cin >> s; )
 	{
@@ -188,8 +195,10 @@ void testAsync()
 
 	thReqOut1.join();
 	thReqOut2.join();
+	thReqOut3.join();
 	
 	thRespOut1.join();
+	thRespOut2.join();
 }
 
 void testSync()
@@ -229,6 +238,7 @@ void testSync()
 				<< " respQueue [" << g_dispatcher.responsesQueueCount() << "]"
 				<< std::endl;
 
+	
 }
 
 
@@ -253,7 +263,7 @@ void testOne()
 
 	try
 	{
-		RequestData * pRequest = disp.getNextRequest();
+		RequestData * pRequest = disp.scheduleNextRequest();
 		auto id1 = pRequest->id;
 
 		std::cout << "sending request #" << id1 << std::endl;
@@ -263,7 +273,7 @@ void testOne()
 
 
 
-		pRequest = disp.getNextRequest();
+		pRequest = disp.scheduleNextRequest();
 		auto id2 = pRequest->id;
 
 		std::cout << "sending request #" << id2 << std::endl;
@@ -282,7 +292,7 @@ void testOne()
 
 
 
-		pRequest = disp.getNextRequest();
+		pRequest = disp.scheduleNextRequest();
 		id1 = pRequest->id;
 		
 		std::cout << "sending request #" << id1 << std::endl;
@@ -292,7 +302,7 @@ void testOne()
 
 
 
-		disp.removeRequest( id2 );
+		disp.remove( id2 );
 
 		std::cout << "removing request #" << id2 << std::endl;
 		std::cout << "-----------------------" << std::endl << std::endl;	
@@ -302,7 +312,7 @@ void testOne()
 
 
 
-		pRequest = disp.getNextRequest();
+		pRequest = disp.scheduleNextRequest();
 		auto id3 = pRequest->id;
 		
 		std::cout << "sending request #" << id3 << std::endl;
@@ -359,12 +369,12 @@ void testOne()
 
 
 
-		disp.putTopResponseToQueue( disp.getSocket(respID) );
+		disp.syncPutTopResponseToQueue( disp.getSocket(respID) );
 		std::cout << "Response failed. Let's try to send it again. putTopResponseToQueue(" << respID << ")" << std::endl;
 		std::cout << "-----------------------" << std::endl << std::endl;
 		disp.Dump();
 		
-		disp.removeRequestAndResponse( respID );
+		disp.remove( respID );
 		
 		std::cout << "Response succeeded. removeRequestAndResponse(" << respID << ")" << std::endl;
 		std::cout << "-----------------------" << std::endl << std::endl;
@@ -408,8 +418,9 @@ int main( int argc, char** argv )
 {
 	//testOne();
 	//testSync();
-	//testAsync();
-	testWaitSentMap();
+	testAsync();
+
+	//testWaitSentMap();
 }
 
 //int main(int argc, char** argv)

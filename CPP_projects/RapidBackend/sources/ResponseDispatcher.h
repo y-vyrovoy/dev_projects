@@ -9,11 +9,12 @@
 #include "BlockingQueue.h"
 #include "SockTypes.h"
 #include "DataTypes.h"
+#include "WaitSentQueue.h"
 
 class ResponseDispatcher
 {
 public:
-	enum enRequestState { REQ_UNKNOWN = -1, REQ_WAITS = 0, REQ_SENT };
+	enum class enRequestState { REQ_UNKNOWN = -1, REQ_WAITS = 0, REQ_SENT };
 
 public:
 	ResponseDispatcher();
@@ -23,11 +24,9 @@ public:
 
 	void rescheduleRequest( RequestIdType id );
 
-	void removeRequest( RequestIdType id );
-
 	enRequestState isRequestSent( RequestIdType id );
 
-	RequestData * getNextRequest();
+	RequestData * scheduleNextRequest();
 
 
 
@@ -35,40 +34,34 @@ public:
 
 	ResponseData * pullResponse();
 
+	void syncPutTopResponseToQueue( SOCKET );
+
 	void removeResponse( RequestIdType );
-
-	void putTopResponseToQueue( SOCKET );
-
 	
+
 	
 	SOCKET getSocket( RequestIdType ) const;
 	
 	void removeSocket( SOCKET sock );
 
-	void removeRequestAndResponse( RequestIdType id );
+
+
+	void remove( RequestIdType id );
+
+
+	size_t waitingRequestCount() { return m_requestWaitSentQueue.waitingSize(); }
+	size_t sentRequestCount() { return m_requestWaitSentQueue.sentSize(); }
+	size_t responsesCount() { return m_responses.size(); }
+	size_t responsesQueueCount() { return m_responseWaitSentQueue.waitingSize() + m_responseWaitSentQueue.sentSize(); }
+
 
 
 	void Dump();
 
-
-	size_t waitingRequestCount() { return m_waitingRequests.size(); }
-	size_t sentRequestCount() { return m_sentRequests.size(); }
-	size_t responsesCount() { return m_responses.size(); }
-	size_t responsesQueueCount() { return m_responseQueue.size(); }
-
-
 private:
 	RequestData * syncGetAndPumpTopRequest();
 
-	void syncRemoveRequestFromWaitSentMap( RequestIdType id );
-
 	void syncRemoveRequestFromChain( RequestIdType id );
-
-	void synRemoveId2SocketMapping( RequestIdType id );
-
-	void syncRemoveResponse( RequestIdType );
-
-	//void removeFromResponseQueue( RequestIdType id );
 
 private:
 
@@ -76,26 +69,23 @@ private:
 
 	static RequestIdType m_nextRequestID;
 
-	// Requests and responses
 	std::map< RequestIdType, RequestPtr, std::less<RequestIdType> >					m_requests;
 	std::map< RequestIdType, ResponsePtr, std::less<RequestIdType> >				m_responses;
 
-	// requests queues
-	std::deque< RequestIdType >								m_waitingRequests;
-	std::deque< RequestIdType >								m_sentRequests;
+	WaitSentQueue<RequestIdType>							m_requestWaitSentQueue;
 
 
 	// Mapping to manage response order
 	std::map< RequestIdType, SOCKET >						m_requestId2SocketMap;
 	std::map< SOCKET, std::list< RequestIdType > >			m_requestsChains;
-	
-	BlockingQueue<RequestIdType>							m_responseQueue;
+
+	WaitSentQueue<RequestIdType>							m_responseWaitSentQueue;
 
 	std::mutex												m_requestMutex;
 	std::mutex												m_responseMutex;
-	std::mutex												m_responseQueueMutex;
 
 	std::condition_variable									m_cvRequest;
+	std::condition_variable									m_cvResponse;
 
 	std::atomic_bool										m_bForceStop;
 };
