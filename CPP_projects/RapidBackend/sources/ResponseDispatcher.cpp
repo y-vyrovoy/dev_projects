@@ -4,6 +4,7 @@
 #include <sstream>
 #include <exception>
 
+#include "Logger.h"
 #include "MessageException.h"
 
 RequestIdType ResponseDispatcher::m_nextRequestID;
@@ -36,7 +37,7 @@ RequestIdType ResponseDispatcher::registerRequest( SOCKET sock, RequestPtr reque
 	return id;
 }
 
-// private. METHOD IS NOT THREAD SAFE
+// METHOD IS NOT THREAD SAFE
 RequestData * ResponseDispatcher::syncGetAndPumpTopRequest()
 {
 	if ( m_requestWaitSentQueue.isWaitingEmpty() )
@@ -53,7 +54,6 @@ RequestData * ResponseDispatcher::syncGetAndPumpTopRequest()
 	}
 
 	return it->second.get();
-	
 }
 
 
@@ -67,7 +67,7 @@ RequestData * ResponseDispatcher::scheduleNextRequest()
 
     if ( m_bForceStop )
     {
-		DEBUG_LOG << " Throwing cTerminationException" << std::endl;
+		DEBUG_LOG << " Throwing cTerminationException";
         throw cTerminationException();
     }
 
@@ -89,8 +89,7 @@ void ResponseDispatcher::syncRemoveRequestFromChain( RequestIdType id )
     auto itID = m_requestId2SocketMap.find( id );
     if ( itID == m_requestId2SocketMap.end() )
     {
-		//TODO: log
-        //THROW_MESSAGE << "Can't find socket for the response id #" << id;
+        WARNING_LOG << "Can't find socket for the response id #" << id;
 		return;
     }
 
@@ -99,8 +98,7 @@ void ResponseDispatcher::syncRemoveRequestFromChain( RequestIdType id )
     auto itSock = m_requestsChains.find( sock );
     if ( itSock == m_requestsChains.end() )
     {
-		//TODO : log
-        //THROW_MESSAGE << "Can't find chain for socket #" << sock;
+        WARNING_LOG << "Can't find chain for socket #" << sock;
 		return;
     }
 
@@ -273,55 +271,60 @@ void ResponseDispatcher::remove( RequestIdType id )
 #include <iostream>
 void ResponseDispatcher::Dump()
 {
-	 std::cout << std::endl << " ================================================================================================ " << std::endl;
-	 std::cout << " ResponseDispatcher::Dump() " << std::endl << std::endl;
+	std::stringstream ss;
 
-	std::cout << "registered requests:";
+
+	ss << std::endl << " ================================================================================================ " << std::endl;
+	ss << " ResponseDispatcher::Dump() " << std::endl << std::endl;
+
+	ss << "registered requests:";
 	std::for_each(m_requests.begin(),
                     m_requests.end(),
-                    [&](const auto & t) {std::cout << "\n\t[" << t.first << ":" << t.second->address << "] "; });
-    std::cout << std::endl << std::endl;
+                    [&](const auto & t) {ss << "\n\t[" << t.first << ":" << t.second->address << "] "; });
+    ss << std::endl << std::endl;
 
 
-    std::cout << "registered chains:" << std::endl;
+    ss << "registered chains:" << std::endl;
     auto printList = [&](const std::pair<SOCKET, std::list<RequestIdType>> & item)
     {
-            std::cout << "SOCKET " << item.first << ": ";
-            std::for_each(item.second.begin(), item.second.end(), [&](const RequestIdType & i) {std::cout << i << " "; });
-            std::cout << std::endl;
+            ss << "SOCKET " << item.first << ": ";
+            std::for_each(item.second.begin(), item.second.end(), [&](const RequestIdType & i) {ss << i << " "; });
+            ss << std::endl;
     };
 
     std::for_each(m_requestsChains.begin(), m_requestsChains.end(), printList);
-    std::cout << std::endl;
+    ss << std::endl;
 
-	std::cout << "waiting requests:";
+	ss << "waiting requests:";
 	std::for_each(m_requestWaitSentQueue.waitingBegin(),
                     m_requestWaitSentQueue.waitingEnd(),
-                    [&](const auto & t) {std::cout << " " << *t; });
-    std::cout << std::endl << std:: endl;
+                    [&](const auto & t) {ss << " " << *t; });
+    ss << std::endl << std:: endl;
 
-	std::cout << "sent requests:";
+	ss << "sent requests:";
 	std::for_each(m_requestWaitSentQueue.sentBegin(),
                     m_requestWaitSentQueue.sentEnd(),
-                    [&](const auto & t) {std::cout << " " << *t; });
-    std::cout << std::endl << std::endl;
+                    [&](const auto & t) {ss << " " << *t; });
+    ss << std::endl << std::endl;
 
 
-    std::cout << "id vs sockets: ";
+    ss << "id vs sockets: ";
     std::for_each(m_requestId2SocketMap.begin(),
                     m_requestId2SocketMap.end(),
-                    [&](const auto & t) {std::cout << "[" << t.first << ":" << t.second << "] "; });
-    std::cout << std::endl<< std::endl;
+                    [&](const auto & t) {ss << "[" << t.first << ":" << t.second << "] "; });
+    ss << std::endl<< std::endl;
 
 
-    std::cout << "Stored responses: ";
+    ss << "Stored responses: ";
     std::for_each(m_responses.begin(),
                     m_responses.end(),
-                    [&](const auto & t) {std::cout << t.first << " "; });
-    std::cout << std::endl;
+                    [&](const auto & t) {ss << t.first << " "; });
+    ss << std::endl;
 
 
-    std::cout << "Top responses: " << m_responseWaitSentQueue.Dump() << std::endl << std::endl;
-    std::cout << " ================================================================================================ " << std::endl << std::endl;
+    ss << "Top responses: " << m_responseWaitSentQueue.Dump() << std::endl << std::endl;
+    ss << " ================================================================================================ " << std::endl;
+
+	COUT_LOG << ss.str();
 
 }

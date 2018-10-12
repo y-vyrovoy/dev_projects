@@ -9,6 +9,7 @@
 #include "ResponseDispatcher.h"
 
 #include "WaitSentQueue.h"
+#include "Logger.h"
 
 #define N_SOCKETS 3
 
@@ -47,16 +48,12 @@ void pushRequestThreadFunc(const std::chrono::milliseconds & sleepDuration)
 
 		g_dispatcher.registerRequest( ( g_value++ ) % N_SOCKETS, std::move( request ) );
 
-		{
-			std::unique_lock<std::mutex> lock( g_coutMutex );
-			std::cout << " [th id " << std::this_thread::get_id() << " RegReq ]:"
-						<< " REQ:"	
-						<< " register"
-						<< " adr: " << tempAddr
-						<< " W [" << oldW << " -> " << g_dispatcher.waitingRequestCount() << "]"
-						<< " S [" << oldS << " -> "  << g_dispatcher.sentRequestCount() << "]"
-						<< std::endl;
-		}
+		COUT_LOG << " [th id " << std::this_thread::get_id() << " RegReq ]:"
+					<< " REQ:"
+					<< " register"
+					<< " adr: " << tempAddr
+					<< " W [" << oldW << " -> " << g_dispatcher.waitingRequestCount() << "]"
+					<< " S [" << oldS << " -> " << g_dispatcher.sentRequestCount() << "]";
    
 		std::this_thread::sleep_for( sleepDuration );
 	}
@@ -80,17 +77,15 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 			continue;
 		}
 
-		{
-			std::unique_lock<std::mutex> lock( g_coutMutex );
-			std::cout << " [th id " << std::this_thread::get_id() << " PullReq_" << funcId << " ]: "
-						<< " REQ:" 
-						<< " pull"
-						<< " id: " << request->id
-						<< " adr: " << request->address
-						<< " W [" << oldW << " -> " << g_dispatcher.waitingRequestCount() << "]"
-						<< " S [" << oldS << " -> "  << g_dispatcher.sentRequestCount() << "]"
-						<< std::endl;
-		}
+
+		COUT_LOG << " [th id " << std::this_thread::get_id() << " PullReq_" << funcId << " ]: "
+					<< " REQ:"
+					<< " pull"
+					<< " id: " << request->id
+					<< " adr: " << request->address
+					<< " W [" << oldW << " -> " << g_dispatcher.waitingRequestCount() << "]"
+					<< " S [" << oldS << " -> " << g_dispatcher.sentRequestCount() << "]";
+
 
 		std::this_thread::sleep_for( sleepDuration );
 
@@ -104,16 +99,13 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 
 		g_dispatcher.registerResponse( std::move( response ) );
 
-		{
-			std::unique_lock<std::mutex> lock( g_coutMutex );
-			std::cout << " [th id " << std::this_thread::get_id() << " PullReq_" << funcId << " ]: "
-				<< " RESP:"
-				<< " registring response"
-				<< " id: " << request->id
-				<< " resps [" << oldReps << " -> "  << g_dispatcher.responsesCount() << "]"
-				<< " respQ [" << oldQ << " -> " << g_dispatcher.responsesQueueCount() << "]"
-				<< std::endl;
-		}
+
+		COUT_LOG << " [th id " << std::this_thread::get_id() << " PullReq_" << funcId << " ]: "
+					<< " RESP:"
+					<< " registring response"
+					<< " id: " << request->id
+					<< " resps [" << oldReps << " -> " << g_dispatcher.responsesCount() << "]"
+					<< " respQ [" << oldQ << " -> " << g_dispatcher.responsesQueueCount() << "]";
 
 		try 
 		{
@@ -124,7 +116,7 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 		}
 		catch ( std::exception & ex )
 		{
-			std::cout << __func__ <<  ": " << "exception: " << ex.what() << std::endl;
+			COUT_LOG << __func__ << ": " << "exception: " << ex.what();
 		}
 	}
 }
@@ -136,13 +128,8 @@ void pullResponseThreadFunc(  const std::chrono::milliseconds & sleepDuration  )
 
 	while( !g_stop )
 	{
-		{
-			std::unique_lock<std::mutex> lock( g_coutMutex );
-
-			std::cout << " [th id " << std::this_thread::get_id() << " pullResp_"<< funcId << " ]:"
-				<< " RESP: Waiting for response"
-				<< std::endl;
-		}
+		COUT_LOG << " [th id " << std::this_thread::get_id() << " pullResp_" << funcId << " ]:"
+					<< " RESP: Waiting for response";
 		
 		size_t oldReps = g_dispatcher.responsesCount();
 		size_t oldQ = g_dispatcher.responsesQueueCount();
@@ -150,17 +137,13 @@ void pullResponseThreadFunc(  const std::chrono::milliseconds & sleepDuration  )
 		ResponseData * p = g_dispatcher.pullResponse();
 		auto id = p->id;
 
-		{
-			std::unique_lock<std::mutex> lock( g_coutMutex );
 
-			std::cout << " [th id " << std::this_thread::get_id() << " pullResp ]:"
-						<< " RESP:"
-						<< " pulling response"
-						<< " id: " << id
-						<< " resps [" << oldReps << " -> "  << g_dispatcher.responsesCount() << "]"
-						<< " respQ [" << oldQ << " -> " << g_dispatcher.responsesQueueCount() << "]"
-						<< std::endl;
-		}
+		COUT_LOG << " [th id " << std::this_thread::get_id() << " pullResp ]:"
+					<< " RESP:"
+					<< " pulling response"
+					<< " id: " << id
+					<< " resps [" << oldReps << " -> " << g_dispatcher.responsesCount() << "]"
+					<< " respQ [" << oldQ << " -> " << g_dispatcher.responsesQueueCount() << "]";
 
 		g_dispatcher.remove( id );
 
@@ -206,39 +189,34 @@ void testSync()
 	RequestPtr request = getRequest( g_value );
 	g_dispatcher.registerRequest( ( g_value++ ) % N_SOCKETS, std::move( request ) );
 
-	std::cout << __func__<< " [th id " << std::this_thread::get_id() << "]:"
+	COUT_LOG << __func__<< " [th id " << std::this_thread::get_id() << "]:"
 				<< " REQ:" 
 				<< " register"
 				<< " W [" << g_dispatcher.waitingRequestCount() << "]"
-				<< " S [" << g_dispatcher.sentRequestCount() << "]"
-				<< std::endl;
+				<< " S [" << g_dispatcher.sentRequestCount() << "]";
 
 	ResponsePtr response = std::make_unique<ResponseData>();
 	response->id = 0;
 
 
-	std::cout << "th id " << std::this_thread::get_id() << ":"
-		<< " RESP:"
-		<< " registring response"
-		<< " id: " << response->id
-		<< " responses [" << g_dispatcher.responsesCount() << "]"
-		<< " respQueue [" << g_dispatcher.responsesQueueCount() << "]"
-		<< std::endl;
+	COUT_LOG << "th id " << std::this_thread::get_id() << ":"
+				<< " RESP:"
+				<< " registring response"
+				<< " id: " << response->id
+				<< " responses [" << g_dispatcher.responsesCount() << "]"
+				<< " respQueue [" << g_dispatcher.responsesQueueCount() << "]";
 
 	g_dispatcher.registerResponse( std::move( response ) );
 
 	ResponseData * p = g_dispatcher.pullResponse();
 	auto respId = p->id;
 
-	std::cout << "th id " << std::this_thread::get_id() << ":"
+	COUT_LOG << "th id " << std::this_thread::get_id() << ":"
 				<< " RESP:"
 				<< " pulling response"
 				<< " id: " << respId
 				<< " responses [" << g_dispatcher.responsesCount() << "]"
-				<< " respQueue [" << g_dispatcher.responsesQueueCount() << "]"
-				<< std::endl;
-
-	
+				<< " respQueue [" << g_dispatcher.responsesQueueCount() << "]";
 }
 
 
@@ -255,10 +233,9 @@ void testOne()
 
 	disp.Dump();
 
-	std::cout << "LET'S RUN !" << std::endl 
+	COUT_LOG << "LET'S RUN !" << std::endl 
 				<< std::endl 
 				<< " ------ +++++++++++++++++ -----------" 
-				<< std::endl 
 				<< std::endl;
 
 	try
@@ -266,8 +243,8 @@ void testOne()
 		RequestData * pRequest = disp.scheduleNextRequest();
 		auto id1 = pRequest->id;
 
-		std::cout << "sending request #" << id1 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;	
+		COUT_LOG << "sending request #" << id1 << std::endl
+					<< "-----------------------" << std::endl;	
 		disp.Dump();
 
 
@@ -276,8 +253,8 @@ void testOne()
 		pRequest = disp.scheduleNextRequest();
 		auto id2 = pRequest->id;
 
-		std::cout << "sending request #" << id2 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;	
+		COUT_LOG << "sending request #" << id2 << std::endl
+					<< "-----------------------" << std::endl;	
 		disp.Dump();
 
 
@@ -286,8 +263,8 @@ void testOne()
 
 		disp.rescheduleRequest( id1 );
 
-		std::cout << "rescheduling request #" << id1 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;
+		COUT_LOG << "rescheduling request #" << id1 << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 
 
@@ -295,8 +272,8 @@ void testOne()
 		pRequest = disp.scheduleNextRequest();
 		id1 = pRequest->id;
 		
-		std::cout << "sending request #" << id1 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;	
+		COUT_LOG << "sending request #" << id1 << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 
 
@@ -304,8 +281,8 @@ void testOne()
 
 		disp.remove( id2 );
 
-		std::cout << "removing request #" << id2 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;	
+		COUT_LOG << "removing request #" << id2 << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 
 
@@ -315,8 +292,8 @@ void testOne()
 		pRequest = disp.scheduleNextRequest();
 		auto id3 = pRequest->id;
 		
-		std::cout << "sending request #" << id3 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;	
+		COUT_LOG << "sending request #" << id3 << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 
 
@@ -326,8 +303,8 @@ void testOne()
 		response0->id = id1;
 		disp.registerResponse( std::move(response0) );
 
-		std::cout << "Register response id #" << id1 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;	
+		COUT_LOG << "Register response id #" << id1 << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 
 
@@ -340,13 +317,13 @@ void testOne()
 			response2->id = id2;
 			disp.registerResponse( std::move( response2 ) );
 
-			std::cout << "Register response id #" << id2 << std::endl;
-			std::cout << "-----------------------" << std::endl << std::endl;
+			COUT_LOG << "Register response id #" << id2 << std::endl
+						<< "-----------------------" << std::endl;
 			disp.Dump();
 		}
 		catch ( std::exception & ex )
 		{
-			std::cout << "Exception. Trying to register response id #" << id2 << ": " << ex.what() << std::endl;
+			COUT_LOG << "Exception. Trying to register response id #" << id2 << ": " << ex.what() ;
 		}
 
 
@@ -354,30 +331,30 @@ void testOne()
 		response3->id = id3;
 		disp.registerResponse(std::move(response3));
 
-		std::cout << "Register response id #" << id3 << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;
+		COUT_LOG << "Register response id #" << id3 << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 
 
 		ResponseData * p = disp.pullResponse();
 		auto respID = p->id;
 
-		std::cout << "Pull response # " << respID << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;
+		COUT_LOG << "Pull response # " << respID << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 
 
 
 
 		disp.syncPutTopResponseToQueue( disp.getSocket(respID) );
-		std::cout << "Response failed. Let's try to send it again. putTopResponseToQueue(" << respID << ")" << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;
+		COUT_LOG << "Response failed. Let's try to send it again. putTopResponseToQueue(" << respID << ")" << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 		
 		disp.remove( respID );
 		
-		std::cout << "Response succeeded. removeRequestAndResponse(" << respID << ")" << std::endl;
-		std::cout << "-----------------------" << std::endl << std::endl;
+		COUT_LOG << "Response succeeded. removeRequestAndResponse(" << respID << ")" << std::endl
+					<< "-----------------------" << std::endl;
 		disp.Dump();
 	}
 	catch (std::exception & ex)
@@ -416,6 +393,8 @@ void testWaitSentMap()
 
 int main( int argc, char** argv )
 {
+	fileLogger::initStaticInstance( "d:\\rb_log.txt" );
+
 	//testOne();
 	//testSync();
 	testAsync();

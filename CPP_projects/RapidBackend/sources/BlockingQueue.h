@@ -48,7 +48,7 @@ public:
         
         if ( m_bForceStop )
         {
-			DEBUG_LOG << " Throwing cTerminationException" << std::endl;
+			DEBUG_LOG << "Throwing cTerminationException";
             throw cTerminationException();
         }
             
@@ -90,20 +90,6 @@ public:
 			m_deque.erase( it );
 		}
 		
-	}
-
-	std::string Dump()
-	{
-		std::stringstream ss;
-		ss << "[BlockingQueue] ";
-
-		for ( auto it = m_deque.begin(); it != m_deque.end(); it++ )
-		{
-			T temp = *it;
-			ss << temp << " ";
-		}
-
-		return ss.str();
 	}
 
 private:
