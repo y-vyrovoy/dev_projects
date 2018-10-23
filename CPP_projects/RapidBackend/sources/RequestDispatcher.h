@@ -2,23 +2,22 @@
 
 #include <map>
 #include <list>
-#include <set>
-#include <unordered_map>
 #include <condition_variable>
+#include <mutex>
 
 #include "BlockingQueue.h"
 #include "SockTypes.h"
 #include "DataTypes.h"
 #include "WaitSentQueue.h"
 
-class ResponseDispatcher
+class RequestDispatcher
 {
 public:
 	enum class enRequestState { REQ_UNKNOWN = -1, REQ_WAITS = 0, REQ_SENT };
 
 public:
-	ResponseDispatcher();
-	~ResponseDispatcher() {};
+	RequestDispatcher();
+	~RequestDispatcher() {};
 
 	RequestIdType registerRequest( SOCKET, RequestPtr );
 
@@ -44,17 +43,15 @@ public:
 	
 	void removeSocket( SOCKET sock );
 
-
-
 	void remove( RequestIdType id );
 
 
-	size_t waitingRequestCount() { return m_requestWaitSentQueue.waitingSize(); }
-	size_t sentRequestCount() { return m_requestWaitSentQueue.sentSize(); }
-	size_t responsesCount() { return m_responses.size(); }
-	size_t responsesQueueCount() { return m_responseWaitSentQueue.waitingSize() + m_responseWaitSentQueue.sentSize(); }
+	size_t waitingRequestCount()	{ return m_requestWaitSentQueue.waitingSize(); }
+	size_t sentRequestCount()		{ return m_requestWaitSentQueue.sentSize(); }
+	size_t responsesCount()			{ return m_responses.size(); }
+	size_t responsesQueueCount()	{ return m_responseWaitSentQueue.waitingSize() + m_responseWaitSentQueue.sentSize(); }
 
-
+	void stopWaiting();
 
 	void Dump();
 
@@ -90,4 +87,4 @@ private:
 	std::atomic_bool										m_bForceStop;
 };
 
-using enRequestState = ResponseDispatcher::enRequestState;
+using enRequestState = RequestDispatcher::enRequestState;

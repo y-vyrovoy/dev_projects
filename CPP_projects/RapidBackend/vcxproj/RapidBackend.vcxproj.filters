@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\FakeClasses">
+      <UniqueIdentifier>{56b8726c-b818-4a10-9132-417d339a86a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FakeClasses">
+      <UniqueIdentifier>{abe11cf7-a745-42b8-9929-1e6807850ec1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../targetver.h">
@@ -48,14 +54,23 @@
     <ClInclude Include="..\sources\ServerFramework.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\ResponseDispatcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\MessageException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\WaitSentQueue.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\RequestDispatcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\FakeClasses\FakeConnectionManager.h">
+      <Filter>Header Files\FakeClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\FakeClasses\FakeRequestHandler.h">
+      <Filter>Header Files\FakeClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\FakeClasses\FakeRequestParser.h">
+      <Filter>Header Files\FakeClasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -80,10 +95,25 @@
     <ClCompile Include="..\sources\ServerFramework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\ResponseDispatcher.cpp">
+    <ClCompile Include="..\sources\MessageException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\MessageException.cpp">
+    <ClCompile Include="..\sources\RequestDispatcher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\mainTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\FakeClasses\FakeRequestParser.cpp">
+      <Filter>Source Files\FakeClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\FakeClasses\FakeConnectionManager.cpp">
+      <Filter>Source Files\FakeClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\FakeClasses\FakeRequestHandler.cpp">
+      <Filter>Source Files\FakeClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\DataTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

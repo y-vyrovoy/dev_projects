@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ResponseDispatcher.h"
+#include "RequestDispatcher.h"
 
 #include <sstream>
 #include <exception>
@@ -7,14 +7,14 @@
 #include "Logger.h"
 #include "MessageException.h"
 
-RequestIdType ResponseDispatcher::m_nextRequestID;
+RequestIdType RequestDispatcher::m_nextRequestID;
 
-ResponseDispatcher::ResponseDispatcher() 
+RequestDispatcher::RequestDispatcher() 
 	: m_bForceStop{false}
 {
 }
 
-RequestIdType ResponseDispatcher::registerRequest( SOCKET sock, RequestPtr request )
+RequestIdType RequestDispatcher::registerRequest( SOCKET sock, RequestPtr request )
 {
     RequestIdType id = m_nextRequestID++;
 
@@ -38,7 +38,7 @@ RequestIdType ResponseDispatcher::registerRequest( SOCKET sock, RequestPtr reque
 }
 
 // METHOD IS NOT THREAD SAFE
-RequestData * ResponseDispatcher::syncGetAndPumpTopRequest()
+RequestData * RequestDispatcher::syncGetAndPumpTopRequest()
 {
 	if ( m_requestWaitSentQueue.isWaitingEmpty() )
 	{
@@ -60,14 +60,14 @@ RequestData * ResponseDispatcher::syncGetAndPumpTopRequest()
 /// THREAD SAFE.
 /// Moving top request from Waiting to Sent map and returninig its raw pointer.
 /// If no requests are available waits until request will come
-RequestData * ResponseDispatcher::scheduleNextRequest()
+RequestData * RequestDispatcher::scheduleNextRequest()
 {
 	std::unique_lock<std::mutex> lock( m_requestMutex );
 	m_cvRequest.wait( lock, [this] () {return !m_requestWaitSentQueue.waitingEmpty() || m_bForceStop; } );
 
     if ( m_bForceStop )
     {
-		DEBUG_LOG << " Throwing cTerminationException";
+		DEBUG_LOG_F <<  "Throwing cTerminationException";
         throw cTerminationException();
     }
 
@@ -76,7 +76,7 @@ RequestData * ResponseDispatcher::scheduleNextRequest()
 
 
 /// THREAD SAFE.
-void ResponseDispatcher::rescheduleRequest( RequestIdType id )
+void RequestDispatcher::rescheduleRequest( RequestIdType id )
 {
 	std::unique_lock<std::mutex> lck( m_requestMutex );
 
@@ -84,12 +84,12 @@ void ResponseDispatcher::rescheduleRequest( RequestIdType id )
 }
 
 /// private. NOT THREAD SAFE
-void ResponseDispatcher::syncRemoveRequestFromChain( RequestIdType id )
+void RequestDispatcher::syncRemoveRequestFromChain( RequestIdType id )
 {
     auto itID = m_requestId2SocketMap.find( id );
     if ( itID == m_requestId2SocketMap.end() )
     {
-        WARNING_LOG << "Can't find socket for the response id #" << id;
+        WARN_LOG_F << "Can't find socket for the response id #" << id;
 		return;
     }
 
@@ -98,14 +98,14 @@ void ResponseDispatcher::syncRemoveRequestFromChain( RequestIdType id )
     auto itSock = m_requestsChains.find( sock );
     if ( itSock == m_requestsChains.end() )
     {
-        WARNING_LOG << "Can't find chain for socket #" << sock;
+        WARN_LOG_F << "Can't find chain for socket #" << sock;
 		return;
     }
 
     itSock->second.remove( id );
 }
 
-enRequestState ResponseDispatcher::isRequestSent( RequestIdType id )
+enRequestState RequestDispatcher::isRequestSent( RequestIdType id )
 {
 	if ( m_requestWaitSentQueue.isWaiting( id ) )
 	{
@@ -121,7 +121,7 @@ enRequestState ResponseDispatcher::isRequestSent( RequestIdType id )
 
 
 
-void ResponseDispatcher::registerResponse( ResponsePtr response )
+void RequestDispatcher::registerResponse( ResponsePtr response )
 {
     RequestIdType id = response->id;
 
@@ -146,7 +146,7 @@ void ResponseDispatcher::registerResponse( ResponsePtr response )
 }
 
 /// NOT thread safe
-void ResponseDispatcher::syncPutTopResponseToQueue( SOCKET sock )
+void RequestDispatcher::syncPutTopResponseToQueue( SOCKET sock )
 {
 	auto itSock = m_requestsChains.find( sock );
     if ( itSock == m_requestsChains.end() || sock == INVALID_SOCKET )
@@ -165,10 +165,16 @@ void ResponseDispatcher::syncPutTopResponseToQueue( SOCKET sock )
 }
 
 /// THREAD SAFE
-ResponseData * ResponseDispatcher::pullResponse()
+ResponseData * RequestDispatcher::pullResponse()
 {
 	std::unique_lock<std::mutex> lock( m_responseMutex );
 	m_cvResponse.wait( lock, [this] () { return !m_responseWaitSentQueue.waitingEmpty() || m_bForceStop; } );
+
+	if ( m_bForceStop )
+    {
+		DEBUG_LOG_F << "Throwing cTerminationException";
+        throw cTerminationException();
+    }
 
 	RequestIdType id = m_responseWaitSentQueue.moveNextToSent();
 
@@ -186,14 +192,14 @@ ResponseData * ResponseDispatcher::pullResponse()
 
 
 /// THREAD SAFE
-void ResponseDispatcher::removeResponse( RequestIdType id )
+void RequestDispatcher::removeResponse( RequestIdType id )
 {
     std::unique_lock<std::mutex> lck( m_responseMutex );
 
 	m_responseWaitSentQueue.remove( id );
 }
 
-SOCKET ResponseDispatcher::getSocket( RequestIdType id ) const
+SOCKET RequestDispatcher::getSocket( RequestIdType id ) const
 {
     auto it = m_requestId2SocketMap.find(id);
     if ( it == m_requestId2SocketMap.end() )
@@ -204,7 +210,7 @@ SOCKET ResponseDispatcher::getSocket( RequestIdType id ) const
     return it->second;
 }
 
-void ResponseDispatcher::removeSocket( SOCKET sock )
+void RequestDispatcher::removeSocket( SOCKET sock )
 {
 	auto itSocket = m_requestsChains.find( sock );
     if (itSocket == m_requestsChains.end() )
@@ -246,7 +252,7 @@ void ResponseDispatcher::removeSocket( SOCKET sock )
 }
 
 
-void ResponseDispatcher::remove( RequestIdType id )
+void RequestDispatcher::remove( RequestIdType id )
 {
 	std::unique_lock<std::mutex> lckRequest( m_requestMutex );
 	std::unique_lock<std::mutex> lckResponse( m_responseMutex );
@@ -263,13 +269,18 @@ void ResponseDispatcher::remove( RequestIdType id )
 }
 
 
-
+void RequestDispatcher::stopWaiting()
+{
+	m_bForceStop = true;
+	m_cvRequest.notify_all();
+	m_cvResponse.notify_all();
+}
 
 
 
 
 #include <iostream>
-void ResponseDispatcher::Dump()
+void RequestDispatcher::Dump()
 {
 	std::stringstream ss;
 

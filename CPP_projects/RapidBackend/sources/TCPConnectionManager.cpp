@@ -12,7 +12,7 @@
 
 void TCPConnectionManager::Init( )
 {
-	m_responseDispatcher.reset( new ResponseDispatcher );
+	
 }
 
 void TCPConnectionManager::start()
@@ -38,28 +38,16 @@ void TCPConnectionManager::waitForRequestJob()
 
 			/// TODO: Here we get data from TCP connection, and send the string with the request to CB
 
-			registerRequest(INVALID_SOCKET);
-			m_onRequestCallback( "New test request" );
+			//m_onRequestCallback( "New test request" );
 		}
 	}
 	catch (std::exception ex)
 	{
-		DEBUG_LOG << "Exception. error: " << ex.what() << std::endl;
+		DEBUG_LOG_F << "Exception. error: " << ex.what() << std::endl;
 	}
-}
-
-void TCPConnectionManager::registerRequest( SOCKET sock )
-{
-	static const char * pNof = __FUNCTION__;
-
-	std::unique_lock<std::mutex> lck( m_getIdMtx );
-
-	//m_responseDispatcher->registerRequest( sock );
 }
 
 void TCPConnectionManager::registerResponse( ResponsePtr response )
 {
-	static const char * pNof = __FUNCTION__;
-
-	m_responseDispatcher->registerResponse( std::move(response) );
+	
 }

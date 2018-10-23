@@ -91,7 +91,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SourceDir);..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,9 +152,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\sources\FakeClasses\FakeConnectionManager.h" />
+    <ClInclude Include="..\sources\FakeClasses\FakeRequestHandler.h" />
+    <ClInclude Include="..\sources\FakeClasses\FakeRequestParser.h" />
     <ClInclude Include="..\sources\Logger.h" />
     <ClInclude Include="..\sources\MessageException.h" />
-    <ClInclude Include="..\sources\ResponseDispatcher.h" />
+    <ClInclude Include="..\sources\RequestDispatcher.h" />
     <ClInclude Include="..\sources\SockTypes.h" />
     <ClInclude Include="..\sources\stdafx.h" />
     <ClInclude Include="../targetver.h" />
@@ -168,9 +171,14 @@
     <ClInclude Include="..\sources\WaitSentQueue.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\sources\DataTypes.cpp" />
+    <ClCompile Include="..\sources\FakeClasses\FakeConnectionManager.cpp" />
+    <ClCompile Include="..\sources\FakeClasses\FakeRequestHandler.cpp" />
+    <ClCompile Include="..\sources\FakeClasses\FakeRequestParser.cpp" />
     <ClCompile Include="..\sources\Logger.cpp" />
+    <ClCompile Include="..\sources\mainTest.cpp" />
     <ClCompile Include="..\sources\MessageException.cpp" />
-    <ClCompile Include="..\sources\ResponseDispatcher.cpp" />
+    <ClCompile Include="..\sources\RequestDispatcher.cpp" />
     <ClCompile Include="..\sources\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

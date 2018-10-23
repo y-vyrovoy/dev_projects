@@ -59,17 +59,23 @@ public:
 	static fileLogger & getStaticInstance();
 
 private:
-	std::ofstream m_oFile;
-	std::unique_ptr<std::ostream> m_stream;
+	std::ofstream							m_oFile;
+	std::unique_ptr<std::ostream>			m_stream;
 
 	static std::unique_ptr<fileLogger>		m_instance;
 };
 
-#define INFO_LOG fileLogger::getStaticInstance().operator()(enLogLevel::LOG_INFO)
-#define WARNING_LOG fileLogger::getStaticInstance().operator()(enLogLevel::LOG_WARNING)
-#define ERROR_LOG fileLogger::getStaticInstance().operator()(enLogLevel::LOG_ERROR)
-#define CRASH_LOG fileLogger::getStaticInstance().operator()(enLogLevel::LOG_CRASH)
-#define DEBUG_LOG fileLogger::getStaticInstance().operator()(enLogLevel::LOG_DEBUG)
+#define INFO_LOG fileLogger::getStaticInstance().operator()( enLogLevel::LOG_INFO )
+#define WARN_LOG fileLogger::getStaticInstance().operator()( enLogLevel::LOG_WARNING )
+#define ERROR_LOG fileLogger::getStaticInstance().operator()( enLogLevel::LOG_ERROR )
+#define CRASH_LOG fileLogger::getStaticInstance().operator()( enLogLevel::LOG_CRASH )
+#define DEBUG_LOG fileLogger::getStaticInstance().operator()( enLogLevel::LOG_DEBUG )
 
+#define INFO_LOG_F		INFO_LOG << __FUNCTION__ << ": "
+#define WARN_LOG_F		WARN_LOG << __FUNCTION__ << ": "
+#define ERROR_LOG_F		ERROR_LOG << __FUNCTION__ << ": "
+#define CRASH_LOG_F		CRASH_LOG << __FUNCTION__ << ": "
+#define DEBUG_LOG_F		DEBUG_LOG << __FUNCTION__ << ": "
 
-#define COUT_LOG coutLogger::getStaticInstance().operator()(enLogLevel::LOG_DEBUG)
+#define COUT_LOG coutLogger::getStaticInstance().operator()( enLogLevel::LOG_DEBUG )
+#define COUT_LOG_F COUT_LOG << __FUNCTION__ << ": "

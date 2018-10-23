@@ -48,7 +48,7 @@ public:
         
         if ( m_bForceStop )
         {
-			DEBUG_LOG << "Throwing cTerminationException";
+			DEBUG_LOG_F << "Throwing cTerminationException";
             throw cTerminationException();
         }
             

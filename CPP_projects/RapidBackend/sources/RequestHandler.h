@@ -4,6 +4,7 @@
 
 #include "DataTypes.h"
 
+class RequestDispatcher;
 
 class RequestHandler
 {
@@ -11,8 +12,8 @@ public:
 	RequestHandler();
 	~RequestHandler();
 
-	void Init( RequestQueue*, std::function<void(std::unique_ptr<ResponseData>)> );
-	
+	void Init( RequestDispatcher *, std::function<void( std::unique_ptr<ResponseData> )> );
+
 	void start();
 	void stop();
 
@@ -21,9 +22,7 @@ private:
 
 private:
 	std::thread m_workThread;
-	RequestQueue * m_queueManager;
-	std::function<void(std::unique_ptr<ResponseData>)> m_responseCallback;
-
-
+	RequestDispatcher * m_queueManager;
+	std::function<void( std::unique_ptr<ResponseData> )> m_responseCallback;
 };
 

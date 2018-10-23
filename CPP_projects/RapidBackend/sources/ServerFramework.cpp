@@ -4,6 +4,11 @@
 #include <exception>
 #include <iostream>
 
+#include "RequestDispatcher.h"
+#include "FakeClasses/FakeConnectionManager.h"
+#include "FakeClasses/FakeRequestParser.h"
+#include "FakeClasses/FakeRequestHandler.h"
+
 #include "Interfaces.h"
 #include "Logger.h"
 #include "MessageException.h"
@@ -21,15 +26,16 @@ ServerFramework::~ServerFramework()
 
 void ServerFramework::Initialize()
 {
-	m_connectionManager.reset(new TCPConnectionManager);
-    m_requestParser.reset( new FakeRequestParser );
-	m_requestQueue.reset( new RequestQueue );
-	m_requestManager.reset( new RequestHandler );
+	m_requestDispatcher.reset( new RequestDispatcher );
 
-	m_connectionManager->Init( );
+	m_connectionManager.reset( new FakeConnectionManager );
+	m_connectionManager->Init();
+	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::string& param ) {onRequest( socket, param ); } );
 
-    m_connectionManager->setOnRequestCallback( [this](const std::string& param){onRequest(param);} );
-	m_requestManager->Init(m_requestQueue.get(), [this](std::unique_ptr<ResponseData> response) {onResponse( std::move(response) );});
+	m_requestParser.reset( new FakeRequestParser );
+
+	m_requestManager.reset( new FakeRequestHandler );
+	m_requestManager->Init( m_requestDispatcher.get(), [this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
 
 	m_isServerRunning = false;
 	m_isInitialized = true;
@@ -42,44 +48,45 @@ int ServerFramework::StartServer()
 		THROW_MESSAGE << "Server is notinitialized";
 	}
 
-    if ( m_isServerRunning )
-    {
-        THROW_MESSAGE << "Server is already running. Single instance is allowed";
-    }
+	if ( m_isServerRunning )
+	{
+		THROW_MESSAGE << "Server is already running. Single instance is allowed";
+	}
 
 	m_requestManager->start();
 	m_connectionManager->start();
 
-	return 0;	
-}
-    
-void ServerFramework::StopServer()
-{   
-	m_requestManager->stop();
-	m_connectionManager->stop();
-    m_isServerRunning = false;
+	return 0;
 }
 
-void ServerFramework::onRequest(const std::string & request)
+void ServerFramework::StopServer()
+{
+	m_requestManager->stop();
+	m_connectionManager->stop();
+	m_isServerRunning = false;
+}
+
+void ServerFramework::onRequest( SOCKET socket, const std::string & request )
 {
 	try
 	{
-		std::unique_ptr<RequestData> requestDataPtr(new RequestData);
+		std::unique_ptr<RequestData> requestDataPtr( new RequestData );
 
-		m_requestParser->Parse(request, requestDataPtr.get());
-		
-		m_requestQueue->push( std::move(requestDataPtr) );
+		m_requestParser->Parse( request, requestDataPtr.get() );
+
+		m_requestDispatcher->registerRequest( socket, std::move( requestDataPtr ) );
 	}
-	catch (std::exception & ex)
+	catch ( std::exception & ex )
 	{
-		DEBUG_LOG << ex.what() << std::endl;
+		DEBUG_LOG_F << ex.what();
 	}
 }
 
-void ServerFramework::onResponse(std::unique_ptr<ResponseData> response)
+void ServerFramework::onResponse( std::unique_ptr<ResponseData> response )
 {
-	//std::string s();
+	DEBUG_LOG_F << "Response"
+		<< " [id=" << response->id << "]"
+		<< " [data=" << response->data.data() << "]";
 
-	
-	m_connectionManager->registerResponse( std::move(response) );
+	m_connectionManager->registerResponse( std::move( response ) );
 }

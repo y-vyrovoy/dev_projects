@@ -24,7 +24,6 @@ logstream::logstream( Logger & logger, enLogLevel level )
 	: m_logger( logger )
 	, m_level( level )
 {
-	
 }
 
 logstream::logstream( const logstream & ls )
@@ -56,12 +55,6 @@ std::string Logger::getTimeStamp()
 							time.wDay, time.wMonth, time.wYear,
 							time.wHour,  time.wMinute,  time.wSecond, time.wMilliseconds);
 
-	//std::stringstream buf;
-	//buf 
-	//	<< time.wDay << "." << time.wMonth << "." << time.wYear
-	//	<< " "
-	//	<< time.wHour << ":" << time.wMinute << ":" << time.wSecond << "." << time.wMilliseconds;
-
 	return std::string(buffer);
 #endif
 }
@@ -78,15 +71,15 @@ void Logger::log( enLogLevel level,  std::string message )
 		break;
 
 	case enLogLevel::LOG_WARNING:
-		pPrefix = PREFIX_INFO;
+		pPrefix = PREFIX_WARNING;
 		break;
 
 	case enLogLevel::LOG_ERROR:
-		pPrefix = PREFIX_INFO;
+		pPrefix = PREFIX_ERROR;
 		break;
 
 	case enLogLevel::LOG_CRASH:
-		pPrefix = PREFIX_INFO;
+		pPrefix = PREFIX_CRASH;
 		break;
 
 	case enLogLevel::LOG_DEBUG:
@@ -98,7 +91,7 @@ void Logger::log( enLogLevel level,  std::string message )
 		break;
 	}
 
-	(*m_pStream) << getTimeStamp() << " | " << pPrefix << ": " << message << std::endl;
+	(*m_pStream) << getTimeStamp() << " | " << pPrefix << " | " << message << std::endl;
 }
 
 
@@ -107,7 +100,6 @@ void Logger::log( enLogLevel level,  std::string message )
 coutLogger::coutLogger()
 {
 	m_pStream = &std::cout;
-	
 }
 
 coutLogger & coutLogger::getStaticInstance()
@@ -125,7 +117,7 @@ coutLogger & coutLogger::getStaticInstance()
 
 fileLogger::fileLogger( const std::string & fileName )
 {
-	m_oFile.open( fileName, std::fstream::out | std::fstream::app | std::fstream::ate );
+	m_oFile.open( fileName, std::fstream::out | std::fstream::ate );
 	m_pStream = &m_oFile;
 }
 

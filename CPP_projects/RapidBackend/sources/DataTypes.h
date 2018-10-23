@@ -1,9 +1,8 @@
-
 #pragma once
 
 #include <string>
 #include <map>
-#include <array>
+#include <vector>
 
 #include "BlockingQueue.h"
 
@@ -20,7 +19,7 @@ struct RequestData
 
     HTTP_METHOD http_method;
     std::string address;
-    std::map<std::string, std::string> paramsMap;
+    std::map<std::string,std::string> paramsMap;
 };
 
 class ResponseData
@@ -31,11 +30,12 @@ public:
 
 public:
 	RequestIdType id;
-	std::array<char, 1024> data;
+
+	std::vector<char> data;
 };
 
+const char * getHttpMethodString( const HTTP_METHOD & method );
 
 using RequestPtr = std::unique_ptr<RequestData>;
-using RequestQueue = BlockingQueue<RequestPtr>;
 
 using ResponsePtr = std::unique_ptr<ResponseData>;
