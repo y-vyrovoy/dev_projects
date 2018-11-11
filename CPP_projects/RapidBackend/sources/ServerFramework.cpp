@@ -30,9 +30,10 @@ void ServerFramework::Initialize()
 
 	m_connectionManager.reset( new FakeConnectionManager );
 	m_connectionManager->Init();
-	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::string& param ) {onRequest( socket, param ); } );
+	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
 
-	m_requestParser.reset( new FakeRequestParser );
+	//m_requestParser.reset( new FakeRequestParser );
+	m_requestParser.reset( new RequestParser );
 
 	m_requestManager.reset( new FakeRequestHandler );
 	m_requestManager->Init( m_requestDispatcher.get(), [this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
@@ -66,15 +67,17 @@ void ServerFramework::StopServer()
 	m_isServerRunning = false;
 }
 
-void ServerFramework::onRequest( SOCKET socket, const std::string & request )
+void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & request )
 {
 	try
 	{
-		std::unique_ptr<RequestData> requestDataPtr( new RequestData );
+		std::unique_ptr<RequestData> requestData( new RequestData );
 
-		m_requestParser->Parse( request, requestDataPtr.get() );
+		if ( !m_requestParser->Parse( request, *requestData ) )
+		{
+		}
 
-		m_requestDispatcher->registerRequest( socket, std::move( requestDataPtr ) );
+		m_requestDispatcher->registerRequest( socket, std::move( requestData ) );
 	}
 	catch ( std::exception & ex )
 	{

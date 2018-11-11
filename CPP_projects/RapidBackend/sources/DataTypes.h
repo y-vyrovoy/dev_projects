@@ -6,8 +6,6 @@
 
 #include "BlockingQueue.h"
 
-
-
 enum class HTTP_METHOD {ERR_METHOD, GET, PUT, HEAD, POST, TRACE, DEL, CONNECT, OPTIONS};
 
 using RequestIdType = unsigned int;
@@ -19,7 +17,10 @@ struct RequestData
 
     HTTP_METHOD http_method;
     std::string address;
-    std::map<std::string,std::string> paramsMap;
+	int nVersionMajor;
+    int nVersionMinor;
+    std::map<std::string, std::string> paramsMap;
+	std::vector<char> data;
 };
 
 class ResponseData

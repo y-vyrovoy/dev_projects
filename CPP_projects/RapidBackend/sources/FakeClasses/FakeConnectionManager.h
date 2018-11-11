@@ -10,7 +10,6 @@
 #include "../RequestDispatcher.h"
 
 
-
 class FakeConnectionManager : public IConnectionManager
 {
 
@@ -25,7 +24,7 @@ public:
 
 	void Init() override;
 
-	void setOnRequestCallback(const std::function<void( SOCKET socket, const std::string& )> & cb)  override { m_onRequestCallback = cb; }
+	void setOnRequestCallback( const RequestCallbackType & cb )  override { m_onRequestCallback = cb; }
 
 	void start() override;
 
@@ -39,4 +38,7 @@ private:
 
 	void waitForRequestJob();
 
+	std::string generateRequestString();
+
+	std::vector<char> m_fakeRequest;
 };

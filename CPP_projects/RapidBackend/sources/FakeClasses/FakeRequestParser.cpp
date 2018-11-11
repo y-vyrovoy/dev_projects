@@ -8,13 +8,15 @@
 
 static unsigned int cnt = 0;
 
-void FakeRequestParser::Parse( const std::string & request, RequestData * requestDataResult ) const
+int FakeRequestParser::Parse( const std::vector<char> & request, RequestData & requestDataResult ) const
 {
-	DEBUG_LOG_F << request;
+	DEBUG_LOG_F << request.data();
 
-	requestDataResult->http_method = HTTP_METHOD::ERR_METHOD;
-	requestDataResult->id = cnt++;
-	requestDataResult->address = "http://ololo.com";
-	requestDataResult->paramsMap["param1"] = "Fishes";
-	requestDataResult->paramsMap["param2"] = "Birds";
+	requestDataResult.http_method = HTTP_METHOD::ERR_METHOD;
+	requestDataResult.id = cnt++;
+	requestDataResult.address = "http://ololo.com";
+	requestDataResult.paramsMap["param1"] = "Fishes";
+	requestDataResult.paramsMap["param2"] = "Birds";
+
+	return 0;
 }

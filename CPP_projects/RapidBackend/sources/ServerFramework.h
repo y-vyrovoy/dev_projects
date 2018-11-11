@@ -31,7 +31,7 @@ public:
     void StopServer();
     
     void Initialize();
-	void onRequest( SOCKET socket, const std::string & request );
+	void onRequest( SOCKET socket, const std::vector<char> & request );
 	void onResponse( std::unique_ptr<ResponseData> response );
     
     

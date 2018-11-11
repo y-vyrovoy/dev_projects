@@ -70,7 +70,7 @@ void FakeRequestHandler::Init( RequestDispatcher * pQueueManager,
 		{
 			response += nextLine + '\n';
 		}
-		
+
 		m_standardResponse.reserve( response.length() + 1 );
 		m_standardResponse.resize( response.length() + 1 );
 		memcpy( m_standardResponse.data(), response.data(), response.length() );
@@ -126,19 +126,18 @@ void FakeRequestHandler::threadJob()
 			DEBUG_LOG_F << "Exception: " << ex.what();
 			return;
 		}
-
 	}
 }
 
 //TODO: move the function to string_utils lib
-std::vector<char> sstreamToVector(std::stringstream& src)
+std::vector<char> sstreamToVector( std::stringstream& src )
 {
-    std::vector<char> dst;
-    dst.reserve(src.tellp());
-    std::copy(std::istreambuf_iterator<char>(src),
-              std::istreambuf_iterator<char>(),
-              std::back_inserter(dst));
-    return dst;
+	std::vector<char> dst;
+	dst.reserve( static_cast< size_t >( src.tellp() ) );
+	std::copy( std::istreambuf_iterator<char>( src ),
+				std::istreambuf_iterator<char>(),
+				std::back_inserter( dst ) );
+	return dst;
 }
 
 std::vector<char> FakeRequestHandler::createResponse( const RequestData * request ) const
@@ -148,11 +147,11 @@ std::vector<char> FakeRequestHandler::createResponse( const RequestData * reques
 	buffer << RESPONSE_HEADER;
 
 	buffer << "<tr>"
-			<< "<td>id</td><td>" << request->id << "</td>\n"
-			<< "<td>http method</td><td>" << getHttpMethodString( request->http_method ) << "</td>\n"
-			<< "<td>address</td><td>" << request->address << "</td>\n";
+		<< "<td>id</td><td>" << request->id << "</td>\n"
+		<< "<td>http method</td><td>" << getHttpMethodString( request->http_method ) << "</td>\n"
+		<< "<td>address</td><td>" << request->address << "</td>\n";
 
-	for( auto param : request->paramsMap )
+	for ( auto param : request->paramsMap )
 	{
 		buffer << "<tr><td>" << param.first << "</td><td>" << param.second << "</td></tr>\n";
 	}

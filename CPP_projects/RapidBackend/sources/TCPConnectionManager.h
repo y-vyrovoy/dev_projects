@@ -26,7 +26,7 @@ public:
 
 	void Init() override;
 
-	void setOnRequestCallback(const std::function<void( SOCKET socket, const std::string& )> & cb)  override { m_onRequestCallback = cb; }
+	void setOnRequestCallback(const RequestCallbackType & cb)  override { m_onRequestCallback = cb; }
 
 	void start() override;
 

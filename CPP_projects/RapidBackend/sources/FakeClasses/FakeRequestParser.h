@@ -14,8 +14,5 @@
 class FakeRequestParser : public IRequestParser
 {
 public:
-	FakeRequestParser() {};
-	~FakeRequestParser() {};
-
-	void Parse(const std::string & request, RequestData * requestDataResult) const;
+	int Parse(const std::vector<char> & request, RequestData & requestDataResult) const override;
 };
