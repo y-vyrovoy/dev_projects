@@ -168,6 +168,7 @@
     <ClInclude Include="..\sources\ServerFramework.h" />
     <ClInclude Include="..\sources\TCPConnectionManager.h" />
     <ClInclude Include="..\sources\RequestHandler.h" />
+    <ClInclude Include="..\sources\Utils.h" />
     <ClInclude Include="..\sources\WaitSentQueue.h" />
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +191,7 @@
     <ClCompile Include="..\sources\RequestParser.cpp" />
     <ClCompile Include="..\sources\ServerFramework.cpp" />
     <ClCompile Include="..\sources\TCPConnectionManager.cpp" />
+    <ClCompile Include="..\sources\Utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,20 +2,23 @@
 
 #include <functional>
 
+#include "Interfaces.h"
 #include "DataTypes.h"
 
 class RequestDispatcher;
 
-class RequestHandler
+class RequestHandler : public IRequestHandler
 {
 public:
 	RequestHandler();
 	~RequestHandler();
 
-	void Init( RequestDispatcher *, std::function<void( std::unique_ptr<ResponseData> )> );
+	void Init( RequestDispatcher *, std::function<void( std::unique_ptr<ResponseData> )> ) override;
 
-	void start();
-	void stop();
+	void start() override;
+	void stop() override;
+
+	std::vector<char> createFaultResponse( RequestIdType id, enErrorIdType err ) const override;
 
 private:
 	void threadJob();

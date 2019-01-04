@@ -55,6 +55,8 @@ public:
 
 	void Dump();
 
+	RequestIdType getNextRequestId();
+
 private:
 	RequestData * syncGetAndPumpTopRequest();
 
@@ -62,7 +64,7 @@ private:
 
 private:
 
-
+	RequestIdType getNextRequestIdSync();
 
 	static RequestIdType m_nextRequestID;
 

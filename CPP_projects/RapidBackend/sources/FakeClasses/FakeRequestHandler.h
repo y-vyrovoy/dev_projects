@@ -18,6 +18,8 @@ public:
 	void start() override;
 	void stop() override;
 
+	std::vector<char> createFaultResponse( RequestIdType id, enErrorIdType err ) const override;
+
 protected:
 	void threadJob() override;
 
@@ -25,5 +27,6 @@ private:
 	std::vector<char>			m_standardResponse;
 
 	std::vector<char> createResponse( const RequestData * request ) const;
+	
 };
 

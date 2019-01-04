@@ -64,6 +64,9 @@ public:
 	virtual void start() = 0;
 	virtual void stop() = 0;
 
+	virtual std::vector<char> createFaultResponse( RequestIdType id, enErrorIdType err ) const = 0 ;
+
+
 protected:
 	virtual void threadJob() = 0;
 

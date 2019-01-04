@@ -28,15 +28,21 @@ void ServerFramework::Initialize()
 {
 	m_requestDispatcher.reset( new RequestDispatcher );
 
-	m_connectionManager.reset( new FakeConnectionManager );
-	m_connectionManager->Init();
-	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
-
+	// --------- Setting up request parser ------------
 	//m_requestParser.reset( new FakeRequestParser );
 	m_requestParser.reset( new RequestParser );
 
-	m_requestManager.reset( new FakeRequestHandler );
-	m_requestManager->Init( m_requestDispatcher.get(), [this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
+	// --------- Setting up request handler ------------
+	m_requestHandler.reset( new FakeRequestHandler );
+	m_requestHandler->Init( m_requestDispatcher.get(), [this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
+
+
+	// --------- Starting connection manager ------------
+	//m_connectionManager.reset( new FakeConnectionManager );
+	m_connectionManager.reset( new TCPConnectionManager );
+	m_connectionManager->Init();
+	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
+
 
 	m_isServerRunning = false;
 	m_isInitialized = true;
@@ -54,15 +60,17 @@ int ServerFramework::StartServer()
 		THROW_MESSAGE << "Server is already running. Single instance is allowed";
 	}
 
-	m_requestManager->start();
+	m_requestHandler->start();
 	m_connectionManager->start();
+
+	m_isServerRunning = true;
 
 	return 0;
 }
 
 void ServerFramework::StopServer()
 {
-	m_requestManager->stop();
+	m_requestHandler->stop();
 	m_connectionManager->stop();
 	m_isServerRunning = false;
 }
@@ -73,21 +81,32 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 	{
 		std::unique_ptr<RequestData> requestData( new RequestData );
 
-		if ( !m_requestParser->Parse( request, *requestData ) )
+		if ( m_requestParser->Parse( request, *requestData ) != 0 )
 		{
-		}
+			ERROR_LOG_F << "Failed to parse request from " << socket << " socket";
 
-		m_requestDispatcher->registerRequest( socket, std::move( requestData ) );
+			
+
+			ResponsePtr response( new ResponseData() );
+			response->id = m_requestDispatcher->getNextRequestId();
+			response->data = m_requestHandler->createFaultResponse( response->id, enErrorIdType::ERR_PARSE_METDHOD );
+
+			m_connectionManager->registerResponse( std::move( response ) );
+		}
+		else
+		{
+			m_requestDispatcher->registerRequest( socket, std::move( requestData ) );
+		}
 	}
 	catch ( std::exception & ex )
 	{
-		DEBUG_LOG_F << ex.what();
+		ERROR_LOG_F << ex.what();
 	}
 }
 
-void ServerFramework::onResponse( std::unique_ptr<ResponseData> response )
+void ServerFramework::onResponse( ResponsePtr response )
 {
-	DEBUG_LOG_F << "Response"
+	INFO_LOG_F << "Response"
 		<< " [id=" << response->id << "]"
 		<< " [data=" << response->data.data() << "]";
 

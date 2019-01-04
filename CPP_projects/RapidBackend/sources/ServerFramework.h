@@ -32,7 +32,7 @@ public:
     
     void Initialize();
 	void onRequest( SOCKET socket, const std::vector<char> & request );
-	void onResponse( std::unique_ptr<ResponseData> response );
+	void onResponse( ResponsePtr response );
     
     
 private:
@@ -44,7 +44,6 @@ private:
     std::unique_ptr< IConnectionManager >		m_connectionManager;
     
 	std::unique_ptr< IRequestParser >			m_requestParser;
-	std::unique_ptr< IRequestHandler >			m_requestManager;
-	
+	std::unique_ptr< IRequestHandler >			m_requestHandler;
 };
 

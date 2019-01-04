@@ -108,5 +108,55 @@ namespace RapidBETests
 			Assert::IsTrue( result.paramsMap.find("Accept") !=  result.paramsMap.end() );
 			Assert::IsTrue( result.paramsMap["Accept"] == "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
 		}
+
+TEST_METHOD( testGetContentLengthNoContentLength )
+		{
+			char requestNoContentLength[] =
+				"GET /some/web/page?param1=12&param2=true HTTP/1.1\r\n"
+				"Host: 127.0.0.1\r\n"
+				"Connection: keep-alive\r\n"
+				"Cache-Control: max-age=0\r\n"
+				"Upgrade-Insecure-Requests: 1\r\n"
+				"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36\r\n"
+				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
+				"Accept-Encoding: gzip, deflate, br\r\n"
+				"Accept-Language: en-GB,en;q=0.9,ru-RU;q=0.8,ru;q=0.7,en-US;q=0.6\r\n"
+				"\r\n"
+			;
+
+			std::vector<char> fakeRequestNoContenLength;
+			fakeRequestNoContenLength.assign( requestNoContentLength, requestNoContentLength + sizeof( requestNoContentLength ) - 1 );
+
+			size_t s;
+
+			Assert::IsFalse( RequestParser::getContentLength( fakeRequestNoContenLength, s ) );
+			Assert::AreEqual( s, static_cast< size_t >( 0 ) );
+		}
+
+		TEST_METHOD( testGetContentLengthWithContentLength )
+		{
+			char requestWithContentLength[] =
+				"GET /some/web/page?param1=12&param2=true HTTP/1.1\r\n"
+				"Host: 127.0.0.1\r\n"
+				"Connection: keep-alive\r\n"
+				"Content-Length: 10\r\n"	// !!!
+				"Cache-Control: max-age=0\r\n"
+				"Upgrade-Insecure-Requests: 1\r\n"
+				"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36\r\n"
+				"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
+				"Accept-Encoding: gzip, deflate, br\r\n"
+				"Accept-Language: en-GB,en;q=0.9,ru-RU;q=0.8,ru;q=0.7,en-US;q=0.6\r\n"
+				"\r\n"
+			;
+
+			std::vector<char> fakeRequestWithContenLength;
+			fakeRequestWithContenLength.assign( requestWithContentLength, requestWithContentLength + sizeof( requestWithContentLength ) - 1 );
+
+			size_t s;
+
+			Assert::IsTrue( RequestParser::getContentLength( fakeRequestWithContenLength, s ) );
+			Assert::AreEqual( s, static_cast< size_t >( 10 ) );
+
+		}
 	};
 }

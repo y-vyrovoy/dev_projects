@@ -11,15 +11,15 @@
 #define N_SOCKETS 4;
 
 char g_fakeRequest[] =
-	"GET /some/web/page?param1=12&param2=true HTTP/1.1\r"
-	"Host: 127.0.0.1\r"
-	"Connection: keep-alive\r"
-	"Cache-Control: max-age=0\r"
-	"Upgrade-Insecure-Requests: 1\r"
-	"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36\r"
-	"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r"
-	"Accept-Encoding: gzip, deflate, br\r"
-	"Accept-Language: en-GB,en;q=0.9,ru-RU;q=0.8,ru;q=0.7,en-US;q=0.6\r"
+	"GET /some/web/page?param1=12&param2=true HTTP/1.1\r\n"
+	"Host: 127.0.0.1\r\n"
+	"Connection: keep-alive\r\n"
+	"Cache-Control: max-age=0\r\n"
+	"Upgrade-Insecure-Requests: 1\r\n"
+	"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36\r\n"
+	"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8\r\n"
+	"Accept-Encoding: gzip, deflate, br\r\n"
+	"Accept-Language: en-GB,en;q=0.9,ru-RU;q=0.8,ru;q=0.7,en-US;q=0.6\r\n"
 ;
 
 

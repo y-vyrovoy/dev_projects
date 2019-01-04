@@ -9,33 +9,29 @@
 int RequestParser::Parse( const std::vector<char> & request, RequestData & requestDataResult ) const
 {
 
-	int paramsStart = ParseFirstLine( request, requestDataResult );
+	int paramsStart = ParseStartLine( request, requestDataResult );
 
 	if ( paramsStart <= 0 )
 	{
-		ERROR_LOG_F << "ParseFirstLine() failed. Request [" 
-					<< request.data() << "]"
-					<< std::endl;
+		SPAM_LOG_F << "ParseFirstLine() failed. Request" << std::endl
+					<< "[" 
+					<< request.data() << "]";
 		return 1;
 	}
 
 	int nRetVal = ParseParams( request, paramsStart, requestDataResult );
 
 
-	//if ( nRetVal != 0 )
-	//{
-	//	COUT_LOG << ": " << "ParseParams() failed" << std::endl;
-	//	return 2;
-	//}
-
-	std::cout << "ParseParams() succeeded" << std::endl;
-	std::cout << "Dump" << std::endl;
-	//PrintRequest(reqParams);
+	if ( nRetVal != 0 )
+	{
+		SPAM_LOG_F << ": " << "ParseParams() failed" << std::endl;
+		return 2;
+	}
 
 	return 0;
 }
 
-int RequestParser::ParseFirstLine( const std::vector<char> & request, RequestData & requestData ) const
+int RequestParser::ParseStartLine( const std::vector<char> & request, RequestData & requestData ) const
 {
 	size_t NSize = request.size();
 
@@ -74,7 +70,7 @@ int RequestParser::ParseFirstLine( const std::vector<char> & request, RequestDat
 	nStart = nEnd + 1;
 	if ( nStart >= NSize || request[nStart] != '/' )
 	{
-		COUT_LOG << "No parameters section in request header" << std::endl;
+		SPAM_LOG_F << "No parameters section in request header" << std::endl;
 		return RET_NO_PARAMS_SECTION;
 	}
 
@@ -101,7 +97,7 @@ int RequestParser::ParseFirstLine( const std::vector<char> & request, RequestDat
 
 	if ( ( nStart < nEnd - 8 ) || ( std::equal( request.begin() + nStart, request.begin() + nStart + 6, "HTTP/" ) ) )
 	{
-		COUT_LOG << "No HTTP/ section in request header" << std::endl;
+		SPAM_LOG_F << "No HTTP/ section in request header" << std::endl;
 		return RET_NO_HTTP_SECTION;
 	}
 
@@ -114,7 +110,7 @@ int RequestParser::ParseFirstLine( const std::vector<char> & request, RequestDat
 		char chDigit = GetDigit( request[nStart] );
 		if ( chDigit < 0 )
 		{
-			COUT_LOG << "Incorrect HTTP version" << std::endl;
+			SPAM_LOG_F << "Incorrect HTTP version" << std::endl;
 			return RET_INCORRECT_PROTOCOL_VERSION;
 		}
 		requestData.nVersionMajor = requestData.nVersionMajor * 10 + chDigit;
@@ -123,7 +119,7 @@ int RequestParser::ParseFirstLine( const std::vector<char> & request, RequestDat
 
 	if ( request[nStart] != '.' )
 	{
-		COUT_LOG << "Incorrect HTTP version" << std::endl;
+		SPAM_LOG_F << "Incorrect HTTP version" << std::endl;
 		return RET_INCORRECT_PROTOCOL_VERSION;
 	}
 
@@ -135,7 +131,7 @@ int RequestParser::ParseFirstLine( const std::vector<char> & request, RequestDat
 		char chDigit = GetDigit( request[nStart] );
 		if ( chDigit < 0 )
 		{
-			COUT_LOG << "Incorrect HTTP version" << std::endl;
+			SPAM_LOG_F << "Incorrect HTTP version" << std::endl;
 			return RET_INCORRECT_PROTOCOL_VERSION;
 		}
 		requestData.nVersionMinor = requestData.nVersionMinor * 10 + chDigit;
@@ -148,7 +144,7 @@ int RequestParser::ParseFirstLine( const std::vector<char> & request, RequestDat
 }
 
 
-HTTP_METHOD RequestParser::getHTTPMethod( std::vector<char>::const_iterator itBegin, std::vector<char>::const_iterator itEnd ) const
+HTTP_METHOD RequestParser::getHTTPMethod( std::vector<char>::const_iterator itBegin, std::vector<char>::const_iterator itEnd )
 {
 	if ( std::distance(itBegin, itEnd) == 3 )
 	{
@@ -197,10 +193,8 @@ HTTP_METHOD RequestParser::getHTTPMethod( std::vector<char>::const_iterator itBe
 			return HTTP_METHOD::OPTIONS;
 		}
 	}
-	else
-	{
-		return HTTP_METHOD::ERR_METHOD;
-	}
+	
+	return HTTP_METHOD::ERR_METHOD;
 }
 
 int RequestParser::ParseParams( const std::vector<char> & request, size_t offset, RequestData & requestData ) const
@@ -272,4 +266,78 @@ inline char RequestParser::GetDigit( char chSymbol ) const
 	}
 
 	return -1;
+}
+
+bool RequestParser::isHeaderValid( std::vector<char> & vecBuffer )
+{
+	static char token[] = { 'H', 'T', 'T', 'P', '/' };
+	size_t tokenSize = sizeof( token );
+
+	auto it = std::find( vecBuffer.begin(), vecBuffer.end(), ' ' );
+	if ( it == vecBuffer.end() )
+		return false;
+
+	HTTP_METHOD method = getHTTPMethod( vecBuffer.begin(), it );
+	if ( method == HTTP_METHOD::ERR_METHOD )
+		return false;
+
+	it = std::search( vecBuffer.begin(), vecBuffer.end(), token, token + tokenSize );
+	if ( it == vecBuffer.end() )
+		return false;
+
+	return true;
+}
+
+bool RequestParser::getHeaderLength( std::vector<char> & vecBuffer, size_t & outLength )
+{
+	static char delimeter[] = { '\r', '\n', '\r', '\n' };
+	size_t delimeterSize = sizeof( delimeter );
+
+	auto it = std::search( vecBuffer.begin(), vecBuffer.end(), delimeter, delimeter + delimeterSize );
+
+	if ( it == vecBuffer.end() )
+	{
+		outLength = static_cast< size_t >( 0 );
+		return false;
+	}
+
+	outLength = std::distance( vecBuffer.begin(), it ) + delimeterSize;
+	return true;
+}
+
+bool RequestParser::getContentLength( std::vector<char> & vecBuffer, size_t & outLength )
+{
+	static char token[] = { 'C', 'o', 'n', 't', 'e', 'n', 't', '-', 'L', 'e', 'n', 'g', 't', 'h', ':', ' ' };
+	size_t tokenSize = sizeof( token );
+
+	static char eol[] = { '\r', '\n' };
+	size_t eolSize = sizeof( eol );
+
+
+
+	auto itBegin = std::search( vecBuffer.begin(), vecBuffer.end(), token, token + tokenSize );
+
+	if ( itBegin == vecBuffer.end() )
+	{
+		outLength = static_cast< size_t >( 0 );
+		return false;
+	}
+	itBegin += tokenSize;
+
+
+
+	auto itEnd = std::search( itBegin, vecBuffer.end(), eol, eol + eolSize );
+
+	if ( itEnd == vecBuffer.end() )
+	{
+		outLength = static_cast< size_t >( 0 );
+		return false;
+	}
+
+
+
+	std::string length( itBegin, itEnd );
+	outLength = atoi( length.c_str() );
+
+	return true;
 }

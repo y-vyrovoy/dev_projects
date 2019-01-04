@@ -14,12 +14,23 @@ RequestDispatcher::RequestDispatcher()
 {
 }
 
+RequestIdType RequestDispatcher::getNextRequestIdSync()
+{
+	return m_nextRequestID++;
+}
+
+RequestIdType RequestDispatcher::getNextRequestId()
+{
+	std::unique_lock<std::mutex> lck( m_requestMutex );
+	return getNextRequestIdSync();
+}
+
 RequestIdType RequestDispatcher::registerRequest( SOCKET sock, RequestPtr request )
 {
-    RequestIdType id = m_nextRequestID++;
-
     std::unique_lock<std::mutex> lck( m_requestMutex );
-
+	
+	RequestIdType id = getNextRequestIdSync();
+	
 	request->id = id;
 
     // mapping request with socket
@@ -336,6 +347,6 @@ void RequestDispatcher::Dump()
     ss << "Top responses: " << m_responseWaitSentQueue.Dump() << std::endl << std::endl;
     ss << " ================================================================================================ " << std::endl;
 
-	COUT_LOG << ss.str();
+	//COUT_LOG << ss.str();
 
 }

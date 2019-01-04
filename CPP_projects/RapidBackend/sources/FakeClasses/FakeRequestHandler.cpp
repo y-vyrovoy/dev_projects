@@ -11,19 +11,20 @@
 
 #include "../Logger.h"
 #include "../RequestDispatcher.h"
+#include "../Utils.h"
 
 #define STD_RESPONSE_FILE_PATH	"..//html//std_response.html"
 
 char RESPONSE_HEADER[] =
-"<html>\n"
-"<head>Default response</head>\n"
-"<body>\n"
-"<table border=\"1\">\n";
+"<html>"
+"<head>Default response</head>"
+"<body>"
+"<table border=\"1\">";
 
 
 char RESPONSE_FOOTER[] =
-"</table>\n"
-"</body>\n"
+"</table>"
+"</body>"
 "</html>";
 
 
@@ -129,40 +130,52 @@ void FakeRequestHandler::threadJob()
 	}
 }
 
-//TODO: move the function to string_utils lib
-std::vector<char> sstreamToVector( std::stringstream& src )
-{
-	std::vector<char> dst;
-	dst.reserve( static_cast< size_t >( src.tellp() ) );
-	std::copy( std::istreambuf_iterator<char>( src ),
-				std::istreambuf_iterator<char>(),
-				std::back_inserter( dst ) );
-	return dst;
-}
-
 std::vector<char> FakeRequestHandler::createResponse( const RequestData * request ) const
 {
 	std::stringstream buffer;
 
 	buffer << RESPONSE_HEADER;
 
-	buffer << "<tr>"
-		<< "<td>id</td><td>" << request->id << "</td>\n"
-		<< "<td>http method</td><td>" << getHttpMethodString( request->http_method ) << "</td>\n"
-		<< "<td>address</td><td>" << request->address << "</td>\n";
+	buffer 
+		<< "<tr><td>id</td><td>" << request->id << "</td></tr>"
+		<< "<tr><td>http method</td><td>" << getHttpMethodString( request->http_method ) << "</td></tr>"
+		<< "<tr><td>address</td><td>" << request->address << "</td></tr>";
 
 	for ( auto param : request->paramsMap )
 	{
-		buffer << "<tr><td>" << param.first << "</td><td>" << param.second << "</td></tr>\n";
+		buffer << "<tr><td>" << param.first << "</td><td>" << param.second << "</td></tr>";
 	}
 
-	buffer << "</tr>";
 	buffer << RESPONSE_FOOTER << '\0';
 
 	std::string str = buffer.str();
 
-	COUT_LOG_F << str;
+	DEBUG_LOG_F << str;
 
 	return sstreamToVector( buffer );
 }
 
+std::vector<char> FakeRequestHandler::createFaultResponse( RequestIdType id, enErrorIdType err ) const
+{
+	std::stringstream buffer;
+
+	buffer << RESPONSE_HEADER;
+
+	buffer
+		<< "<tr><td>id</td><td>" << id << "</td></tr>";
+	
+	switch ( err )
+	{
+	case enErrorIdType::ERR_PARSE_METDHOD:
+		buffer << "<tr><td>Error</td><td>Failed to parse http method</td></tr>";
+		break;
+	}
+
+	buffer << RESPONSE_FOOTER << '\0';
+
+	std::string str = buffer.str();
+
+	DEBUG_LOG_F << str;
+
+	return sstreamToVector( buffer );
+}

@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include "DataTypes.h"
 
-char strERR_METHOD[] = "ERR"; 
-char strGET[] = "GET"; 
-char strPUT[] = "PUT"; 
-char strHEAD[] = "HEAD"; 
-char strPOST[] = "POST"; 
-char strTRACE[] = "TRACE"; 
-char strDEL[] = "DEL"; 
-char strCONNECT[] = "CONNECT"; 
-char strOPTIONS[] = "OPTIONS";
+const char * strERR_METHOD = "ERR"; 
+const char * strGET = "GET"; 
+const char * strPUT = "PUT"; 
+const char * strHEAD = "HEAD"; 
+const char * strPOST = "POST"; 
+const char * strTRACE = "TRACE"; 
+const char * strDEL = "DEL"; 
+const char * strCONNECT = "CONNECT"; 
+const char * strOPTIONS = "OPTIONS";
 
 const char * getHttpMethodString( const HTTP_METHOD & method )
 {

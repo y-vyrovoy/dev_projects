@@ -3,6 +3,9 @@
 #include <thread>
 #include <atomic>
 #include <chrono>
+#include <vector>
+#include <WinSock2.h>
+
 
 #include "DataTypes.h"
 #include "Interfaces.h"
@@ -16,7 +19,7 @@ class TCPConnectionManager : public IConnectionManager
 {
 
 public:
-	TCPConnectionManager() {};
+	TCPConnectionManager();
 	~TCPConnectionManager() {};
 
 	TCPConnectionManager(const TCPConnectionManager &) = delete;
@@ -35,11 +38,20 @@ public:
 	void registerResponse( ResponsePtr ) override;
 
 
-
 private:
 
 	void waitForRequestJob();
 
+	void initWSA();
+	void initListenSocket();
+	void shutdownWSA();
+
+	SOCKET waitForConnection();
+	std::vector<char> readRequest( SOCKET clientSocket );
 	
+
+	SOCKET m_listenSocket;
+
+	unsigned int m_listenPort;
 
 };

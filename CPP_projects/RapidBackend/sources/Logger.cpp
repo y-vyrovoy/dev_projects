@@ -15,6 +15,7 @@ const char * PREFIX_WARNING	= "WARNINIG";
 const char * PREFIX_ERROR = "ERROR";
 const char * PREFIX_CRASH = "CRASH";
 const char * PREFIX_DEBUG = "DEBUG";
+const char * PREFIX_SPAM = "SPAM";
 const char * PREFIX_UNKN = "UNKNOWN";
 
 std::unique_ptr<fileLogger>		fileLogger::m_instance;
@@ -37,11 +38,11 @@ logstream::~logstream()
 	m_logger.log( m_level, str() );
 }
 
-
-logstream Logger::operator()( enLogLevel level )
+logstream Logger::get_logstream( enLogLevel level )
 {
 	return logstream( *this, level );
 }
+
 
 std::string Logger::getTimeStamp()
 {
@@ -84,6 +85,10 @@ void Logger::log( enLogLevel level,  std::string message )
 
 	case enLogLevel::LOG_DEBUG:
 		pPrefix = PREFIX_DEBUG;
+		break;
+
+	case enLogLevel::LOG_SPAM:
+		pPrefix = PREFIX_SPAM;
 		break;
 
 	default:
