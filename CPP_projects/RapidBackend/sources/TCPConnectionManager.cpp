@@ -25,6 +25,32 @@ void TCPConnectionManager::Init( )
 {
 }
 
+void TCPConnectionManager::start()
+{
+	initWSA();
+	try
+	{
+		initListenSocket();
+	}
+	catch( std::exception & ex )
+	{
+		WSACleanup();
+		throw;
+	}
+
+	m_forceStopThread = false;
+	std::thread t( [this] () { waitForRequestJob(); } );
+	m_workThread.swap( t );
+}
+
+void TCPConnectionManager::stop()
+{
+	m_forceStopThread = true;
+	m_workThread.join();
+
+	shutdown();
+}
+
 void TCPConnectionManager::initWSA()
 {
 	WORD wVersionRequested;
@@ -78,6 +104,7 @@ void TCPConnectionManager::initListenSocket()
 		THROW_MESSAGE << "socket() failed with error: " << WSAGetLastError();
 	}
 
+
 	// Setup the TCP listening socket
 	iResult = bind( m_listenSocket, result->ai_addr, ( int ) result->ai_addrlen );
 	if ( iResult == SOCKET_ERROR )
@@ -87,83 +114,95 @@ void TCPConnectionManager::initListenSocket()
 	}
 
 	freeaddrinfo( result );
+
+	// Listen for the TCP listening socket
+	if ( listen( m_listenSocket, SOMAXCONN ) == SOCKET_ERROR )
+	{
+		THROW_MESSAGE << "listen() failed with error: " << WSAGetLastError();
+	}
 }
 
-void TCPConnectionManager::shutdownWSA()
+void TCPConnectionManager::shutdown()
 {
+
 	if ( m_listenSocket != INVALID_SOCKET )
 	{
 		INFO_LOG_F << "Closing listen socket" << std::endl;
 		closesocket( m_listenSocket );
 	}
 
+	closeClientsSockets();
+
 	INFO_LOG_F << "Closing WSA" << std::endl;
 	WSACleanup();
 }
 
-void TCPConnectionManager::start()
-{
-	initWSA();
-	try
-	{
-		initListenSocket();
-	}
-	catch( std::exception & ex )
-	{
-		WSACleanup();
-		throw;
-	}
 
-	m_forceStopThread = false;
-	std::thread t( [this] () { waitForRequestJob(); } );
-	m_workThread.swap( t );
-}
-
-void TCPConnectionManager::stop()
-{
-	m_forceStopThread = true;
-	m_workThread.join();
-
-	shutdownWSA();
-}
 
 void TCPConnectionManager::waitForRequestJob()
 {
+	fd_set active_fd_set;
+	fd_set read_fd_set;
+
+	timeval selectTimeout;
+	selectTimeout.tv_sec = 2;
+	selectTimeout.tv_usec = 0;
+
+	// Initialize the set of active sockets.
+	FD_ZERO( &active_fd_set );
+	FD_SET( m_listenSocket, &active_fd_set );
+		
 	while ( !m_forceStopThread )
 	{
-		SOCKET clientSocket = INVALID_SOCKET;
+		read_fd_set = active_fd_set;
 
-		try
+		int retVal = select( FD_SETSIZE, &read_fd_set, NULL, NULL, &selectTimeout );
+		if ( retVal < 0 )
 		{
-			clientSocket = waitForConnection();
-			std::vector<char> vecBuffer = readRequest( clientSocket );
-
-			m_onRequestCallback( clientSocket, vecBuffer );
+			ERROR_LOG_F << "select() failed with error: " << WSAGetLastError() << std::endl;
 		}
-		catch (std::exception & ex)
+
+		int readySockets = ( FD_SETSIZE < retVal ) ? FD_SETSIZE : retVal;
+
+		// Service all the sockets with input pending.
+		for ( int i = 0; i < readySockets; ++i )
 		{
-			ERROR_LOG_F << "Exception. error: " << ex.what() << std::endl;
+			SOCKET sock = read_fd_set.fd_array[i];
+
+			if ( FD_ISSET( sock, &read_fd_set ) )
+			{
+				if ( sock == m_listenSocket )
+				{
+					std::cout << "Listen socket " << sock << std::endl;
+
+					// Accept a client socket
+					SOCKET clientSocket = accept( m_listenSocket, NULL, NULL );
+					if ( clientSocket == INVALID_SOCKET )
+					{
+						ERROR_LOG_F << "accept() failed with error: " << WSAGetLastError() << std::endl;
+					}
+
+					m_clientSockets.push_back( clientSocket );
+
+					FD_SET( clientSocket, &active_fd_set );
+				}
+				else
+				{
+					std::cout << "Established socket " << sock << std::endl;
+
+					// Data arriving on an already-connected socket. 
+					std::vector<char> vecRequest = readRequest( sock );
+					m_onRequestCallback( sock, vecRequest );
+										
+					// TODO: Handle errors
+
+					FD_CLR( sock, &active_fd_set );
+				}
+			}
 		}
 	}
 }
 
-SOCKET TCPConnectionManager::waitForConnection()
-{
-	// Listen for the TCP listening socket
-	if ( listen( m_listenSocket, SOMAXCONN ) == SOCKET_ERROR )
-	{
-		THROW_MESSAGE << "listen() failed with error: " << WSAGetLastError();
-	}
-
-	// Accept a client socket
-	SOCKET clientSocket = accept( m_listenSocket, NULL, NULL );
-	if ( clientSocket == INVALID_SOCKET )
-	{
-		THROW_MESSAGE << "accept() failed with error: " << WSAGetLastError();
-	}
-
-	return clientSocket;
-}
 
 std::vector<char> TCPConnectionManager::readRequest( SOCKET clientSocket )
 {
@@ -230,7 +269,13 @@ std::vector<char> TCPConnectionManager::readRequest( SOCKET clientSocket )
 	return vecResult;
 }
 
-
+void TCPConnectionManager::closeClientsSockets()
+{
+	for ( auto it : m_clientSockets )
+	{
+		closesocket( it );
+	}
+}
 
 void TCPConnectionManager::registerResponse( ResponsePtr response )
 {

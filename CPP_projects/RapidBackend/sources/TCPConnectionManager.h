@@ -44,13 +44,15 @@ private:
 
 	void initWSA();
 	void initListenSocket();
-	void shutdownWSA();
+	void shutdown();
 
-	SOCKET waitForConnection();
 	std::vector<char> readRequest( SOCKET clientSocket );
+
+	void closeClientsSockets();
 	
 
-	SOCKET m_listenSocket;
+	SOCKET						m_listenSocket;
+	std::vector<SOCKET>			m_clientSockets;
 
 	unsigned int m_listenPort;
 

@@ -141,7 +141,7 @@ fileLogger & fileLogger::getStaticInstance()
 {
 	if ( !m_instance )
 	{
-		THROW_MESSAGE "fileLogger was not initialized";
+		THROW_MESSAGE << "fileLogger was not initialized";
 	}
 
 	return *(m_instance.get()); 

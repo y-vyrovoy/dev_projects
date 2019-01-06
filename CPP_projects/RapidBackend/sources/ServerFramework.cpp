@@ -85,8 +85,6 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 		{
 			ERROR_LOG_F << "Failed to parse request from " << socket << " socket";
 
-			
-
 			ResponsePtr response( new ResponseData() );
 			response->id = m_requestDispatcher->getNextRequestId();
 			response->data = m_requestHandler->createFaultResponse( response->id, enErrorIdType::ERR_PARSE_METDHOD );

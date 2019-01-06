@@ -3,15 +3,15 @@
 #include "RequestParser.h"
 
 #include <iostream>
+#include <utility>			// std::pair
 
 #include "Logger.h"
 
 int RequestParser::Parse( const std::vector<char> & request, RequestData & requestDataResult ) const
 {
-
 	int paramsStart = ParseStartLine( request, requestDataResult );
 
-	if ( paramsStart <= 0 )
+	if ( paramsStart < 0 )
 	{
 		SPAM_LOG_F << "ParseFirstLine() failed. Request" << std::endl
 					<< "[" 
@@ -19,10 +19,7 @@ int RequestParser::Parse( const std::vector<char> & request, RequestData & reque
 		return 1;
 	}
 
-	int nRetVal = ParseParams( request, paramsStart, requestDataResult );
-
-
-	if ( nRetVal != 0 )
+	if ( ParseParams( request, requestDataResult ) != 0 )
 	{
 		SPAM_LOG_F << ": " << "ParseParams() failed" << std::endl;
 		return 2;
@@ -43,108 +40,46 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, RequestDat
 	 * GET /?param=acer HTTP/1.1
 	 */
 
-	 // ------------- looking for HTTP method
+	// HTTP method
 
-	while ( ( nEnd < NSize && request[nEnd] != ' ' ) &&
-		( request[nEnd] != '\r' ) &&
-		( nEnd < NSize ) )
-	{
-		nEnd++;
-	}
-
-	if ( request[nEnd] != ' ' )
-	{
-		return RET_WRONG_FORMAT;
-	}
-
-	auto itBegin = request.begin();
-	auto itEnd = itBegin + ( nEnd - nStart );
-
-	requestData.http_method = getHTTPMethod( itBegin, itEnd );
+	requestData.http_method = parseHttpMethod( request );
 	if ( requestData.http_method == HTTP_METHOD::ERR_METHOD )
+	{
+		SPAM_LOG_F << "No HTTP method in request header" << std::endl;
 		return RET_UKNOWN_METHOD;
+	}
 
+	// request parameters
 
-	// ------------- looking for request parameters
-
-	nStart = nEnd + 1;
-	if ( nStart >= NSize || request[nStart] != '/' )
+	requestData.address = parseHeaderParams( request );
+	if ( requestData.address.empty() )
 	{
 		SPAM_LOG_F << "No parameters section in request header" << std::endl;
 		return RET_NO_PARAMS_SECTION;
 	}
 
-	nEnd = nStart;
 
-	while ( ( nEnd < NSize && request[nEnd] != ' ' ) &&
-		( request[nEnd] != '\r' ) &&
-		( nEnd < NSize ) )
-	{
-		nEnd++;
-	}
+	// HTTP version
 
-	requestData.address.assign( &request[nStart], nEnd - nStart );
-
-	// ------------- looking for HTTP version
-
-	nStart = nEnd + 1;
-	nEnd = nStart;
-
-	while ( ( nEnd < NSize ) && ( request[nEnd] != '\r' ) )
-	{
-		nEnd++;
-	}
-
-	if ( ( nStart < nEnd - 8 ) || ( std::equal( request.begin() + nStart, request.begin() + nStart + 6, "HTTP/" ) ) )
+	std::pair<char, char> httpVersion = parseHttpVersion( request );
+	if ( httpVersion.first == 0 && httpVersion.second == 0) 
 	{
 		SPAM_LOG_F << "No HTTP/ section in request header" << std::endl;
 		return RET_NO_HTTP_SECTION;
 	}
 
-	nStart += 5;
 
-	requestData.nVersionMajor = 0;
+	requestData.nVersionMajor = httpVersion.first;
+	requestData.nVersionMinor = httpVersion.second;
 
-	while ( request[nStart] != '.' && nStart != nEnd )
-	{
-		char chDigit = GetDigit( request[nStart] );
-		if ( chDigit < 0 )
-		{
-			SPAM_LOG_F << "Incorrect HTTP version" << std::endl;
-			return RET_INCORRECT_PROTOCOL_VERSION;
-		}
-		requestData.nVersionMajor = requestData.nVersionMajor * 10 + chDigit;
-		nStart++;
-	}
-
-	if ( request[nStart] != '.' )
-	{
-		SPAM_LOG_F << "Incorrect HTTP version" << std::endl;
-		return RET_INCORRECT_PROTOCOL_VERSION;
-	}
-
-	nStart++;
-
-	requestData.nVersionMinor = 0;
-	while ( nStart != nEnd )
-	{
-		char chDigit = GetDigit( request[nStart] );
-		if ( chDigit < 0 )
-		{
-			SPAM_LOG_F << "Incorrect HTTP version" << std::endl;
-			return RET_INCORRECT_PROTOCOL_VERSION;
-		}
-		requestData.nVersionMinor = requestData.nVersionMinor * 10 + chDigit;
-		nStart++;
-	}
 
 	// --------------- parsing request header finished ----------------------------
 
-	return nEnd + 1;
+	return 0;
 }
 
 
-HTTP_METHOD RequestParser::getHTTPMethod( std::vector<char>::const_iterator itBegin, std::vector<char>::const_iterator itEnd )
+HTTP_METHOD RequestParser::charToHttpMethod( std::vector<char>::const_iterator itBegin, std::vector<char>::const_iterator itEnd )
 {
 	if ( std::distance(itBegin, itEnd) == 3 )
 	{
@@ -197,19 +132,35 @@ HTTP_METHOD RequestParser::getHTTPMethod( std::vector<char>::const_iterator itBe
 	return HTTP_METHOD::ERR_METHOD;
 }
 
-int RequestParser::ParseParams( const std::vector<char> & request, size_t offset, RequestData & requestData ) const
+int RequestParser::ParseParams( const std::vector<char> & request, RequestData & requestData ) const
 {
-	// Every line before /r/r should be like [XXX: ddddddd\r]
-	// Parameter block finishes with the empty line [\r]
+	// Every line before \r\n\r\n should be like [XXX: ddddddd\r\n]
+	// Parameter block finishes with the empty line [\r\n]
 	// If request doesn't correspond the format retrning error value
 
-	auto it = request.begin() + offset;
+	static char delimeter[] = { '\r', '\n', '\r', '\n' };
+	size_t delimeterSize = sizeof( delimeter );
+
+	auto itHeaderEnd = std::search( request.begin(), request.end(), delimeter, delimeter + delimeterSize );
+	if ( itHeaderEnd == request.end() )
+		return -1;
+
+	auto itNewLine = std::find( request.begin(), request.end(), '\r' );
+	if ( itNewLine == request.end() )
+		return -1;
+
+	itNewLine++;
+
+	if ( *itNewLine == '\n' )
+		itNewLine++;
+
+	auto it = itNewLine;
 	while ( it != request.end() )
 	{
 		// Param name
 		auto itSemicolon = std::find( it, request.end(), ':' );
 		if ( itSemicolon == request.end() )
-			return -1;
+			break;
 
 		std::string paramName( it, itSemicolon );
 
@@ -226,9 +177,15 @@ int RequestParser::ParseParams( const std::vector<char> & request, size_t offset
 		requestData.paramsMap[paramName] = paramValue;
 
 		it = itEndl + 1;
-		
-		if ( ( it == request.end() ) || ( *it == '\r' ) )
+
+		// is it the end?
+		if ( ( it == request.end() ) || ( it == itHeaderEnd + 1 ) )
 			break;
+		
+		
+
+		if ( *it == '\n' )
+			it++;
 	}
 
 	if ( *it == '\r' )
@@ -268,20 +225,84 @@ inline char RequestParser::GetDigit( char chSymbol ) const
 	return -1;
 }
 
+HTTP_METHOD RequestParser::parseHttpMethod( const std::vector<char> & vecBuffer )
+{
+	auto it = std::find( vecBuffer.begin(), vecBuffer.end(), ' ' );
+	if ( it == vecBuffer.end() )
+		return HTTP_METHOD::ERR_METHOD;
+
+	return charToHttpMethod( vecBuffer.begin(), it );
+}
+
+std::string RequestParser::parseHeaderParams( const std::vector<char> & vecBuffer )
+{
+	auto itBegin = std::find( vecBuffer.begin(), vecBuffer.end(), '/' );
+	if ( itBegin == vecBuffer.end() )
+		return "";
+
+
+	auto itEnd = std::find( itBegin, vecBuffer.end(), ' ' );
+	if ( itEnd == vecBuffer.end() )
+		return "";
+
+	return std::string(itBegin, itEnd);;
+}
+
+std::pair<char, char> RequestParser::parseHttpVersion( const std::vector<char> & vecBuffer )
+{
+	static char token[] = { 'H', 'T', 'T', 'P', '/' };
+	size_t tokenSize = sizeof( token );
+
+	std::pair<char, char> result;
+
+	auto itBegin = std::search( vecBuffer.begin(), vecBuffer.end(), token, token + tokenSize );
+	if ( itBegin == vecBuffer.end() )
+		return { 0, 0 };
+
+	itBegin += tokenSize;
+
+	auto itEnd = std::find( itBegin, vecBuffer.end(), '.' );
+	if ( itEnd == vecBuffer.end() )
+		return { 0, 0 };
+
+
+	result.first = 0;
+	for ( auto it = itBegin; it != itEnd; ++it )
+	{
+		result.first = result.first * 10 + atoi( &( *it ) );
+	}
+
+
+	itBegin = itEnd + 1;
+	if ( itBegin == vecBuffer.end() )
+		return { 0, 0 };
+
+	itEnd = std::find( itBegin, vecBuffer.end(), '\r' );
+	if ( itEnd == vecBuffer.end() )
+		return { 0, 0 };
+
+
+	result.second = 0;
+	for ( auto it = itBegin; it != itEnd; ++it )
+	{
+		result.second = result.second * 10 + atoi( &( *it ) );
+	}
+
+	return result;
+
+}
+
 bool RequestParser::isHeaderValid( std::vector<char> & vecBuffer )
 {
 	static char token[] = { 'H', 'T', 'T', 'P', '/' };
 	size_t tokenSize = sizeof( token );
 
-	auto it = std::find( vecBuffer.begin(), vecBuffer.end(), ' ' );
-	if ( it == vecBuffer.end() )
+	// getting http method
+	if ( parseHttpMethod( vecBuffer ) == HTTP_METHOD::ERR_METHOD )
 		return false;
-
-	HTTP_METHOD method = getHTTPMethod( vecBuffer.begin(), it );
-	if ( method == HTTP_METHOD::ERR_METHOD )
-		return false;
-
-	it = std::search( vecBuffer.begin(), vecBuffer.end(), token, token + tokenSize );
+	
+	// getting http version
+	auto it = std::search( vecBuffer.begin(), vecBuffer.end(), token, token + tokenSize );
 	if ( it == vecBuffer.end() )
 		return false;
 
