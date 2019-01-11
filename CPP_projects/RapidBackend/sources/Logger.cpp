@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 
+
 #include "MessageException.h"
 
 #ifdef WIN32
@@ -38,11 +39,13 @@ logstream::~logstream()
 	m_logger.log( m_level, str() );
 }
 
+
+
+
 logstream Logger::get_logstream( enLogLevel level )
 {
 	return logstream( *this, level );
 }
-
 
 std::string Logger::getTimeStamp()
 {
@@ -145,4 +148,10 @@ fileLogger & fileLogger::getStaticInstance()
 	}
 
 	return *(m_instance.get()); 
-};
+}
+
+void fileLogger::log( enLogLevel level, std::string message )
+{
+	Logger::log( level, message );
+	m_oFile.flush();
+}

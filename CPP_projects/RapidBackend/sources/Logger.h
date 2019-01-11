@@ -1,9 +1,9 @@
 #pragma once
 
 #include <memory>			// std::unique_ptr
-#include <sstream>
 #include <fstream>			// std::ofstream
 #include <mutex>			// std::mutex
+#include <sstream>			// std::ostringstream
 
 class Logger;
 enum class enLogLevel { LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_CRASH, LOG_DEBUG, LOG_SPAM, LOG_UNKNOWN };
@@ -24,7 +24,7 @@ class Logger
 {
 public:
 
-	void log( enLogLevel level, std::string message );
+	virtual void log( enLogLevel level, std::string message );
 
 	logstream get_logstream( enLogLevel level = enLogLevel::LOG_INFO  );
 
@@ -59,6 +59,8 @@ public:
 	static void initStaticInstance( const std::string & fileName );
 	static fileLogger & getStaticInstance();
 
+	void log( enLogLevel level, std::string message ) override;
+
 private:
 	std::ofstream							m_oFile;
 	std::unique_ptr<std::ostream>			m_stream;
@@ -81,4 +83,5 @@ private:
 #define SPAM_LOG_F		SPAM_LOG << __FUNCTION__ << ": "
 
 #define COUT_LOG coutLogger::getStaticInstance().get_logstream( enLogLevel::LOG_DEBUG )
-#define COUT_LOG_F COUT_LOG << __FUNCTION__ << ": "
+
+#define COUT_LOG_F		COUT_LOG << __FUNCTION__ << ": "
