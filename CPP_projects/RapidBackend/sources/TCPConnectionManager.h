@@ -29,18 +29,15 @@ public:
 
 	void Init() override;
 
-	void setOnRequestCallback(const RequestCallbackType & cb)  override { m_onRequestCallback = cb; }
-
 	void start() override;
 
 	void stop() override;
-
-	void registerResponse( ResponsePtr ) override;
 
 
 private:
 
 	void waitForRequestJob();
+	void waitForResponseJob();
 
 	void initWSA();
 	void initListenSocket();
@@ -50,10 +47,9 @@ private:
 
 	void closeClientsSockets();
 	
-
+private:
 	SOCKET						m_listenSocket;
 	std::vector<SOCKET>			m_clientSockets;
 
-	unsigned int m_listenPort;
-
+	unsigned int				m_listenPort;
 };

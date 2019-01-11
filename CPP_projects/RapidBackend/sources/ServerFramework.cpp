@@ -40,10 +40,11 @@ void ServerFramework::Initialize()
 	// --------- Starting connection manager ------------
 	//m_connectionManager.reset( new FakeConnectionManager );
 	m_connectionManager.reset( new TCPConnectionManager );
-	m_connectionManager->Init();
+	m_connectionManager->Init( );
 	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
+	m_connectionManager->setOnResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response ) {return getNextResponse( sendSocket, response ); } );
 
-
+	
 	m_isServerRunning = false;
 	m_isInitialized = true;
 }
@@ -89,7 +90,7 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 			response->id = m_requestDispatcher->getNextRequestId();
 			response->data = m_requestHandler->createFaultResponse( response->id, enErrorIdType::ERR_PARSE_METDHOD );
 
-			m_connectionManager->registerResponse( std::move( response ) );
+			m_requestDispatcher->registerResponse( std::move( response ) );
 		}
 		else
 		{
@@ -108,5 +109,12 @@ void ServerFramework::onResponse( ResponsePtr response )
 		<< " [id=" << response->id << "]"
 		<< " [data=" << response->data.data() << "]";
 
-	m_connectionManager->registerResponse( std::move( response ) );
+	m_requestDispatcher->registerResponse( std::move( response ) );
+}
+
+void ServerFramework::getNextResponse( SOCKET & sendSocket, ResponseData* &  response )
+{
+	response = m_requestDispatcher->pullResponse();
+
+	sendSocket = m_requestDispatcher->getSocket( response->id );
 }

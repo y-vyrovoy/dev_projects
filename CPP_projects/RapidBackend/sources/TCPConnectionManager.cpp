@@ -16,13 +16,14 @@
 #define DEFAULT_RECV_BUF_LEN	4096
 
 TCPConnectionManager::TCPConnectionManager()
-: m_listenSocket( INVALID_SOCKET )
-, m_listenPort( DEFAULT_PORT )
+	: m_listenSocket( INVALID_SOCKET )
+	, m_listenPort( DEFAULT_PORT )
 {
 }
 
-void TCPConnectionManager::Init( )
+void TCPConnectionManager::Init()
 {
+	
 }
 
 void TCPConnectionManager::start()
@@ -39,14 +40,18 @@ void TCPConnectionManager::start()
 	}
 
 	m_forceStopThread = false;
-	std::thread t( [this] () { waitForRequestJob(); } );
-	m_workThread.swap( t );
+	std::thread tRequest( [this] () { waitForRequestJob(); } );
+	m_requestsThread.swap( tRequest );
+
+	std::thread tResponse( [this] () { waitForResponseJob(); } );
+	m_responsesThread.swap( tResponse );
 }
 
 void TCPConnectionManager::stop()
 {
 	m_forceStopThread = true;
-	m_workThread.join();
+	m_requestsThread.join();
+	m_responsesThread.join();
 
 	shutdown();
 }
@@ -173,8 +178,6 @@ void TCPConnectionManager::waitForRequestJob()
 			{
 				if ( sock == m_listenSocket )
 				{
-					std::cout << "Listen socket " << sock << std::endl;
-
 					// Accept a client socket
 					SOCKET clientSocket = accept( m_listenSocket, NULL, NULL );
 					if ( clientSocket == INVALID_SOCKET )
@@ -188,8 +191,6 @@ void TCPConnectionManager::waitForRequestJob()
 				}
 				else
 				{
-					std::cout << "Established socket " << sock << std::endl;
-
 					// Data arriving on an already-connected socket. 
 					std::vector<char> vecRequest = readRequest( sock );
 					m_onRequestCallback( sock, vecRequest );
@@ -277,7 +278,27 @@ void TCPConnectionManager::closeClientsSockets()
 	}
 }
 
-void TCPConnectionManager::registerResponse( ResponsePtr response )
+
+
+void TCPConnectionManager::waitForResponseJob()
 {
-	
+	if ( m_onResponseCallback == nullptr )
+	{
+		THROW_MESSAGE << "m_onResponseCallback is not initialized";
+		return;
+	}
+
+
+	while ( !m_forceStopThread )
+	{
+		// TODO: data size control!!!
+
+		ResponseData * response;
+		SOCKET sendSocket;
+
+		m_onResponseCallback( sendSocket, response );
+
+		send( sendSocket, response->data.data(), response->data.size(), NULL );
+	}
+
 }

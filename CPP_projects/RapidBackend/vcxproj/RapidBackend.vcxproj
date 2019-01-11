@@ -193,6 +193,9 @@
     <ClCompile Include="..\sources\TCPConnectionManager.cpp" />
     <ClCompile Include="..\sources\Utils.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="TODOlist.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

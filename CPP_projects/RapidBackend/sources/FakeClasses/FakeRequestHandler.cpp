@@ -16,13 +16,18 @@
 #define STD_RESPONSE_FILE_PATH	"..//html//std_response.html"
 
 char RESPONSE_HEADER[] =
+"HTTP/1.1 200 OK\r\n"
+"Content-Type: text/html; charset=UTF-8\r\n"
+"Webpage Content\r\n";
+
+char RESPONSE_CONTENT_HEADER[] =
 "<html>"
 "<head>Default response</head>"
 "<body>"
 "<table border=\"1\">";
 
 
-char RESPONSE_FOOTER[] =
+char RESPONSE_CONTENT_FOOTER[] =
 "</table>"
 "</body>"
 "</html>";
@@ -132,21 +137,31 @@ void FakeRequestHandler::threadJob()
 
 std::vector<char> FakeRequestHandler::createResponse( const RequestData * request ) const
 {
-	std::stringstream buffer;
-
-	buffer << RESPONSE_HEADER;
-
-	buffer 
+	std::stringstream bufferContent;
+	bufferContent 
+		<< RESPONSE_CONTENT_HEADER
 		<< "<tr><td>id</td><td>" << request->id << "</td></tr>"
 		<< "<tr><td>http method</td><td>" << getHttpMethodString( request->http_method ) << "</td></tr>"
 		<< "<tr><td>address</td><td>" << request->address << "</td></tr>";
 
 	for ( auto param : request->paramsMap )
 	{
-		buffer << "<tr><td>" << param.first << "</td><td>" << param.second << "</td></tr>";
+		bufferContent << "<tr><td>" << param.first << "</td><td>" << param.second << "</td></tr>";
 	}
 
-	buffer << RESPONSE_FOOTER << '\0';
+	bufferContent << RESPONSE_CONTENT_FOOTER;
+
+	size_t contentLength = bufferContent.str().size();
+
+
+	std::stringstream buffer;
+
+	buffer << RESPONSE_HEADER;
+	buffer << "Content-Length: " << contentLength << "\r\n";
+	
+	buffer << "\r\n";
+	buffer << bufferContent.str();
+
 
 	std::string str = buffer.str();
 
@@ -171,7 +186,7 @@ std::vector<char> FakeRequestHandler::createFaultResponse( RequestIdType id, enE
 		break;
 	}
 
-	buffer << RESPONSE_FOOTER << '\0';
+	buffer << RESPONSE_CONTENT_FOOTER;
 
 	std::string str = buffer.str();
 

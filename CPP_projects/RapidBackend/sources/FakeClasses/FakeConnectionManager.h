@@ -24,14 +24,9 @@ public:
 
 	void Init() override;
 
-	void setOnRequestCallback( const RequestCallbackType & cb )  override { m_onRequestCallback = cb; }
-
 	void start() override;
 
 	void stop() override;
-
-	void registerResponse( ResponsePtr ) override;
-
 
 
 private:

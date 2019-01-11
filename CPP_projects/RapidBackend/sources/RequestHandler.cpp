@@ -20,10 +20,10 @@ RequestHandler::~RequestHandler()
 	// TODO: check is the working thread avilve and stop it if necessary
 }
 
-void RequestHandler::Init( RequestDispatcher * pQueueManager,
+void RequestHandler::Init( RequestDispatcher * pRequestDispatcher,
 							std::function<void(std::unique_ptr<ResponseData>)> responseCB)
 {
-	m_queueManager = pQueueManager;
+	m_queueManager = pRequestDispatcher;
 	m_responseCallback = responseCB;
 }
 

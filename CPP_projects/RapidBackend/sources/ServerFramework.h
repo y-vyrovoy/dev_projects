@@ -31,12 +31,15 @@ public:
     void StopServer();
     
     void Initialize();
-	void onRequest( SOCKET socket, const std::vector<char> & request );
-	void onResponse( ResponsePtr response );
-    
-    
+
 private:
-    static std::atomic<bool> m_isServerRunning;
+
+	void onRequest( SOCKET socket, const std::vector<char> & );
+	void onResponse( ResponsePtr );
+	void getNextResponse( SOCKET &, ResponseData* & );
+	
+	
+	static std::atomic<bool> m_isServerRunning;
 	std::atomic<bool> m_isInitialized;
     
 

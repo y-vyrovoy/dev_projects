@@ -30,7 +30,7 @@ using namespace std::chrono_literals;
 
 
 
-void FakeConnectionManager::Init( )
+void FakeConnectionManager::Init()
 {
 	int size = sizeof( g_fakeRequest );
 	m_fakeRequest.assign( g_fakeRequest, g_fakeRequest + size );
@@ -43,13 +43,13 @@ void FakeConnectionManager::start()
 {
 	m_forceStopThread = false;
 	std::thread t( [this] () { waitForRequestJob(); } );
-	m_workThread.swap(t);
+	m_requestsThread.swap(t);
 }
 
 void FakeConnectionManager::stop()
 {
 	m_forceStopThread = true;
-	m_workThread.join();
+	m_requestsThread.join();
 }
 
 void FakeConnectionManager::waitForRequestJob()
@@ -72,12 +72,6 @@ void FakeConnectionManager::waitForRequestJob()
 	{
 		DEBUG_LOG_F << "Exception. error: " << ex.what();
 	}
-}
-
-
-void FakeConnectionManager::registerResponse( ResponsePtr response )
-{
-	
 }
 
 std::string FakeConnectionManager::generateRequestString()
