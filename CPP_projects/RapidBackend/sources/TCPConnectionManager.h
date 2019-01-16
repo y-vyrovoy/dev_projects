@@ -43,9 +43,13 @@ private:
 	void initListenSocket();
 	void shutdown();
 
-	std::vector<char> readRequest( SOCKET clientSocket );
+	int readRequest( SOCKET, std::vector<char> & );
 
+	
+	void addClientSocket( SOCKET clientSocket );
+	void closeClientSocket( SOCKET clientSocket );
 	void closeClientsSockets();
+
 	
 private:
 	SOCKET						m_listenSocket;

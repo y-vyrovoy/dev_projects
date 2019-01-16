@@ -9,6 +9,8 @@
 #include "TCPConnectionManager.h"
 #include "Logger.h"
 #include "RequestParser.h"
+#include "Utils.h"
+
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -125,6 +127,8 @@ void TCPConnectionManager::initListenSocket()
 	{
 		THROW_MESSAGE << "listen() failed with error: " << WSAGetLastError();
 	}
+
+	INFO_LOG_F << "Listen socket is ready: " << m_listenSocket;
 }
 
 void TCPConnectionManager::shutdown()
@@ -132,7 +136,7 @@ void TCPConnectionManager::shutdown()
 
 	if ( m_listenSocket != INVALID_SOCKET )
 	{
-		INFO_LOG_F << "Closing listen socket" << std::endl;
+		INFO_LOG_F << "Closing listen socket";
 		closesocket( m_listenSocket );
 	}
 
@@ -164,7 +168,7 @@ void TCPConnectionManager::waitForRequestJob()
 		int retVal = select( FD_SETSIZE, &read_fd_set, NULL, NULL, &selectTimeout );
 		if ( retVal < 0 )
 		{
-			ERROR_LOG_F << "select() failed with error: " << WSAGetLastError() << std::endl;
+			ERROR_LOG_F << "select() failed with error: " << WSAGetLastError();
 		}
 
 		int readySockets = ( FD_SETSIZE < retVal ) ? FD_SETSIZE : retVal;
@@ -182,50 +186,74 @@ void TCPConnectionManager::waitForRequestJob()
 					SOCKET clientSocket = accept( m_listenSocket, NULL, NULL );
 					if ( clientSocket == INVALID_SOCKET )
 					{
-						ERROR_LOG_F << "accept() failed with error: " << WSAGetLastError() << std::endl;
+						ERROR_LOG_F << "accept() failed with error: " << WSAGetLastError();
 					}
 
-					m_clientSockets.push_back( clientSocket );
+					addClientSocket( clientSocket );
+
+					INFO_LOG_F << "New connection. [ socket = " << clientSocket << " ]";
 
 					FD_SET( clientSocket, &active_fd_set );
 				}
 				else
 				{
-					// Data arriving on an already-connected socket. 
-					std::vector<char> vecRequest = readRequest( sock );
-					m_onRequestCallback( sock, vecRequest );
-										
-					// TODO: Handle errors
+					INFO_LOG_F << "Request recieved. [ socket = " << sock << " ]";
 
-					FD_CLR( sock, &active_fd_set );
+					// Data arriving on an already-connected socket. 
+					std::vector<char> vecRequest;
+					int res = readRequest( sock, vecRequest );
+					
+					if ( res )
+					{
+						INFO_LOG_F << "Closing socket [ socket = " << sock << " ]";
+						FD_CLR( sock, &active_fd_set );	
+						closeClientSocket( sock );
+						continue;
+					}
+
+					//SPAM_LOG_F << "New request: [" << std::string( vecRequest.begin(), vecRequest.end() );
+
+					m_onRequestCallback( sock, vecRequest );
+									
+					// TODO: Handle errors
 				}
 			}
 		}
 	}
 }
 
-
-std::vector<char> TCPConnectionManager::readRequest( SOCKET clientSocket )
+int TCPConnectionManager::readRequest( SOCKET clientSocket, std::vector<char> & vecResult )
 {
 	int iResult;
 
 	char recvBuffer[DEFAULT_RECV_BUF_LEN];
 	int recvBufLen = DEFAULT_RECV_BUF_LEN;
 
-	static std::vector<char> vecResult;
-	vecResult.reserve( DEFAULT_RECV_BUF_LEN );
+	if( vecResult.capacity() < DEFAULT_RECV_BUF_LEN )
+	{
+		vecResult.reserve( DEFAULT_RECV_BUF_LEN );
+	}
+
 
 	size_t bytesReceived = 0;
 	size_t requestLength = 0;
 
 	bool needRecvMore = true;
 
+
 	do
 	{
 		iResult = recv( clientSocket, recvBuffer, recvBufLen, 0 );
 
-		if ( iResult > 0 )
+		if ( iResult == 0 )
+		{
+			return -1;
+		}
+
+		else if ( iResult > 0 )
 		{	
+			saveBuffer( recvBuffer, iResult, "rb_request" );
+			
 			bytesReceived += iResult;
 
 			if ( bytesReceived >= vecResult.capacity() )
@@ -237,7 +265,10 @@ std::vector<char> TCPConnectionManager::readRequest( SOCKET clientSocket )
 			
 			// Is it HTTP request?
 			if ( !RequestParser::isHeaderValid( vecResult ) )
-				return std::vector<char>( 0 );
+			{
+				vecResult.clear();
+				return 0;
+			}
 
 
 			// Did we receive all the header?
@@ -267,8 +298,26 @@ std::vector<char> TCPConnectionManager::readRequest( SOCKET clientSocket )
 
 	} while ( ( iResult > 0 ) && needRecvMore );	
 
-	return vecResult;
+	return 0;
 }
+
+void TCPConnectionManager::addClientSocket( SOCKET clientSocket )
+{
+	m_clientSockets.push_back( clientSocket );
+}
+
+void TCPConnectionManager::closeClientSocket( SOCKET clientSocket )
+{
+	auto it = std::find( m_clientSockets.begin(), m_clientSockets.end(), clientSocket );
+	
+	if ( it == m_clientSockets.end() )
+		return;
+
+	m_clientSockets.erase( it );
+
+	closesocket( clientSocket );
+}
+
 
 void TCPConnectionManager::closeClientsSockets()
 {
@@ -278,27 +327,46 @@ void TCPConnectionManager::closeClientsSockets()
 	}
 }
 
-
-
 void TCPConnectionManager::waitForResponseJob()
 {
-	if ( m_onResponseCallback == nullptr )
+	if ( m_getResponseCallback == nullptr )
 	{
 		THROW_MESSAGE << "m_onResponseCallback is not initialized";
 		return;
 	}
 
-
 	while ( !m_forceStopThread )
 	{
-		// TODO: data size control!!!
-
 		ResponseData * response;
 		SOCKET sendSocket;
 
-		m_onResponseCallback( sendSocket, response );
+		m_getResponseCallback( sendSocket, response );
 
-		send( sendSocket, response->data.data(), response->data.size(), NULL );
+		size_t currentPosition = 0;
+		int iResult;
+
+		while( currentPosition < response->data.size() )
+		{
+			iResult = send( sendSocket, response->data.data() + currentPosition, response->data.size() - currentPosition, NULL );
+			
+			INFO_LOG_F << "Response sent." 
+						<< " [ socket = " << sendSocket << " ]"
+						<< " [ id = " << response->id << " ]";
+
+			if ( iResult == SOCKET_ERROR )
+			{
+				closeClientSocket( sendSocket );
+				SPAM_LOG_F << "send() failed. Error: " << WSAGetLastError();
+
+				break;
+			}
+
+			currentPosition += iResult;
+		}
+
+		m_onResponseSentCallback( response->id );
+
+		// very very temporary
+		saveBuffer( response->data.data(), response->data.size(), "rb_responses" );
 	}
-
 }

@@ -37,6 +37,7 @@ private:
 	void onRequest( SOCKET socket, const std::vector<char> & );
 	void onResponse( ResponsePtr );
 	void getNextResponse( SOCKET &, ResponseData* & );
+	void onResponseSent( RequestIdType id );
 	
 	
 	static std::atomic<bool> m_isServerRunning;

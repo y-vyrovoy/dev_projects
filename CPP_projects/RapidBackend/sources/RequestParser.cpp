@@ -9,6 +9,12 @@
 
 int RequestParser::Parse( const std::vector<char> & request, RequestData & requestDataResult ) const
 {
+	if ( request.size() == 0 )
+	{
+		INFO_LOG_F << "Empty request. Size is 0";
+		return 3;
+	}
+
 	int paramsStart = ParseStartLine( request, requestDataResult );
 
 	if ( paramsStart < 0 )
@@ -21,7 +27,7 @@ int RequestParser::Parse( const std::vector<char> & request, RequestData & reque
 
 	if ( ParseParams( request, requestDataResult ) != 0 )
 	{
-		SPAM_LOG_F << ": " << "ParseParams() failed" << std::endl;
+		SPAM_LOG_F << ": " << "ParseParams() failed";
 		return 2;
 	}
 
@@ -45,7 +51,7 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, RequestDat
 	requestData.http_method = parseHttpMethod( request );
 	if ( requestData.http_method == HTTP_METHOD::ERR_METHOD )
 	{
-		SPAM_LOG_F << "No HTTP method in request header" << std::endl;
+		SPAM_LOG_F << "No HTTP method in request header";
 		return RET_UKNOWN_METHOD;
 	}
 
@@ -54,7 +60,7 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, RequestDat
 	requestData.address = parseHeaderParams( request );
 	if ( requestData.address.empty() )
 	{
-		SPAM_LOG_F << "No parameters section in request header" << std::endl;
+		SPAM_LOG_F << "No parameters section in request header";
 		return RET_NO_PARAMS_SECTION;
 	}
 
@@ -64,7 +70,7 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, RequestDat
 	std::pair<char, char> httpVersion = parseHttpVersion( request );
 	if ( httpVersion.first == 0 && httpVersion.second == 0) 
 	{
-		SPAM_LOG_F << "No HTTP/ section in request header" << std::endl;
+		SPAM_LOG_F << "No HTTP/ section in request header";
 		return RET_NO_HTTP_SECTION;
 	}
 

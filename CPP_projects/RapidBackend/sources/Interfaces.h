@@ -32,6 +32,7 @@ public:
 
 using RequestCallbackType = std::function<void( SOCKET, const std::vector<char>& )>;
 using ResponseCallbackType = std::function<void ( SOCKET&, ResponseData* & )>;
+using ReponseSentCallbackType = std::function<void(RequestIdType)>;
 
 class IConnectionManager
 {
@@ -41,7 +42,9 @@ public:
 
 	virtual void setOnRequestCallback( const RequestCallbackType & cb ) { m_onRequestCallback = cb; };
 
-	virtual void setOnResponseCallback( const ResponseCallbackType & cb ) { m_onResponseCallback = cb; };
+	virtual void setGetResponseCallback( const ResponseCallbackType & cb ) { m_getResponseCallback = cb; };
+
+	virtual void setOnResponseSent( const ReponseSentCallbackType & cb ) { m_onResponseSentCallback = cb; };
 
 	virtual void start() = 0;
 
@@ -53,7 +56,10 @@ protected:
 	RequestCallbackType m_onRequestCallback;
 	
 	// Connection manager calls it to get next response to send
-	ResponseCallbackType m_onResponseCallback;
+	ResponseCallbackType m_getResponseCallback;
+
+	// Connection manager calls it to notify response is successfully sent
+	ReponseSentCallbackType m_onResponseSentCallback;
 
 	std::thread m_requestsThread;
 	std::thread m_responsesThread;

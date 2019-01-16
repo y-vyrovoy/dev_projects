@@ -125,7 +125,7 @@ coutLogger & coutLogger::getStaticInstance()
 
 fileLogger::fileLogger( const std::string & fileName )
 {
-	m_oFile.open( fileName, std::fstream::out | std::fstream::ate );
+	m_oFile.open( fileName, std::fstream::out | std::fstream::ate | std::ios::binary );
 	m_pStream = &m_oFile;
 }
 

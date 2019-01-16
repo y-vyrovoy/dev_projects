@@ -42,8 +42,8 @@ void ServerFramework::Initialize()
 	m_connectionManager.reset( new TCPConnectionManager );
 	m_connectionManager->Init( );
 	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
-	m_connectionManager->setOnResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response ) {return getNextResponse( sendSocket, response ); } );
-
+	m_connectionManager->setGetResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response ) {return getNextResponse( sendSocket, response ); } );
+	m_connectionManager->setOnResponseSent( [this] ( RequestIdType id ) { onResponseSent( id ); } );
 	
 	m_isServerRunning = false;
 	m_isInitialized = true;
@@ -94,6 +94,10 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 		}
 		else
 		{
+			//INFO_LOG_F << "New request."
+			//			<< " [ address " << requestData->address << " ]" 
+			//			<< " [ socket = " << socket << " ]";
+
 			m_requestDispatcher->registerRequest( socket, std::move( requestData ) );
 		}
 	}
@@ -105,9 +109,11 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 
 void ServerFramework::onResponse( ResponsePtr response )
 {
-	INFO_LOG_F << "Response"
-		<< " [id=" << response->id << "]"
-		<< " [data=" << response->data.data() << "]";
+	std::string logString{ response->data.begin(), response->data.end() };
+
+	//INFO_LOG_F << "Response"
+	//	<< " [id=" << response->id << "]"
+	//	<< " [data=" << logString << "]";
 
 	m_requestDispatcher->registerResponse( std::move( response ) );
 }
@@ -117,4 +123,9 @@ void ServerFramework::getNextResponse( SOCKET & sendSocket, ResponseData* &  res
 	response = m_requestDispatcher->pullResponse();
 
 	sendSocket = m_requestDispatcher->getSocket( response->id );
+}
+
+void ServerFramework::onResponseSent( RequestIdType id )
+{
+	m_requestDispatcher->remove( id );
 }

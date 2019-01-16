@@ -33,6 +33,12 @@ RequestIdType RequestDispatcher::registerRequest( SOCKET sock, RequestPtr reques
 	
 	request->id = id;
 
+	INFO_LOG_F << "Registering request."
+				<< " [ address " << request->address << " ]" 
+				<< " [ socket = " << sock << " ]"
+				<< " [ id = " << id << " ]";
+
+
     // mapping request with socket
     m_requestId2SocketMap[id] = sock;
 
@@ -61,7 +67,7 @@ RequestData * RequestDispatcher::syncGetAndPumpTopRequest()
 	auto it = m_requests.find( id );
 	if ( it == m_requests.end() )
 	{
-		THROW_MESSAGE << "Failed to find request id #" << id << " while waiting queue contains it";
+		THROW_MESSAGE << "Failed to find request for queue [ id = " << id << " ]";
 	}
 
 	return it->second.get();
@@ -100,7 +106,7 @@ void RequestDispatcher::syncRemoveRequestFromChain( RequestIdType id )
     auto itID = m_requestId2SocketMap.find( id );
     if ( itID == m_requestId2SocketMap.end() )
     {
-        WARN_LOG_F << "Can't find socket for the response id #" << id;
+        WARN_LOG_F << "Can't find socket for the response [ id = " << id << " ]";
 		return;
     }
 
@@ -109,7 +115,7 @@ void RequestDispatcher::syncRemoveRequestFromChain( RequestIdType id )
     auto itSock = m_requestsChains.find( sock );
     if ( itSock == m_requestsChains.end() )
     {
-        WARN_LOG_F << "Can't find chain for socket #" << sock;
+        WARN_LOG_F << "Can't find chain for socket " << sock;
 		return;
     }
 
@@ -140,13 +146,13 @@ void RequestDispatcher::registerResponse( ResponsePtr response )
 	
     if ( m_responses.find( id ) != m_responses.end() )
     {
-        THROW_MESSAGE << "Duplicating response id #" << id;
+        THROW_MESSAGE << "Duplicating response [ id = " << id << " ]";
     }
 
     auto it = m_requestId2SocketMap.find( id );
     if ( it == m_requestId2SocketMap.end() )
     {
-        THROW_MESSAGE << "Can't find socket for the response id #" << id;
+        THROW_MESSAGE << "Can't find socket for the response [ id = " << id << " ]";
     }
 
 	m_responses[id] = std::move( response );
@@ -226,7 +232,7 @@ void RequestDispatcher::removeSocket( SOCKET sock )
 	auto itSocket = m_requestsChains.find( sock );
     if (itSocket == m_requestsChains.end() )
     {
-        THROW_MESSAGE << "Can't find socket #" << sock;
+        THROW_MESSAGE << "Can't find socket " << sock;
     }
 
 	// Blocking requests and responses to avoid the case

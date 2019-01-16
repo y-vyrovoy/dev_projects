@@ -13,11 +13,11 @@
 #include "../RequestDispatcher.h"
 #include "../Utils.h"
 
-#define STD_RESPONSE_FILE_PATH	"..//html//std_response.html"
 
 char RESPONSE_HEADER[] =
 "HTTP/1.1 200 OK\r\n"
 "Content-Type: text/html; charset=UTF-8\r\n"
+"Connection: keep-alive\r\n"
 "Webpage Content\r\n";
 
 char RESPONSE_CONTENT_HEADER[] =
@@ -62,33 +62,6 @@ void FakeRequestHandler::Init( RequestDispatcher * pQueueManager,
 {
 	m_queueManager = pQueueManager;
 	m_responseCallback = responseCB;
-
-	try
-	{
-		std::ifstream file;
-		file.open( STD_RESPONSE_FILE_PATH );
-
-
-		std::string response;
-		std::string nextLine;
-
-		while ( std::getline( file, nextLine ) )
-		{
-			response += nextLine + '\n';
-		}
-
-		m_standardResponse.reserve( response.length() + 1 );
-		m_standardResponse.resize( response.length() + 1 );
-		memcpy( m_standardResponse.data(), response.data(), response.length() );
-		m_standardResponse.data()[response.length()] = 0;
-		m_standardResponse.resize( response.length() + 1 );
-
-		file.close();
-	}
-	catch ( const std::exception & ex )
-	{
-		ERROR_LOG_F << "Can't read standard reposnse file. Exception message: " << ex.what();
-	}
 }
 
 void FakeRequestHandler::start()
@@ -111,13 +84,12 @@ void FakeRequestHandler::threadJob()
 
 			// Waitinig for the next request from the queue
 			RequestData * request = m_queueManager->scheduleNextRequest();
-			DEBUG_LOG_F << "Starting request processing: id=" << request->id;
+			//DEBUG_LOG_F << "Starting request processing [ id = " << request->id << " ]";
 
 			//Here's the next request - let's send new response
 
 			ResponsePtr response( new ResponseData );
 			response->id = request->id;
-			//response->data = m_standardResponse;
 			response->data = createResponse( request );
 
 			m_responseCallback( std::move( response ) );
@@ -162,11 +134,6 @@ std::vector<char> FakeRequestHandler::createResponse( const RequestData * reques
 	buffer << "\r\n";
 	buffer << bufferContent.str();
 
-
-	std::string str = buffer.str();
-
-	DEBUG_LOG_F << str;
-
 	return sstreamToVector( buffer );
 }
 
@@ -176,8 +143,7 @@ std::vector<char> FakeRequestHandler::createFaultResponse( RequestIdType id, enE
 
 	buffer << RESPONSE_HEADER;
 
-	buffer
-		<< "<tr><td>id</td><td>" << id << "</td></tr>";
+	buffer << "<tr><td>id</td><td>" << id << "</td></tr>";
 	
 	switch ( err )
 	{
@@ -190,7 +156,7 @@ std::vector<char> FakeRequestHandler::createFaultResponse( RequestIdType id, enE
 
 	std::string str = buffer.str();
 
-	DEBUG_LOG_F << str;
+	//DEBUG_LOG_F << str;
 
 	return sstreamToVector( buffer );
 }

@@ -16,7 +16,7 @@ using namespace std::chrono_literals;
 
 int main(int argc, char** argv)
 {
-	fileLogger::initStaticInstance( "d:\\rb_log.txt" );
+	fileLogger::initStaticInstance( "d:\\temp\\rb_logs\\rb_log.txt" );
 
 	ServerFramework server;
 
