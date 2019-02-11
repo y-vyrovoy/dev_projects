@@ -193,6 +193,32 @@ ResponseData * RequestDispatcher::pullResponse()
         throw cTerminationException();
     }
 
+	return getResponse();
+}
+
+/// THREAD SAFE
+ResponseData * RequestDispatcher::pullResponse( std::chrono::milliseconds waitMS )
+{
+	std::unique_lock<std::mutex> lock( m_responseMutex );
+	auto ret = m_cvResponse.wait_for( lock, waitMS, [this] () { return !m_responseWaitSentQueue.waitingEmpty() || m_bForceStop; } );
+
+	if ( !ret )
+	{	
+		// timeout
+		return nullptr;
+	}
+
+	if ( m_bForceStop )
+    {
+		DEBUG_LOG_F << "Throwing cTerminationException";
+        throw cTerminationException();
+    }
+
+	return getResponse();
+}
+
+ResponseData * RequestDispatcher::getResponse()
+{
 	RequestIdType id = m_responseWaitSentQueue.moveNextToSent();
 
 	auto it = m_responses.find( id );
@@ -205,8 +231,6 @@ ResponseData * RequestDispatcher::pullResponse()
 		return nullptr;
 	}
 }
-
-
 
 /// THREAD SAFE
 void RequestDispatcher::removeResponse( RequestIdType id )

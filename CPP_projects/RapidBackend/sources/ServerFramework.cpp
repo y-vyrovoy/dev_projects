@@ -3,6 +3,7 @@
 #include "ServerFramework.h"
 #include <exception>
 #include <iostream>
+#include <chrono>
 
 #include "RequestDispatcher.h"
 #include "FakeClasses/FakeConnectionManager.h"
@@ -42,7 +43,7 @@ void ServerFramework::Initialize()
 	m_connectionManager.reset( new TCPConnectionManager );
 	m_connectionManager->Init( );
 	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
-	m_connectionManager->setGetResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response ) {return getNextResponse( sendSocket, response ); } );
+	m_connectionManager->setGetResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response, std::chrono::milliseconds timeout ) {return getNextResponse( sendSocket, response, timeout ); } );
 	m_connectionManager->setOnResponseSent( [this] ( RequestIdType id ) { onResponseSent( id ); } );
 	
 	m_isServerRunning = false;
@@ -53,7 +54,7 @@ int ServerFramework::StartServer()
 {
 	if ( !m_isInitialized )
 	{
-		THROW_MESSAGE << "Server is notinitialized";
+		THROW_MESSAGE << "Server is initialized";
 	}
 
 	if ( m_isServerRunning )
@@ -118,9 +119,15 @@ void ServerFramework::onResponse( ResponsePtr response )
 	m_requestDispatcher->registerResponse( std::move( response ) );
 }
 
-void ServerFramework::getNextResponse( SOCKET & sendSocket, ResponseData* &  response )
+void ServerFramework::getNextResponse( SOCKET & sendSocket, ResponseData* &  response, std::chrono::milliseconds timeoutMS )
 {
-	response = m_requestDispatcher->pullResponse();
+	response = m_requestDispatcher->pullResponse( timeoutMS );
+	
+	if ( response == nullptr )
+	{
+		// timeout
+		return;
+	}
 
 	sendSocket = m_requestDispatcher->getSocket( response->id );
 }

@@ -31,7 +31,7 @@ public:
 
 private:
 
-	void waitForRequestJob();
+	void waitForRequestJob( StopFlagPtr forceStop );
 
 	std::string generateRequestString();
 

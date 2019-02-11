@@ -36,7 +36,7 @@ private:
 
 	void onRequest( SOCKET socket, const std::vector<char> & );
 	void onResponse( ResponsePtr );
-	void getNextResponse( SOCKET &, ResponseData* & );
+	void getNextResponse( SOCKET & sendSocket, ResponseData* &  response, std::chrono::milliseconds timeoutMS );
 	void onResponseSent( RequestIdType id );
 	
 	

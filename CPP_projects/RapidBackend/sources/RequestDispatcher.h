@@ -4,6 +4,7 @@
 #include <list>
 #include <condition_variable>
 #include <mutex>
+#include <chrono>
 
 #include "BlockingQueue.h"
 #include "SockTypes.h"
@@ -33,6 +34,8 @@ public:
 
 	ResponseData * pullResponse();
 
+	ResponseData * pullResponse( std::chrono::milliseconds waitMS );
+
 	void syncPutTopResponseToQueue( SOCKET );
 
 	void removeResponse( RequestIdType );
@@ -61,6 +64,8 @@ private:
 	RequestData * syncGetAndPumpTopRequest();
 
 	void syncRemoveRequestFromChain( RequestIdType id );
+
+	ResponseData * getResponse();
 
 private:
 

@@ -6,10 +6,13 @@
 #include <thread>
 #include <functional>
 #include <vector>
+#include <chrono>
+
 
 #include "DataTypes.h"
 #include "SockTypes.h"
 #include "RequestDispatcher.h"
+#include "StoppableThread.h"
 
 class IRequestParser
 {
@@ -31,11 +34,13 @@ public:
 
 
 using RequestCallbackType = std::function<void( SOCKET, const std::vector<char>& )>;
-using ResponseCallbackType = std::function<void ( SOCKET&, ResponseData* & )>;
+using ResponseCallbackType = std::function<void ( SOCKET&, ResponseData* &, std::chrono::milliseconds )>;
 using ReponseSentCallbackType = std::function<void(RequestIdType)>;
 
 class IConnectionManager
 {
+public:
+	
 public:
 
 	virtual void Init() = 0;
@@ -61,10 +66,10 @@ protected:
 	// Connection manager calls it to notify response is successfully sent
 	ReponseSentCallbackType m_onResponseSentCallback;
 
-	std::thread m_requestsThread;
-	std::thread m_responsesThread;
+	StoppableThreadPtr		m_requestsThread;
+	StoppableThreadPtr		m_responsesThread;
 
-	std::atomic<bool> m_forceStopThread;
+	std::atomic<bool>		m_forceStopThread;
 };
 
 

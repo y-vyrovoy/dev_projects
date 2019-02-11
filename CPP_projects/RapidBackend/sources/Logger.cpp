@@ -11,13 +11,13 @@
 #include <Windows.h>	
 #endif
 
-const char * PREFIX_INFO = "INFO";
-const char * PREFIX_WARNING	= "WARNINIG";
-const char * PREFIX_ERROR = "ERROR";
-const char * PREFIX_CRASH = "CRASH";
-const char * PREFIX_DEBUG = "DEBUG";
-const char * PREFIX_SPAM = "SPAM";
-const char * PREFIX_UNKN = "UNKNOWN";
+const char * PREFIX_INFO		= "INFO";
+const char * PREFIX_WARNING		= "WARN";
+const char * PREFIX_ERROR		= "ERRR";
+const char * PREFIX_CRASH		= "CRSH";
+const char * PREFIX_DEBUG		= "DEBG";
+const char * PREFIX_SPAM		= "SPAM";
+const char * PREFIX_UNKN		= "UNKN";
 
 std::unique_ptr<fileLogger>		fileLogger::m_instance;
 std::unique_ptr<coutLogger>		coutLogger::m_instance;

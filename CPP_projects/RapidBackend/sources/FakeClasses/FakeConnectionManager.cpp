@@ -7,6 +7,7 @@
 
 #include "FakeConnectionManager.h"
 #include "../Logger.h"
+#include "../StoppableThread.h"
 
 #define N_SOCKETS 4;
 
@@ -41,22 +42,20 @@ void FakeConnectionManager::Init()
 
 void FakeConnectionManager::start()
 {
-	m_forceStopThread = false;
-	std::thread t( [this] () { waitForRequestJob(); } );
-	m_requestsThread.swap(t);
+	m_requestsThread.reset( new StoppableThread( [this] ( StopFlagPtr forceStop ) { waitForRequestJob( forceStop ); } ) );
+	m_requestsThread->start();
 }
 
 void FakeConnectionManager::stop()
 {
-	m_forceStopThread = true;
-	m_requestsThread.join();
+	m_requestsThread->stopAndJoin();
 }
 
-void FakeConnectionManager::waitForRequestJob()
+void FakeConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 {
 	try
 	{
-		while (!m_forceStopThread)
+		while (!*forceStop)
 		{
 			std::this_thread::sleep_for( 1s );
 
