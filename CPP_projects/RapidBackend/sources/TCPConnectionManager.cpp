@@ -70,7 +70,6 @@ void TCPConnectionManager::stop()
 {
 	m_watchdogThread->stopAndJoin();
 
-
 	m_requestThreadIsOn = false;
 	m_requestsThread->stopAndJoin();
 
@@ -296,7 +295,7 @@ void TCPConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 			// tick to let know that the thread is alive
 			HiResTimePoint tpNow = HiResClock::now();
 
-			SpamLogHiResTP( __FUNCTION__ "\t", m_nextRequestThreadTick.load() );			
+			//SpamLogHiResTP( __FUNCTION__ "\t", m_nextRequestThreadTick.load() );			
 			
 			// timeout should fit m_nextRequestThreadTick
 
@@ -505,7 +504,7 @@ void TCPConnectionManager::waitForResponseJob( StopFlagPtr forceStop )
 			// tick to let know that the thread is alive
 			HiResTimePoint tpNow = HiResClock::now();
 
-			SpamLogHiResTP( __FUNCTION__ "\t", m_nextResponseThreadTick.load() );			
+			//SpamLogHiResTP( __FUNCTION__ "\t", m_nextResponseThreadTick.load() );			
 			
 			// timeout should fit m_nextRequestThreadTick
 			std::chrono::milliseconds timeToSleep = CastToMS( m_nextResponseThreadTick.load() - tpNow );
@@ -552,7 +551,7 @@ void TCPConnectionManager::waitForResponseJob( StopFlagPtr forceStop )
 			}
 		}
 
-		INFO_LOG_F << "Response thread was forced to terminate [forceStopResponseThread]";
+		INFO_LOG_F << "Response thread was forced to terminate [forceStop]";
 	}
 	catch ( cTerminationException & )
 	{
@@ -579,16 +578,16 @@ void TCPConnectionManager::watchdogThreadFunction( StopFlagPtr forceStop )
 		// sleeping the rest of m_watchdogCheckPeriod
 		// this is necessary to be sure that watchdog period is exactly m_watchdogCheckPeriod 
 		
-		SpamLogHiResTP( __FUNCTION__ " SyncPoint\t", m_syncPoint.load() );
+		//SpamLogHiResTP( __FUNCTION__ " SyncPoint\t", m_syncPoint.load() );
 
 		cv.wait_for( lock, CastToMS( m_syncPoint.load() - HiResClock::now() ) );
+		if ( *forceStop )
+			break;
 
 		tpNow = HiResClock::now();
 
 
-		static size_t cnt = 0;
-
-		if ( !( cnt++ % 3 ) || ( m_requestThreadIsOn && ( m_nextRequestThreadTick.load() < tpNow - 50ms) ) )
+		if (  m_requestThreadIsOn && ( m_nextRequestThreadTick.load() < tpNow - 50ms) ) 
 		{
 			// TODO: we've lost request thread!!
 			ERROR_LOG_F << "Request thread is down. Restarting request and response threads";
@@ -606,5 +605,6 @@ void TCPConnectionManager::watchdogThreadFunction( StopFlagPtr forceStop )
 			m_syncPoint.store( m_syncPoint.load() + m_watchdogCheckPeriod );
 		}
 	}
-}
 
+	INFO_LOG_F << "Watchdog thread was forced to terminate [forceStop]";
+}
