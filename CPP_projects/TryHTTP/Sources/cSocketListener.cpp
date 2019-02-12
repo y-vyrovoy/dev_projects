@@ -41,7 +41,7 @@ cSocketListener::enInitRet cSocketListener::Init()
     m_socketListen = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socketListen < 0)
     {
-        COUT_LOG << "Error: socket() failed. errno = " << errno << std::endl;
+        DEBUG_LOG_F << "Error: socket() failed. errno = " << errno << std::endl;
     	return enInitRet::INIT_ERR_SOCKET;
     }
 
@@ -49,7 +49,7 @@ cSocketListener::enInitRet cSocketListener::Init()
     nRetVal = setsockopt(m_socketListen, SOL_SOCKET, SO_REUSEADDR, &trueFlag, sizeof(int));
     if (nRetVal < 0)
     {
-    	COUT_LOG << "setsockopt() failed. errno: " << errno << std::endl;
+    	DEBUG_LOG_F << "setsockopt() failed. errno: " << errno << std::endl;
     	close(m_socketListen);
     	return enInitRet::INIT_ERR_SOCKOPT;
     }
@@ -66,19 +66,18 @@ cSocketListener::enInitRet cSocketListener::Init()
     nRetVal = bind(m_socketListen, (const struct sockaddr* )&addrServer, sizeof(addrServer));
     if (nRetVal < 0)
     {
-    	COUT_LOG << "bind() failed. errno: " << errno << std::endl;
+    	DEBUG_LOG_F << "bind() failed. errno: " << errno << std::endl;
     	close(m_socketListen);
     	return enInitRet::INIT_ERR_BIND;
     }
 
-    COUT_LOG << "bind() ok" << std::endl;
+    DEBUG_LOG_F << "bind() ok" << std::endl;
 
     return enInitRet::INIT_OK;
 }
 
 void cSocketListener::StartListener(SockListenerCallback requestHandler)
 {
-    COUT_LOG << std::endl;
     m_bListen.store(true);
 
     auto lambda = [this, requestHandler](){WaitAndHandleConnections(requestHandler);};
@@ -98,8 +97,6 @@ void cSocketListener::StopListener()
 
 void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandler)
 {
-    COUT_LOG << std::endl;
-    
     struct sockaddr_in addrClient;
     
     while (m_bListen)
@@ -112,9 +109,9 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
         nRetVal = listen(m_socketListen, SOMAXCONN);
         if (nRetVal == -1)
         {
-            COUT_LOG << "listen() returned " << nRetVal << ", errno: " << errno << std::endl;
+            DEBUG_LOG_F << "listen() returned " << nRetVal << ", errno: " << errno << std::endl;
         }
-        COUT_LOG << "listen() ok" << std::endl;
+        DEBUG_LOG_F << "listen() ok" << std::endl;
 
 
         struct timeval timeout;
@@ -134,30 +131,30 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
 
         if (nRetVal == -1)
         {
-            COUT_LOG << "select() failed. ";
+            DEBUG_LOG_F << "select() failed. ";
             switch(nRetVal)
             {
                 case EBADF:
-                    COUT_LOG << "EBADF. One of the file descriptor sets specified an invalid file descriptor." << std::endl;
+                    DEBUG_LOG_F << "EBADF. One of the file descriptor sets specified an invalid file descriptor." << std::endl;
                     break;
 
                 case EINTR:
-                    COUT_LOG << "EINTR. The operation was interrupted by a signal" << std::endl;
+                    DEBUG_LOG_F << "EINTR. The operation was interrupted by a signal" << std::endl;
                     break;
 
                 case EINVAL:
-                    COUT_LOG << "EINVAL. The timeout argument is invalid; one of the components is negative or too large." << std::endl;
+                    DEBUG_LOG_F << "EINVAL. The timeout argument is invalid; one of the components is negative or too large." << std::endl;
                     break;
             }
             continue;
         }
         else if (nRetVal == 0)
         {
-            COUT_LOG << "select() timeout" << std::endl;
+            DEBUG_LOG_F << "select() timeout" << std::endl;
             continue;
         }
 
-        COUT_LOG << "select() got ready connection" << std::endl;
+        DEBUG_LOG_F << "select() got ready connection" << std::endl;
 
         if (FD_ISSET(m_socketListen, &set))
         {
@@ -170,17 +167,17 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
                 switch (errno)
                 {
                     case EAGAIN:
-                        COUT_LOG << "accept() returned -1. errno = EAGAIN" << std::endl;
+                        DEBUG_LOG_F << "accept() returned -1. errno = EAGAIN" << std::endl;
                         break;
 
                     default:
-                        COUT_LOG << "accept() returned -1. errno: " << errno << std::endl;
+                        DEBUG_LOG_F << "accept() returned -1. errno: " << errno << std::endl;
                         break;
                 }
                 continue;
             }
 
-            COUT_LOG << "accept() ok. socket: " << clientSocket << std::endl;
+            DEBUG_LOG_F << "accept() ok. socket: " << clientSocket << std::endl;
 
             auto lambda = [this, &clientSocket, &requestHandler](){HandleRequest(clientSocket, requestHandler);};
             auto fut = std::async(std::launch::async, lambda);
@@ -190,8 +187,6 @@ void cSocketListener::WaitAndHandleConnections(SockListenerCallback requestHandl
 
 void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandler)
 {
-    COUT_LOG << std::endl;
- 
     REQEST_DATA reqData;
     reqData.sock = sock;
     reqData.vecRequestBuffer.resize(BUF_SIZE);
@@ -216,11 +211,11 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
 
             if (NRead > 0)
             {
-                COUT_LOG << "NRead = " << NRead << std::endl;
+                DEBUG_LOG_F << "NRead = " << NRead << std::endl;
             }
             else if (NRead == 0)
             {
-                COUT_LOG << "NRead == 0" << std::endl;
+                DEBUG_LOG_F << "NRead == 0" << std::endl;
                 bKeepReading = false;
                 continue;
             }
@@ -228,13 +223,13 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
             {
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                 {
-                    COUT_LOG << "NRead == -1 errno == EAGAIN" << std::endl;
+                    DEBUG_LOG_F << "NRead == -1 errno == EAGAIN" << std::endl;
                     bKeepReading = false;
                     continue;
                 }
                 else
                 {
-                    COUT_LOG << "recv() error. errno: " << errno << std::endl;
+                    DEBUG_LOG_F << "recv() error. errno: " << errno << std::endl;
                     bProcessRequest = false;
                     bKeepReading = false;
                     continue;
@@ -242,7 +237,7 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
             }
             else
             {
-                COUT_LOG << "The message is empty" << std::endl;
+                DEBUG_LOG_F << "The message is empty" << std::endl;
             }
 
             if (nCurrentPosition + NRead >= reqData.vecRequestBuffer.capacity())
@@ -261,7 +256,7 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
             return;
         }
 
-        COUT_LOG << "recv() ok. NRead: " << nMessageSize << std::endl;
+        DEBUG_LOG_F << "recv() ok. NRead: " << nMessageSize << std::endl;
 
         
         requestHandler(reqData);
@@ -270,7 +265,7 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
     }
     catch (const std::exception & ex)
     {
-        COUT_LOG << "Exception. what(): " << ex.what() << std::endl;
+        DEBUG_LOG_F << "Exception. what(): " << ex.what() << std::endl;
         //close (sock);
         return;
     }
@@ -279,8 +274,6 @@ void cSocketListener::HandleRequest(int sock, SockListenerCallback requestHandle
 int cSocketListener::SendResponse(const REQUEST_PARAMS & reqParams, 
                                     std::vector<char> verResponce)
 {
-    COUT_LOG << std::endl;
-    
     try
     {
         send(reqParams.sock, verResponce.data(), verResponce.size(), MSG_CONFIRM);
@@ -289,7 +282,7 @@ int cSocketListener::SendResponse(const REQUEST_PARAMS & reqParams,
     }
     catch(const std::exception & ex)
     {
-       COUT_LOG << "Exception: " << ex.what() << std::endl;
+       ERROR_LOG_F << "Exception: " << ex.what() << std::endl;
     }
     
     return 0;
