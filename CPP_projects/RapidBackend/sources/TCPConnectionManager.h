@@ -38,12 +38,11 @@ public:
 	TCPConnectionManager & operator= ( const TCPConnectionManager & ) = delete;
 	TCPConnectionManager & operator= ( TCPConnectionManager && ) = delete;
 
-	void Init() override;
+	void init( const ConfigHelperPtr & config ) override;
 
 	void start() override;
 
 	void stop() override;
-
 
 private:
 
@@ -86,7 +85,7 @@ private:
 
 	fd_set										m_active_fd_set;
 
-	unsigned int								m_listenPort;
+	DEFINE_PROPERTY( std::string, listenPort )
 
 	StoppableThreadPtr							m_watchdogThread;
 

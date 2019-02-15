@@ -22,7 +22,7 @@ public:
 	FakeConnectionManager & operator= (const FakeConnectionManager &) = delete;
 	FakeConnectionManager & operator= (FakeConnectionManager &&) = delete;
 
-	void Init() override;
+	void init( const ConfigHelperPtr & config ) override;
 
 	void start() override;
 

@@ -23,7 +23,7 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
-#define DEFAULT_PORT			80
+#define DEFAULT_PORT			"80"
 #define DEFAULT_RECV_BUF_LEN	4096
 
 namespace
@@ -49,8 +49,21 @@ TCPConnectionManager::TCPConnectionManager()
 {
 }
 
-void TCPConnectionManager::Init()
+void TCPConnectionManager::init( const ConfigHelperPtr & config )
 {
+	m_config = config;
+
+	std::string listenPort;
+	if( m_config->getOptional("port", listenPort))
+	{
+		m_listenPort = listenPort;
+		INFO_LOG_F << "Setting listen port: " << m_listenPort;
+	}
+	else
+	{
+		WARN_LOG_F << "No listen port in config. Default value is " << m_listenPort;
+	} 
+	
 }
 
 void TCPConnectionManager::start()
@@ -215,9 +228,6 @@ void TCPConnectionManager::initListenSocket()
 	struct addrinfo *result = NULL;
 	struct addrinfo hints;
 
-	std::stringstream ss;
-	ss << m_listenPort;
-
 	memset( &hints, 0, sizeof( hints ) );
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
@@ -225,7 +235,7 @@ void TCPConnectionManager::initListenSocket()
 	hints.ai_flags = AI_PASSIVE;
 
 	// Resolve the server address and port
-	iResult = getaddrinfo( NULL, ss.str().c_str(), &hints, &result );
+	iResult = getaddrinfo( NULL, m_listenPort.c_str(), &hints, &result );
 	if ( iResult != 0 )
 	{
 		THROW_MESSAGE << "getaddrinfo() failed with error: " << WSAGetLastError();

@@ -13,6 +13,7 @@
 #include "Interfaces.h"
 #include "Logger.h"
 #include "MessageException.h"
+#include "ConfigHelper.h"
 
 std::atomic<bool> ServerFramework::m_isServerRunning;
 
@@ -25,8 +26,11 @@ ServerFramework::~ServerFramework()
 {
 }
 
-void ServerFramework::Initialize()
+void ServerFramework::Initialize( ConfigHelperPtr & config )
 {
+	m_config = config;
+	config->dump();
+
 	m_requestDispatcher.reset( new RequestDispatcher );
 
 	// --------- Setting up request parser ------------
@@ -41,7 +45,9 @@ void ServerFramework::Initialize()
 	// --------- Starting connection manager ------------
 	//m_connectionManager.reset( new FakeConnectionManager );
 	m_connectionManager.reset( new TCPConnectionManager );
-	m_connectionManager->Init( );
+	
+	m_connectionManager->init( m_config );
+	//m_connectionManager->set
 	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
 	m_connectionManager->setGetResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response, std::chrono::milliseconds timeout ) {return getNextResponse( sendSocket, response, timeout ); } );
 	m_connectionManager->setOnResponseSent( [this] ( RequestIdType id ) { onResponseSent( id ); } );

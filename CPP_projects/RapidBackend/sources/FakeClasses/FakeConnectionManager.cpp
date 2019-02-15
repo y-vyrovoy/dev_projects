@@ -31,7 +31,7 @@ using namespace std::chrono_literals;
 
 
 
-void FakeConnectionManager::Init()
+void FakeConnectionManager::init( const ConfigHelperPtr & config )
 {
 	int size = sizeof( g_fakeRequest );
 	m_fakeRequest.assign( g_fakeRequest, g_fakeRequest + size );

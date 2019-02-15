@@ -8,9 +8,10 @@
 #include "TCPConnectionManager.h"
 #include "RequestParser.h"
 #include "RequestHandler.h"
-
+#include "ConfigHelper.h"
 
 class RequestDispatcher;
+
 
 class ServerFramework
 {
@@ -20,28 +21,28 @@ public:
 	~ServerFramework();
 
 
-    ServerFramework( const ServerFramework& orig ) = delete;
-    ServerFramework( ServerFramework&& orig ) = delete;
+    ServerFramework( const ServerFramework& ) = delete;
+    ServerFramework( ServerFramework&& ) = delete;
     
-    ServerFramework & operator= ( const ServerFramework& orig ) = delete;
-    ServerFramework & operator= ( ServerFramework&& orig ) = delete;
+    ServerFramework & operator= ( const ServerFramework& ) = delete;
+    ServerFramework & operator= ( ServerFramework&& ) = delete;
    
     
     int StartServer();
     void StopServer();
     
-    void Initialize();
+	void Initialize( ConfigHelperPtr & config );
 
 private:
 
-	void onRequest( SOCKET socket, const std::vector<char> & );
-	void onResponse( ResponsePtr );
+	void onRequest( SOCKET socket, const std::vector<char> & request );
+	void onResponse( ResponsePtr response );
 	void getNextResponse( SOCKET & sendSocket, ResponseData* &  response, std::chrono::milliseconds timeoutMS );
 	void onResponseSent( RequestIdType id );
 	
 	
-	static std::atomic<bool> m_isServerRunning;
-	std::atomic<bool> m_isInitialized;
+	static std::atomic<bool>					m_isServerRunning;
+	std::atomic<bool>							m_isInitialized;
     
 
 	std::unique_ptr< RequestDispatcher >		m_requestDispatcher;
@@ -49,5 +50,7 @@ private:
     
 	std::unique_ptr< IRequestParser >			m_requestParser;
 	std::unique_ptr< IRequestHandler >			m_requestHandler;
+
+	ConfigHelperPtr								m_config;
 };
 

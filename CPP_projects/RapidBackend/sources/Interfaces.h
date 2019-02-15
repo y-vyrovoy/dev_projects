@@ -13,6 +13,8 @@
 #include "SockTypes.h"
 #include "RequestDispatcher.h"
 #include "StoppableThread.h"
+#include "ConfigHelper.h"
+
 
 class IRequestParser
 {
@@ -39,11 +41,10 @@ using ReponseSentCallbackType = std::function<void(RequestIdType)>;
 
 class IConnectionManager
 {
-public:
-	
+
 public:
 
-	virtual void Init() = 0;
+	virtual void init( const ConfigHelperPtr & config ) = 0;
 
 	virtual void setOnRequestCallback( const RequestCallbackType & cb ) { m_onRequestCallback = cb; };
 
@@ -57,11 +58,13 @@ public:
 
 protected:
 
+	ConfigHelperPtr			m_config;
+
 	// Connection manager calls it when it gets new request to process
-	RequestCallbackType m_onRequestCallback;
+	RequestCallbackType		m_onRequestCallback;
 	
 	// Connection manager calls it to get next response to send
-	ResponseCallbackType m_getResponseCallback;
+	ResponseCallbackType	m_getResponseCallback;
 
 	// Connection manager calls it to notify response is successfully sent
 	ReponseSentCallbackType m_onResponseSentCallback;
