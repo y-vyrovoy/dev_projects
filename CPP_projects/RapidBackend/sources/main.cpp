@@ -26,6 +26,7 @@ int main(int argc, char** argv)
 		if ( !config->getOptional( "log", logFilename ) )
 		{
 			std::cout << "Can't find log filename. Terminating" << std::endl;
+			return 0;
 		}
 
 		fileLogger::initStaticInstance( logFilename );
@@ -46,6 +47,7 @@ int main(int argc, char** argv)
 	catch ( const std::exception & ex )
 	{
 		std::cout << "Program crashed. Error: " << ex.what() << std::endl;
+
 	}
 
 	return 0;

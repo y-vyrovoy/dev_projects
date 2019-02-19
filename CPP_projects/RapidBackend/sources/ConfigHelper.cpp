@@ -76,7 +76,10 @@ const std::string ConfigHelper::get( const char * paramName ) const
 	ParameterContainer::const_iterator it = m_params.find( paramName );
 	if ( it == m_params.end() )
 	{
-		THROW_MESSAGE << __FUNCTION__ ": Cant't find parameter [" << paramName << "]";
+		std::stringstream ssError;
+		ssError << "Cant't find config parameter [" << paramName << "]";
+		throw std::runtime_error( ssError.str() );
+
 	}
 
 	return it->second;

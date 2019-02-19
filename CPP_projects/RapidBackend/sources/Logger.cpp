@@ -144,7 +144,7 @@ fileLogger & fileLogger::getStaticInstance()
 {
 	if ( !m_instance )
 	{
-		THROW_MESSAGE << "fileLogger was not initialized";
+		throw std::runtime_error( "fileLogger was not initialized" );
 	}
 
 	return *(m_instance.get()); 

@@ -56,7 +56,7 @@ void ServerFramework::Initialize( ConfigHelperPtr & config )
 		m_connectionManager.reset( new TCPConnectionManager );
 
 		m_connectionManager->init( m_config );
-		//m_connectionManager->set
+		
 		m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
 		m_connectionManager->setGetResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response, std::chrono::milliseconds timeout ) {return getNextResponse( sendSocket, response, timeout ); } );
 		m_connectionManager->setOnResponseSent( [this] ( RequestIdType id ) { onResponseSent( id ); } );
@@ -64,15 +64,9 @@ void ServerFramework::Initialize( ConfigHelperPtr & config )
 		m_isServerRunning = false;
 		m_isInitialized = true;
 	}
-	catch( std::exception & ex )
+	catch( const std::exception & ex )
 	{
-		ssError << "Initialization failed. Config was not initialized. Error: " << ex.what() << std::endl;
-	}
-
-	ssError.seekp( 0, std::ios::end );
-	if ( ssError.tellp() != 0 )
-	{
-		THROW_MESSAGE << ssError.str();
+		ERROR_LOG_F << "Error: [" << ex.what() << ']' << std::endl;
 	}
 }
 
@@ -81,12 +75,12 @@ int ServerFramework::StartServer()
 {
 	if ( !m_isInitialized )
 	{
-		THROW_MESSAGE << "Server is initialized";
+		throw std::runtime_error( "Server is not initialized" );
 	}
 
 	if ( m_isServerRunning )
 	{
-		THROW_MESSAGE << "Server is already running. Single instance is allowed";
+		throw std::runtime_error( "Server is already running. Single instance is allowed" );
 	}
 
 	m_requestHandler->start();

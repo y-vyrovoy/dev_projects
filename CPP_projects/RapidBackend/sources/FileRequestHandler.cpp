@@ -32,7 +32,7 @@ void FileRequestHandler::Init( const ConfigHelperPtr & config,
 	m_rootFolder = m_config->getRootFolder();
 	if ( m_rootFolder.empty() )
 	{
-		THROW_MESSAGE << "Can't get root folder from config";
+		throw std::runtime_error( "Can't get root folder from config" );
 	}
 }
 

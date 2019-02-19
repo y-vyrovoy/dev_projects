@@ -75,7 +75,7 @@ T& WaitSentQueue<T>::moveNextToSent()
 
 	if ( m_waitingQueue.empty() )
 	{
-		THROW_MESSAGE << "Waiting queue is empty";
+		throw std::runtime_error( "Waiting queue is empty" );
 	}
 
 	m_sentQueue.emplace_back( std::move( m_waitingQueue.front() ) );
@@ -92,7 +92,9 @@ void WaitSentQueue<T>::moveToWaiting( T const & item )
 
 	if ( it == m_sentQueue.end() )
 	{
-		THROW_MESSAGE << "Item " << item << " was not scheduled";
+		std::stringstream ssError;
+		ssError << "Item " << item << " was not scheduled";
+		throw std::runtime_error( ssError.str() );
 	}
 
 	m_waitingQueue.emplace_back( std::move( *it ) );

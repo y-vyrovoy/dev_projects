@@ -211,13 +211,15 @@ void TCPConnectionManager::initWSA()
 
 	if ( iResult != 0 )
 	{
-		THROW_MESSAGE << "WSAStartup failed with error: " << WSAGetLastError();
+		std::stringstream ssError;
+		ssError << "WSAStartup failed with error: " << WSAGetLastError();
+		throw std::runtime_error( ssError.str() );
 	}
 
 	if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 )
 	{
 		WSACleanup();
-		THROW_MESSAGE << "Could not find a usable version of Winsock.dll";
+		throw std::runtime_error( "Could not find a usable version of Winsock.dll" );
 	}
 }
 
@@ -238,7 +240,9 @@ void TCPConnectionManager::initListenSocket()
 	iResult = getaddrinfo( NULL, m_listenPort.c_str(), &hints, &result );
 	if ( iResult != 0 )
 	{
-		THROW_MESSAGE << "getaddrinfo() failed with error: " << WSAGetLastError();
+		std::stringstream ssError;
+		ssError << "getaddrinfo() failed with error: " << WSAGetLastError();
+		throw std::runtime_error( ssError.str() );
 	}
 
 
@@ -246,7 +250,9 @@ void TCPConnectionManager::initListenSocket()
 	m_listenSocket = socket( result->ai_family, result->ai_socktype, result->ai_protocol );
 	if ( m_listenSocket == INVALID_SOCKET )
 	{
-		THROW_MESSAGE << "socket() failed with error: " << WSAGetLastError();
+		std::stringstream ssError;
+		ssError << "socket() failed with error: " << WSAGetLastError();
+		throw std::runtime_error( ssError.str() );
 	}
 
 
@@ -254,8 +260,11 @@ void TCPConnectionManager::initListenSocket()
 	iResult = bind( m_listenSocket, result->ai_addr, ( int ) result->ai_addrlen );
 	if ( iResult == SOCKET_ERROR )
 	{
-		THROW_MESSAGE << "bind() failed with error: " << WSAGetLastError();
 		freeaddrinfo( result );
+
+		std::stringstream ssError;
+		ssError << "bind() failed with error: " << WSAGetLastError();
+		throw std::runtime_error( ssError.str() );
 	}
 
 	freeaddrinfo( result );
@@ -263,7 +272,9 @@ void TCPConnectionManager::initListenSocket()
 	// Listen for the TCP listening socket
 	if ( listen( m_listenSocket, SOMAXCONN ) == SOCKET_ERROR )
 	{
-		THROW_MESSAGE << "listen() failed with error: " << WSAGetLastError();
+		std::stringstream ssError;
+		ssError << "listen() failed with error: " << WSAGetLastError();
+		throw std::runtime_error( ssError.str() );
 	}
 
 	// Initialize the set of active sockets.

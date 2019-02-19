@@ -67,7 +67,9 @@ RequestData * RequestDispatcher::getAndPumpTopRequest()
 	auto it = m_requests.find( id );
 	if ( it == m_requests.end() )
 	{
-		THROW_MESSAGE << "Failed to find request for queue [ id = " << id << " ]";
+		std::stringstream ssError;
+		ssError << __FUNCTION__ ": Failed to find request for queue [ id = " << id << " ]";
+		throw std::runtime_error( ssError.str() );
 	}
 
 	return it->second.get();
@@ -146,13 +148,17 @@ void RequestDispatcher::registerResponse( ResponsePtr response )
 	
     if ( m_responses.find( id ) != m_responses.end() )
     {
-        THROW_MESSAGE << "Duplicating response [ id = " << id << " ]";
+		std::stringstream ssError;
+		ssError <<  "Duplicating response [ id = " << id << " ]";
+		throw std::runtime_error( ssError.str() );
     }
 
     auto it = m_requestId2SocketMap.find( id );
     if ( it == m_requestId2SocketMap.end() )
     {
-        THROW_MESSAGE << "Can't find socket for the response [ id = " << id << " ]";
+		std::stringstream ssError;
+		ssError << "Can't find socket for the response [ id = " << id << " ]";
+		throw std::runtime_error( ssError.str() );
     }
 
 	m_responses[id] = std::move( response );
@@ -256,7 +262,9 @@ void RequestDispatcher::removeSocket( SOCKET sock )
 	auto itSocket = m_requestsChains.find( sock );
     if (itSocket == m_requestsChains.end() )
     {
-        THROW_MESSAGE << "Can't find socket " << sock;
+		std::stringstream ssError;
+		ssError << "Can't find socket " << sock;
+		throw std::runtime_error( ssError.str() );
     }
 
 	// Blocking requests and responses to avoid the case
