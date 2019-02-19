@@ -28,7 +28,6 @@ public:
 
 	void stop() override;
 
-
 private:
 
 	void waitForRequestJob( StopFlagPtr forceStop );

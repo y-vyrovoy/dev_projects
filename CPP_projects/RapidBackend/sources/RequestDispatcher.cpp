@@ -55,7 +55,7 @@ RequestIdType RequestDispatcher::registerRequest( SOCKET sock, RequestPtr reques
 }
 
 // METHOD IS NOT THREAD SAFE
-RequestData * RequestDispatcher::syncGetAndPumpTopRequest()
+RequestData * RequestDispatcher::getAndPumpTopRequest()
 {
 	if ( m_requestWaitSentQueue.isWaitingEmpty() )
 	{
@@ -88,7 +88,7 @@ RequestData * RequestDispatcher::scheduleNextRequest()
         throw cTerminationException();
     }
 
-	return syncGetAndPumpTopRequest();
+	return getAndPumpTopRequest();
 }
 
 

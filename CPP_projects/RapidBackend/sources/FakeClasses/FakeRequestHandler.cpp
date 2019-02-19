@@ -57,10 +57,11 @@ FakeRequestHandler::~FakeRequestHandler()
 	// TODO: check is the working thread avilve and stop it if necessary
 }
 
-void FakeRequestHandler::Init( RequestDispatcher * pQueueManager,
-	std::function<void( std::unique_ptr<ResponseData> )> responseCB )
+void FakeRequestHandler::Init( const ConfigHelperPtr & config,
+								RequestDispatcher * requestDispatcher, 
+								std::function<void( std::unique_ptr<ResponseData> )> responseCB )
 {
-	m_queueManager = pQueueManager;
+	m_queueManager = requestDispatcher;
 	m_responseCallback = responseCB;
 }
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #define NOMINMAX
 
-#include "RequestHandler.h"
+#include "FileRequestHandler.h"
 
 #include <cstring>
 #include <algorithm>
@@ -10,37 +10,45 @@
 #include "RequestDispatcher.h"
 #include "Utils.h"
 #include "Logger.h"
+#include "ConfigHelper.h"
 
-RequestHandler::RequestHandler()
+FileRequestHandler::FileRequestHandler()
 {
 }
 
-RequestHandler::~RequestHandler()
+FileRequestHandler::~FileRequestHandler()
 {
 	// TODO: check is the working thread avilve and stop it if necessary
 }
 
-void RequestHandler::Init( const ConfigHelperPtr & config,
-							RequestDispatcher * requestDispatcher, 
-							std::function<void( std::unique_ptr<ResponseData> )> responseCB )
+void FileRequestHandler::Init( const ConfigHelperPtr & config,
+								RequestDispatcher * requestDispatcher, 
+								std::function<void( std::unique_ptr<ResponseData> )> responseCB )
 {
+	m_config = config;
 	m_queueManager = requestDispatcher;
 	m_responseCallback = responseCB;
+
+	m_rootFolder = m_config->getRootFolder();
+	if ( m_rootFolder.empty() )
+	{
+		THROW_MESSAGE << "Can't get root folder from config";
+	}
 }
 
-void RequestHandler::start()
+void FileRequestHandler::start()
 {
 	std::thread t([this]() { this->threadJob(); });
 	m_workThread.swap(t);
 }
 
-void RequestHandler::stop()
+void FileRequestHandler::stop()
 {
 	m_queueManager->stopWaiting();
 	m_workThread.join();
 }
 
-void RequestHandler::threadJob()
+void FileRequestHandler::threadJob()
 {
 	while (true)
 	{
@@ -48,6 +56,12 @@ void RequestHandler::threadJob()
 
 			// Waitinig for the next request from the queue
 			RequestData * request = m_queueManager->scheduleNextRequest();
+			if ( !request )
+			{
+				WARN_LOG_F << "Request dispatched returned empty request. Skipping";
+				continue;
+			}
+
 			DEBUG_LOG_F << "Starting request processing: id=" << request->id;
 
 
@@ -80,7 +94,7 @@ void RequestHandler::threadJob()
 }
 
 
-std::vector<char> RequestHandler::createFaultResponse( RequestIdType id, enErrorIdType err ) const
+std::vector<char> FileRequestHandler::createFaultResponse( RequestIdType id, enErrorIdType err ) const
 {
 	std::stringstream buffer;
 

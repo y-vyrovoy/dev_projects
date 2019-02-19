@@ -158,6 +158,7 @@
     <ClInclude Include="..\sources\FakeClasses\FakeConnectionManager.h" />
     <ClInclude Include="..\sources\FakeClasses\FakeRequestHandler.h" />
     <ClInclude Include="..\sources\FakeClasses\FakeRequestParser.h" />
+    <ClInclude Include="..\sources\FileRequestHandler.h" />
     <ClInclude Include="..\sources\Logger.h" />
     <ClInclude Include="..\sources\MessageException.h" />
     <ClInclude Include="..\sources\RequestDispatcher.h" />
@@ -181,6 +182,7 @@
     <ClCompile Include="..\sources\FakeClasses\FakeConnectionManager.cpp" />
     <ClCompile Include="..\sources\FakeClasses\FakeRequestHandler.cpp" />
     <ClCompile Include="..\sources\FakeClasses\FakeRequestParser.cpp" />
+    <ClCompile Include="..\sources\FileRequestHandler.cpp" />
     <ClCompile Include="..\sources\Logger.cpp" />
     <ClCompile Include="..\sources\mainTest.cpp" />
     <ClCompile Include="..\sources\MessageException.cpp" />

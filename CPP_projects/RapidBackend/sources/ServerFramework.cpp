@@ -4,6 +4,7 @@
 #include <exception>
 #include <iostream>
 #include <chrono>
+#include <sstream>
 
 #include "RequestDispatcher.h"
 #include "FakeClasses/FakeConnectionManager.h"
@@ -14,6 +15,7 @@
 #include "Logger.h"
 #include "MessageException.h"
 #include "ConfigHelper.h"
+#include "FileRequestHandler.h"
 
 std::atomic<bool> ServerFramework::m_isServerRunning;
 
@@ -28,33 +30,52 @@ ServerFramework::~ServerFramework()
 
 void ServerFramework::Initialize( ConfigHelperPtr & config )
 {
-	m_config = config;
-	config->dump();
+	std::stringstream ssError;
 
-	m_requestDispatcher.reset( new RequestDispatcher );
+	try
+	{
+		m_config = config;
+		config->dump();
 
-	// --------- Setting up request parser ------------
-	//m_requestParser.reset( new FakeRequestParser );
-	m_requestParser.reset( new RequestParser );
+		m_requestDispatcher.reset( new RequestDispatcher );
 
-	// --------- Setting up request handler ------------
-	m_requestHandler.reset( new FakeRequestHandler );
-	m_requestHandler->Init( m_requestDispatcher.get(), [this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
+		// --------- Setting up request parser ------------
+		//m_requestParser.reset( new FakeRequestParser );
+		m_requestParser.reset( new RequestParser );
+
+		// --------- Setting up request handler ------------
+		//m_requestHandler.reset( new FakeRequestHandler );
+		m_requestHandler.reset( new FileRequestHandler );
+		m_requestHandler->Init( m_config,
+								m_requestDispatcher.get(),
+								[this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
 
 
-	// --------- Starting connection manager ------------
-	//m_connectionManager.reset( new FakeConnectionManager );
-	m_connectionManager.reset( new TCPConnectionManager );
-	
-	m_connectionManager->init( m_config );
-	//m_connectionManager->set
-	m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
-	m_connectionManager->setGetResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response, std::chrono::milliseconds timeout ) {return getNextResponse( sendSocket, response, timeout ); } );
-	m_connectionManager->setOnResponseSent( [this] ( RequestIdType id ) { onResponseSent( id ); } );
-	
-	m_isServerRunning = false;
-	m_isInitialized = true;
+		// --------- Starting connection manager ------------
+		//m_connectionManager.reset( new FakeConnectionManager );
+		m_connectionManager.reset( new TCPConnectionManager );
+
+		m_connectionManager->init( m_config );
+		//m_connectionManager->set
+		m_connectionManager->setOnRequestCallback( [this] ( SOCKET socket, const std::vector<char>& param ) {onRequest( socket, param ); } );
+		m_connectionManager->setGetResponseCallback( [this] ( SOCKET & sendSocket, ResponseData * & response, std::chrono::milliseconds timeout ) {return getNextResponse( sendSocket, response, timeout ); } );
+		m_connectionManager->setOnResponseSent( [this] ( RequestIdType id ) { onResponseSent( id ); } );
+
+		m_isServerRunning = false;
+		m_isInitialized = true;
+	}
+	catch( std::exception & ex )
+	{
+		ssError << "Initialization failed. Config was not initialized. Error: " << ex.what() << std::endl;
+	}
+
+	ssError.seekp( 0, std::ios::end );
+	if ( ssError.tellp() != 0 )
+	{
+		THROW_MESSAGE << ssError.str();
+	}
 }
+
 
 int ServerFramework::StartServer()
 {

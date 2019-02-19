@@ -79,7 +79,9 @@ protected:
 class IRequestHandler
 {
 public:
-	virtual void Init( RequestDispatcher *, std::function<void( std::unique_ptr<ResponseData> )> ) = 0;
+	virtual void Init( const ConfigHelperPtr & config,
+						RequestDispatcher * requestDispatcher, 
+						std::function<void( std::unique_ptr<ResponseData> )> responseCB ) = 0;
 
 	virtual void start() = 0;
 	virtual void stop() = 0;

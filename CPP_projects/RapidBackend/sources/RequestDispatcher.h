@@ -61,7 +61,7 @@ public:
 	RequestIdType getNextRequestId();
 
 private:
-	RequestData * syncGetAndPumpTopRequest();
+	RequestData * getAndPumpTopRequest();
 
 	void syncRemoveRequestFromChain( RequestIdType id );
 

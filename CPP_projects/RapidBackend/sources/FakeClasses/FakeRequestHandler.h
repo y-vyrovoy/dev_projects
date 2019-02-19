@@ -13,7 +13,9 @@ public:
 	FakeRequestHandler();
 	~FakeRequestHandler();
 
-	void Init( RequestDispatcher *, std::function<void( std::unique_ptr<ResponseData> )> )  override;
+	void Init( const ConfigHelperPtr & config,
+				RequestDispatcher * requestDispatcher, 
+				std::function<void( std::unique_ptr<ResponseData> )> responseCB )  override;
 
 	void start() override;
 	void stop() override;

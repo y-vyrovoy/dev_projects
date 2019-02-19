@@ -16,30 +16,37 @@ using namespace std::chrono_literals;
 
 int main(int argc, char** argv)
 {
-	ConfigHelperPtr config( new ConfigHelper );
-
-	config->parseCmdLine( argc, argv );
-
-	std::string logFilename;
-	if ( !config->getOptional( "log", logFilename ) )
+	try
 	{
-		std::cout << "Can't find log filename. Terminating" << std::endl;
+		ConfigHelperPtr config( new ConfigHelper );
+
+		config->parseCmdLine( argc, argv );
+
+		std::string logFilename;
+		if ( !config->getOptional( "log", logFilename ) )
+		{
+			std::cout << "Can't find log filename. Terminating" << std::endl;
+		}
+
+		fileLogger::initStaticInstance( logFilename );
+
+		ServerFramework server;
+
+		server.Initialize( config );
+		server.StartServer();
+
+		for ( std::string s; std::cin >> s; )
+		{
+			if ( s == "exit" )
+				break;
+		}
+
+		server.StopServer();
 	}
-
-	fileLogger::initStaticInstance( logFilename );
-
-	ServerFramework server;
-
-	server.Initialize( config );
-	server.StartServer();
-
-	for (std::string s; std::cin >> s; )
+	catch ( const std::exception & ex )
 	{
-		if (s == "exit")
-		break;
+		std::cout << "Program crashed. Error: " << ex.what() << std::endl;
 	}
-
-	server.StopServer();
 
 	return 0;
 }
