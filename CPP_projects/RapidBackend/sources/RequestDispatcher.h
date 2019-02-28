@@ -20,7 +20,7 @@ public:
 	RequestDispatcher();
 	~RequestDispatcher() {};
 
-	RequestIdType registerRequest( SOCKET, RequestPtr );
+	RequestIdType registerRequest( SOCKET socket, RequestPtr request );
 
 	void rescheduleRequest( RequestIdType id );
 
@@ -30,15 +30,15 @@ public:
 
 
 
-	void registerResponse( ResponsePtr );
+	void registerResponse( ResponsePtr response );
 
 	ResponseData * pullResponse();
 
 	ResponseData * pullResponse( std::chrono::milliseconds waitMS );
 
-	void syncPutTopResponseToQueue( SOCKET );
+	void syncPutTopResponseToQueue( SOCKET sock );
 
-	void removeResponse( RequestIdType );
+	void removeResponse( RequestIdType id );
 	
 
 	
@@ -63,7 +63,7 @@ public:
 private:
 	RequestData * getAndPumpTopRequest();
 
-	void syncRemoveRequestFromChain( RequestIdType id );
+	void syncRemoveRequestFromSocketChain( RequestIdType id );
 
 	ResponseData * getResponse();
 

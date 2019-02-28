@@ -44,8 +44,8 @@ void ServerFramework::Initialize( ConfigHelperPtr & config )
 		m_requestParser.reset( new RequestParser );
 
 		// --------- Setting up request handler ------------
-		//m_requestHandler.reset( new FakeRequestHandler );
-		m_requestHandler.reset( new FileRequestHandler );
+		m_requestHandler.reset( new FakeRequestHandler );
+		//m_requestHandler.reset( new FileRequestHandler );
 		m_requestHandler->Init( m_config,
 								m_requestDispatcher.get(),
 								[this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );

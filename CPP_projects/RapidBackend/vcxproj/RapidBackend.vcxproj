@@ -160,7 +160,6 @@
     <ClInclude Include="..\sources\FakeClasses\FakeRequestParser.h" />
     <ClInclude Include="..\sources\FileRequestHandler.h" />
     <ClInclude Include="..\sources\Logger.h" />
-    <ClInclude Include="..\sources\MessageException.h" />
     <ClInclude Include="..\sources\RequestDispatcher.h" />
     <ClInclude Include="..\sources\SockTypes.h" />
     <ClInclude Include="..\sources\stdafx.h" />
@@ -185,7 +184,6 @@
     <ClCompile Include="..\sources\FileRequestHandler.cpp" />
     <ClCompile Include="..\sources\Logger.cpp" />
     <ClCompile Include="..\sources\mainTest.cpp" />
-    <ClCompile Include="..\sources\MessageException.cpp" />
     <ClCompile Include="..\sources\RequestDispatcher.cpp" />
     <ClCompile Include="..\sources\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

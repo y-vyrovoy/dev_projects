@@ -103,7 +103,8 @@ void RequestDispatcher::rescheduleRequest( RequestIdType id )
 }
 
 /// private. NOT THREAD SAFE
-void RequestDispatcher::syncRemoveRequestFromChain( RequestIdType id )
+/// removes request from id-socket map
+void RequestDispatcher::syncRemoveRequestFromSocketChain( RequestIdType id )
 {
     auto itID = m_requestId2SocketMap.find( id );
     if ( itID == m_requestId2SocketMap.end() )
@@ -171,10 +172,16 @@ void RequestDispatcher::registerResponse( ResponsePtr response )
 /// NOT thread safe
 void RequestDispatcher::syncPutTopResponseToQueue( SOCKET sock )
 {
-	auto itSock = m_requestsChains.find( sock );
-    if ( itSock == m_requestsChains.end() || sock == INVALID_SOCKET )
+	if ( sock == INVALID_SOCKET )
     {
-		// TODO: log
+		WARN_LOG_F << "sock == INVALID_SOCKET. Ignoring";
+		return;
+    }
+
+	auto itSock = m_requestsChains.find( sock );
+    if ( itSock == m_requestsChains.end() )
+    {
+		WARN_LOG_F << "Can't find queue for socket [" << sock << "]. Ignoring";
 		return;
     }
 
@@ -292,7 +299,7 @@ void RequestDispatcher::removeSocket( SOCKET sock )
 	for ( RequestIdType id : itSocket->second )
 	{
 		m_requestWaitSentQueue.remove( id );
-		syncRemoveRequestFromChain( id );
+		syncRemoveRequestFromSocketChain( id );
 		m_requestId2SocketMap.erase( m_requestId2SocketMap.find( id ) );
 		m_requests.erase( id );
 	}
@@ -300,23 +307,28 @@ void RequestDispatcher::removeSocket( SOCKET sock )
 	m_requestsChains.erase( itSocket );
 }
 
-
 void RequestDispatcher::remove( RequestIdType id )
 {
 	std::unique_lock<std::mutex> lckRequest( m_requestMutex );
 	std::unique_lock<std::mutex> lckResponse( m_responseMutex );
 
 	m_responseWaitSentQueue.remove( id );
+
 	m_responses.erase( m_responses.find( id ) );
 
 	m_requestWaitSentQueue.remove( id );
-	syncRemoveRequestFromChain( id );
+	
+	syncRemoveRequestFromSocketChain( id );
+	
 	m_requestId2SocketMap.erase( m_requestId2SocketMap.find( id ) );
+	
 	m_requests.erase( m_requests.find( id ) );
 
-	syncPutTopResponseToQueue( getSocket( id ) );
-}
+	SOCKET s = getSocket( id );
 
+	if ( s != INVALID_SOCKET )
+		syncPutTopResponseToQueue( s );
+}
 
 void RequestDispatcher::stopWaiting()
 {
@@ -324,6 +336,7 @@ void RequestDispatcher::stopWaiting()
 	m_cvRequest.notify_all();
 	m_cvResponse.notify_all();
 }
+
 
 
 

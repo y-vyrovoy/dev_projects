@@ -548,10 +548,6 @@ void TCPConnectionManager::waitForResponseJob( StopFlagPtr forceStop )
 				{
 					iResult = send( sendSocket, response->data.data() + currentPosition, response->data.size() - currentPosition, NULL );
 
-					INFO_LOG_F << "Response sent."
-						<< " [ socket = " << sendSocket << " ]"
-						<< " [ id = " << response->id << " ]";
-
 					if ( iResult == SOCKET_ERROR )
 					{
 						closeClientSocket( sendSocket );
@@ -559,6 +555,10 @@ void TCPConnectionManager::waitForResponseJob( StopFlagPtr forceStop )
 
 						break;
 					}
+
+					INFO_LOG_F << "Response sent."
+						<< " [ socket = " << sendSocket << " ]"
+						<< " [ id = " << response->id << " ]";
 
 					currentPosition += iResult;
 				}
