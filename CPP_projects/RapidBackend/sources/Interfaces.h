@@ -74,3 +74,24 @@ protected:
 
 	std::atomic<bool>		m_forceStopThread;
 };
+
+
+class IRequestHandler
+{
+public:
+	virtual void Init( const ConfigHelperPtr & config,
+						StdResponseHelper * stdResponseHelper, 
+						RequestDispatcher * requestDispatcher, 
+						std::function<void( std::unique_ptr<ResponseData> )> responseCB ) = 0;
+
+	virtual void start() = 0;
+	virtual void stop() = 0;
+
+
+protected:
+	virtual void threadJob() = 0;
+
+	std::thread m_workThread;
+	RequestDispatcher * m_queueManager;
+	std::function<void( std::unique_ptr<ResponseData> )> m_responseCallback;
+};

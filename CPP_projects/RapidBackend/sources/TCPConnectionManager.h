@@ -65,7 +65,7 @@ private:
 	void closeClientsSockets();
 
 
-	void restartAsyn();
+	void restartAsync();
 	void restartJob();
 
 

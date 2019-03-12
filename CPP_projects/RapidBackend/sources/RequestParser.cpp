@@ -20,8 +20,7 @@ int RequestParser::Parse( const std::vector<char> & request, const RequestPtr & 
 	if ( paramsStart < 0 )
 	{
 		SPAM_LOG_F << "ParseFirstLine() failed. Request" << std::endl
-					<< "[" 
-					<< request.data() << "]";
+					<< "[" << request.data() << "]";
 		return 1;
 	}
 
@@ -48,8 +47,8 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, const Requ
 
 	// HTTP method
 
-	requestData->http_method = parseHttpMethod( request );
-	if ( requestData->http_method == HTTP_METHOD::ERR_METHOD )
+	requestData->setHTTP_method( parseHttpMethod( request ) );
+	if ( requestData->getHTTP_method() == HTTP_METHOD::ERR_METHOD )
 	{
 		SPAM_LOG_F << "No HTTP method in request header";
 		return RET_UKNOWN_METHOD;
@@ -57,8 +56,8 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, const Requ
 
 	// request parameters
 
-	requestData->address = parseHeaderParams( request );
-	if ( requestData->address.empty() )
+	requestData->setAddress( parseHeaderParams( request ) );
+	if ( requestData->getAddress().empty() )
 	{
 		SPAM_LOG_F << "No parameters section in request header";
 		return RET_NO_PARAMS_SECTION;
@@ -75,8 +74,8 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, const Requ
 	}
 
 
-	requestData->nVersionMajor = httpVersion.first;
-	requestData->nVersionMinor = httpVersion.second;
+	requestData->setVersionMajor( httpVersion.first );
+	requestData->setVersionMinor( httpVersion.second );
 
 
 	// --------------- parsing request header finished ----------------------------
@@ -180,7 +179,7 @@ int RequestParser::ParseParams( const std::vector<char> & request, const Request
 
 		std::string paramValue( itSemicolon + 1, itEndl );
 
-		requestData->paramsMap[paramName] = paramValue;
+		requestData->getParamsMap()[paramName] = paramValue;
 
 		it = itEndl + 1;
 

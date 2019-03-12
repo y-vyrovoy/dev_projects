@@ -3,17 +3,19 @@
 #include <functional>
 #include <string>
 
-#include "../BaseRequestHandler.h"
+#include "../Interfaces.h"
 
 class RequestDispatcher;
+class StdResponseHelper;
 
-class FakeRequestHandler : public BaseRequestHandler
+class FakeRequestHandler : public IRequestHandler
 {
 public:
 	FakeRequestHandler();
 	~FakeRequestHandler();
 
 	void Init( const ConfigHelperPtr & config,
+				StdResponseHelper * stdResponseHelper, 
 				RequestDispatcher * requestDispatcher, 
 				std::function<void( std::unique_ptr<ResponseData> )> responseCB )  override;
 

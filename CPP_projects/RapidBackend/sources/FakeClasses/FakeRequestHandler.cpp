@@ -12,6 +12,8 @@
 #include "../Logger.h"
 #include "../RequestDispatcher.h"
 #include "../Utils.h"
+#include "../StdResponsesHelper.h"
+
 
 
 char ICON_RESPONSE_HEADER[] =
@@ -19,6 +21,24 @@ char ICON_RESPONSE_HEADER[] =
 	"Content-Type: text/html; charset=UTF-8\r\n"
 	"Connection: keep-alive\r\n"
 	"Webpage Content\r\n";
+
+char BASE_RESPONSE_HEADER[] =
+"HTTP/1.1 200 OK\r\n"
+"Content-Type: text/html; charset=UTF-8\r\n"
+"Connection: keep-alive\r\n"
+"Webpage Content\r\n";
+
+char BASE_RESPONSE_CONTENT_HEADER[] =
+"<html>"
+"<head>Default response</head>"
+"<body>"
+"<table border=\"1\">";
+
+char BASE_RESPONSE_CONTENT_FOOTER[] =
+"</table>"
+"</body>"
+"</html>";
+
 
 FakeRequestHandler::FakeRequestHandler()
 {
@@ -30,6 +50,7 @@ FakeRequestHandler::~FakeRequestHandler()
 }
 
 void FakeRequestHandler::Init( const ConfigHelperPtr & config,
+								StdResponseHelper * stdResponseHelper, 
 								RequestDispatcher * requestDispatcher, 
 								std::function<void( std::unique_ptr<ResponseData> )> responseCB )
 {
@@ -61,17 +82,17 @@ void FakeRequestHandler::threadJob()
 			//Here's the next request - let's send new response
 
 			ResponsePtr response( new ResponseData );
-			response->id = request->id;
+			response->id = request->getId();
 			response->data = createResponse( request );
 
 			m_responseCallback( std::move( response ) );
 		}
-		catch ( cTerminationException exTerm )
+		catch ( cTerminationException & exTerm )
 		{
 			DEBUG_LOG_F << "Terminating job";
 			return;
 		}
-		catch ( std::exception ex )
+		catch ( std::exception & ex )
 		{
 			DEBUG_LOG_F << "Exception: " << ex.what();
 			return;
@@ -84,11 +105,11 @@ std::vector<char> FakeRequestHandler::createResponse( const RequestData * reques
 	std::stringstream bufferContent;
 	bufferContent 
 		<< BASE_RESPONSE_CONTENT_HEADER
-		<< "<tr><td>id</td><td>" << request->id << "</td></tr>"
-		<< "<tr><td>http method</td><td>" << getHttpMethodString( request->http_method ) << "</td></tr>"
-		<< "<tr><td>address</td><td>" << request->address << "</td></tr>";
+		<< "<tr><td>id</td><td>" << request->getId() << "</td></tr>"
+		<< "<tr><td>http method</td><td>" << getHttpMethodString( request->getHTTP_method() ) << "</td></tr>"
+		<< "<tr><td>address</td><td>" << request->getAddress() << "</td></tr>";
 
-	for ( auto param : request->paramsMap )
+	for ( auto param : const_cast< RequestData * >( request )->getParamsMap() )
 	{
 		bufferContent << "<tr><td>" << param.first << "</td><td>" << param.second << "</td></tr>";
 	}

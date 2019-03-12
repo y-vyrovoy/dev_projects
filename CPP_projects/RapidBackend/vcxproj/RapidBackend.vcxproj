@@ -154,7 +154,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\BaseRequestHandler.h" />
     <ClInclude Include="..\sources\ConfigHelper.h" />
     <ClInclude Include="..\sources\FakeClasses\FakeConnectionManager.h" />
     <ClInclude Include="..\sources\FakeClasses\FakeRequestHandler.h" />
@@ -170,6 +169,7 @@
     <ClInclude Include="..\sources\DataTypes.h" />
     <ClInclude Include="..\sources\RequestParser.h" />
     <ClInclude Include="..\sources\ServerFramework.h" />
+    <ClInclude Include="..\sources\StdResponsesHelper.h" />
     <ClInclude Include="..\sources\StoppableThread.h" />
     <ClInclude Include="..\sources\TCPConnectionManager.h" />
     <ClInclude Include="..\sources\RequestHandler.h" />
@@ -177,7 +177,6 @@
     <ClInclude Include="..\sources\WaitSentQueue.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\BaseRequestHandler.cpp" />
     <ClCompile Include="..\sources\ConfigHelper.cpp" />
     <ClCompile Include="..\sources\DataTypes.cpp" />
     <ClCompile Include="..\sources\FakeClasses\FakeConnectionManager.cpp" />
@@ -197,6 +196,7 @@
     <ClCompile Include="..\sources\RequestHandler.cpp" />
     <ClCompile Include="..\sources\RequestParser.cpp" />
     <ClCompile Include="..\sources\ServerFramework.cpp" />
+    <ClCompile Include="..\sources\StdResponsesHelper.cpp" />
     <ClCompile Include="..\sources\StoppableThread.cpp" />
     <ClCompile Include="..\sources\TCPConnectionManager.cpp" />
     <ClCompile Include="..\sources\Utils.cpp" />

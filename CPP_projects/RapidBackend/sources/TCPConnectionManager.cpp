@@ -94,7 +94,7 @@ void TCPConnectionManager::stop()
 	shutdown();
 }
 
-void TCPConnectionManager::restartAsyn()
+void TCPConnectionManager::restartAsync()
 {
 	std::async( std::launch::async, [this] () { restartJob(); } );
 }
@@ -318,8 +318,6 @@ void TCPConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 			// tick to let know that the thread is alive
 			HiResTimePoint tpNow = HiResClock::now();
 
-			//SpamLogHiResTP( __FUNCTION__ "\t", m_nextRequestThreadTick.load() );			
-			
 			// timeout should fit m_nextRequestThreadTick
 
 			std::chrono::milliseconds timeToSleep = CastToMS( m_nextRequestThreadTick.load() - tpNow );
@@ -601,8 +599,6 @@ void TCPConnectionManager::watchdogThreadFunction( StopFlagPtr forceStop )
 		// sleeping the rest of m_watchdogCheckPeriod
 		// this is necessary to be sure that watchdog period is exactly m_watchdogCheckPeriod 
 		
-		//SpamLogHiResTP( __FUNCTION__ " SyncPoint\t", m_syncPoint.load() );
-
 		cv.wait_for( lock, CastToMS( m_syncPoint.load() - HiResClock::now() ) );
 		if ( *forceStop )
 			break;
@@ -612,9 +608,8 @@ void TCPConnectionManager::watchdogThreadFunction( StopFlagPtr forceStop )
 
 		if (  m_requestThreadIsOn && ( m_nextRequestThreadTick.load() < tpNow - 50ms) ) 
 		{
-			// TODO: we've lost request thread!!
 			ERROR_LOG_F << "Request thread is down. Restarting request and response threads";
-			restartAsyn();
+			restartAsync();
 		}
 
 		if ( m_responseThreadIsOn && ( m_nextResponseThreadTick.load() < tpNow - 50ms ) )

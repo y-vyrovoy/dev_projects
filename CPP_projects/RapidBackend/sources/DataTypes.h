@@ -8,22 +8,48 @@
 
 enum class HTTP_METHOD {ERR_METHOD, GET, PUT, HEAD, POST, TRACE, DEL, CONNECT, OPTIONS};
 
-enum class enErrorIdType { ERR_PARSE_METDHOD, ERR_CANT_FIND_FILE };
+namespace
+{
+#define DEFINE_PROPERTY(Type, Name)	private: Type m_##Name; \
+									public:	\
+										const Type & get##Name() const { return m_##Name; }  \
+										void set##Name( const Type & param ) { m_##Name = param; }
+};
 
 using RequestIdType = unsigned int;
 
-struct RequestData
+class RequestData
 {
+public:
     // id is used to match request and response
-    RequestIdType id;
 
-    HTTP_METHOD http_method;
-    std::string address;
-	int nVersionMajor;
-    int nVersionMinor;
-    std::map<std::string, std::string> paramsMap;
-	std::vector<char> data;
+	//RequestIdType id;
+
+	//HTTP_METHOD http_method;
+	//std::string address;
+	//int nVersionMajor;
+	//int nVersionMinor;
+	//std::map<std::string, std::string> paramsMap;
+	//std::vector<char> data;
+
+	DEFINE_PROPERTY( RequestIdType, Id )
+
+	DEFINE_PROPERTY( HTTP_METHOD, HTTP_method )
+	DEFINE_PROPERTY( std::string, Address )
+	DEFINE_PROPERTY( int, VersionMajor )
+	DEFINE_PROPERTY( int, VersionMinor )
+	DEFINE_PROPERTY( std::vector<char>, Data )
+
+
+public: 
+	std::map<std::string, std::string> & getParamsMap() { return m_ParamsMap; }
+
+	std::string getOptional( const std::string paramName );
+
+private: 
+	std::map<std::string, std::string> m_ParamsMap;
 };
+
 
 class ResponseData
 {

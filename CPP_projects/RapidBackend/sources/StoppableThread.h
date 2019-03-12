@@ -9,7 +9,6 @@
 using StopFlagPtr = std::shared_ptr<std::atomic<bool>>;
 using StoppableThreadJobFunc = std::function<void( StopFlagPtr )>;
 
-
 class StoppableThread
 {
 public:

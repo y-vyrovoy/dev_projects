@@ -10,6 +10,7 @@
 #include "Utils.h"
 #include "Logger.h"
 #include "ConfigHelper.h"
+#include "StdResponsesHelper.h"
 
 
 #ifdef _WIN32
@@ -30,10 +31,12 @@ FileRequestHandler::~FileRequestHandler()
 }
 
 void FileRequestHandler::Init( const ConfigHelperPtr & config,
+								StdResponseHelper * stdResponseHelper, 
 								RequestDispatcher * requestDispatcher, 
 								std::function<void( std::unique_ptr<ResponseData> )> responseCB )
 {
 	m_config = config;
+	m_stdResponseHelper = stdResponseHelper;
 	m_queueManager = requestDispatcher;
 	m_responseCallback = responseCB;
 
@@ -77,25 +80,26 @@ void FileRequestHandler::threadJob()
 			}
 
 			//Here's the next request - let's send new response
-
 			ResponsePtr response( new ResponseData );
-			response->id = request->id;
+			response->id = request->getId();
 			response->data = createResponse( request );
 
 			m_responseCallback( std::move( response ) );
-			
 		}
-		catch (cTerminationException exTerm)
+		catch ( cTerminationException & exTerm )
 		{
-			DEBUG_LOG_F << "Terminating job";
+			WARN_LOG_F << "Terminating job";
 			return;
 		}
-		catch (std::exception ex)
+		catch ( std::exception & ex )
 		{
-			DEBUG_LOG_F << "Exception: "<< ex.what();
-			return;
-		}
+			ERROR_LOG_F << "Failed to create response. Sending Error message: " << ex.what();
 
+			ResponsePtr response( new ResponseData );
+			response->data = m_stdResponseHelper->createStdResponse( E500_INT_SERVER_ERROR, "Ooooops" );
+			m_responseCallback( std::move( response ) );
+			return;
+		}
 	}
 }
 
@@ -104,15 +108,15 @@ static const char APP_CONTENT_TYPE[] = "application";
 std::vector<char> FileRequestHandler::createResponse( const RequestData * request ) const
 {
 	// opening file
-	std::string sFilePathname = m_config->getRootFolder() + request->address;
+	std::string sFilePathname = m_config->getRootFolder() + request->getAddress();
 
 	std::fstream file( sFilePathname, std::ios::in | std::ios::binary );
 	if ( !file.is_open() )
 	{
-		std::string sErrMessage = "Can't open file [" + sFilePathname + "]";
+		std::string sErrMessage = "Can't open file [" + request->getAddress() + "]";
 
-		WARN_LOG_F << "ReqId [" << request->id << "]. " << sErrMessage << ". Sending FAIL RESPONSE ";
-		return createDefaultFailResponse( request->id, enErrorIdType::ERR_CANT_FIND_FILE, sErrMessage );
+		WARN_LOG_F << "ReqId [" << request->getId() << "]. " << sErrMessage << ". Sending FAIL RESPONSE ";
+		return m_stdResponseHelper->createStdResponse( enResponseId::E404_CANT_FIND_FILE, sErrMessage );
 	}
 
 	// !!! TODO: manage cast streamoff -> size_t
@@ -131,7 +135,7 @@ std::vector<char> FileRequestHandler::createResponse( const RequestData * reques
 
 
 	// adding content type to header
-	const char * pType = getContentType( request->address );
+	const char * pType = getContentType( request->getAddress() );
 	if ( !pType )
 	{
 		pType = APP_CONTENT_TYPE;

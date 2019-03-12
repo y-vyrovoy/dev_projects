@@ -2,19 +2,21 @@
 
 #include <functional>
 
-#include "BaseRequestHandler.h"
+#include "Interfaces.h"
 #include "DataTypes.h"
 
 
 class RequestDispatcher;
+class StdResponseHelper;
 
-class RequestHandler : public BaseRequestHandler
+class RequestHandler : public IRequestHandler
 {
 public:
 	RequestHandler();
 	~RequestHandler();
 
 	void Init( const ConfigHelperPtr & config,
+				StdResponseHelper * stdResponseHelper, 
 				RequestDispatcher * requestDispatcher, 
 				std::function<void( std::unique_ptr<ResponseData> )> responseCB ) override;
 

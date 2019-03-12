@@ -43,3 +43,16 @@ const char * getHttpMethodString( const HTTP_METHOD & method )
 			return strERR_METHOD;
 	}
 }
+
+std::string RequestData::getOptional( const std::string paramName )
+{
+	auto it = m_ParamsMap.find( paramName );
+	if( it != m_ParamsMap.end() )
+	{
+		return it->second;
+	}
+	else
+	{
+		return std::string();
+	}
+}

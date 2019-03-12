@@ -67,7 +67,7 @@ void FakeConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 			std::this_thread::sleep_for( 500ms );
 		}
 	}
-	catch (std::exception ex)
+	catch (std::exception & ex)
 	{
 		DEBUG_LOG_F << "Exception. error: " << ex.what();
 	}

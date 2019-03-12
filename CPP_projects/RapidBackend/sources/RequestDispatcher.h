@@ -10,6 +10,7 @@
 #include "SockTypes.h"
 #include "DataTypes.h"
 #include "WaitSentQueue.h"
+#include "StdResponsesHelper.h"
 
 class RequestDispatcher
 {
@@ -19,6 +20,8 @@ public:
 public:
 	RequestDispatcher();
 	~RequestDispatcher() {};
+
+	void Init( StdResponseHelper * helper );
 
 	RequestIdType registerRequest( SOCKET socket, RequestPtr request );
 
@@ -33,7 +36,6 @@ public:
 	void registerResponse( ResponsePtr response );
 
 	void registerFailResponse( const SOCKET socket, const std::string & msg );
-	void registerFailResponse( const SOCKET socket, const RequestPtr & request );
 
 	ResponseData * pullResponse();
 
@@ -70,11 +72,13 @@ private:
 
 	ResponseData * getResponse();
 
-private:
-
 	RequestIdType getNextRequestIdSync();
 
-	static RequestIdType m_nextRequestID;
+		
+
+	static RequestIdType									m_nextRequestID;
+
+	StdResponseHelper	*									m_stdResponseHelper;
 
 	std::map< RequestIdType, RequestPtr, std::less<RequestIdType> >					m_requests;
 	std::map< RequestIdType, ResponsePtr, std::less<RequestIdType> >				m_responses;

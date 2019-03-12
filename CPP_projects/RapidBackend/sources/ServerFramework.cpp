@@ -6,16 +6,17 @@
 #include <chrono>
 #include <sstream>
 
-#include "RequestDispatcher.h"
+
 #include "FakeClasses/FakeConnectionManager.h"
 #include "FakeClasses/FakeRequestParser.h"
 #include "FakeClasses/FakeRequestHandler.h"
 
+#include "RequestDispatcher.h"
 #include "Interfaces.h"
 #include "Logger.h"
 #include "MessageException.h"
-#include "ConfigHelper.h"
 #include "FileRequestHandler.h"
+
 
 std::atomic<bool> ServerFramework::m_isServerRunning;
 
@@ -37,7 +38,13 @@ void ServerFramework::Initialize( ConfigHelperPtr & config )
 		m_config = config;
 		config->dump();
 
+		// --------- Setting up standard response helper ------------
+		m_stdResponseHelper.reset( new StdResponseHelper );
+		m_stdResponseHelper->Init();
+
 		m_requestDispatcher.reset( new RequestDispatcher );
+		m_requestDispatcher->Init( m_stdResponseHelper.get() );
+
 
 		// --------- Setting up request parser ------------
 		//m_requestParser.reset( new FakeRequestParser );
@@ -47,6 +54,7 @@ void ServerFramework::Initialize( ConfigHelperPtr & config )
 		//m_requestHandler.reset( new FakeRequestHandler );
 		m_requestHandler.reset( new FileRequestHandler );
 		m_requestHandler->Init( m_config,
+								m_stdResponseHelper.get(),
 								m_requestDispatcher.get(),
 								[this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
 
@@ -93,6 +101,8 @@ int ServerFramework::StartServer()
 
 void ServerFramework::StopServer()
 {
+	INFO_LOG_F << "-------- STOPPING SERVER --------";
+
 	m_requestHandler->stop();
 	m_connectionManager->stop();
 	m_isServerRunning = false;

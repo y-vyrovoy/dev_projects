@@ -81,7 +81,7 @@
     <ClInclude Include="..\sources\FileRequestHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\BaseRequestHandler.h">
+    <ClInclude Include="..\sources\StdResponsesHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -137,7 +137,7 @@
     <ClCompile Include="..\sources\FileRequestHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\BaseRequestHandler.cpp">
+    <ClCompile Include="..\sources\StdResponsesHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

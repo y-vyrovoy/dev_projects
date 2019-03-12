@@ -6,13 +6,20 @@
 
 #include "Logger.h"
 #include "MessageException.h"
-#include "BaseRequestHandler.h"
+#include "Interfaces.h"
+
 
 RequestIdType RequestDispatcher::m_nextRequestID;
 
 RequestDispatcher::RequestDispatcher() 
 	: m_bForceStop{false}
+	, m_stdResponseHelper( nullptr )
 {
+}
+
+void RequestDispatcher::Init( StdResponseHelper * helper )
+{
+	m_stdResponseHelper = helper;
 }
 
 RequestIdType RequestDispatcher::getNextRequestIdSync()
@@ -32,10 +39,10 @@ RequestIdType RequestDispatcher::registerRequest( SOCKET sock, RequestPtr reques
 	
 	RequestIdType id = getNextRequestIdSync();
 	
-	request->id = id;
+	request->setId( id );
 
 	INFO_LOG_F << "Registering request."
-				<< " [ address " << request->address << " ]" 
+				<< " [ address " << request->getAddress() << " ]" 
 				<< " [ socket = " << sock << " ]"
 				<< " [ id = " << id << " ]";
 
@@ -187,20 +194,7 @@ void RequestDispatcher::registerFailResponse( const SOCKET socket, const std::st
     // updating response chain
     m_requestsChains[socket].push_back( id );
 
-	response->data = BaseRequestHandler::createDefaultFailResponse( id, enErrorIdType::ERR_PARSE_METDHOD, msg );
-
-	registerResponse( std::move( response ) );
-}
-
-void RequestDispatcher::registerFailResponse( const SOCKET socket, const RequestPtr & request )
-{
-	ResponsePtr response( new ResponseData() );
-	response->id = getNextRequestId();
-
-	// mapping request with socket
-    m_requestId2SocketMap[response->id] = socket;
-
-	response->data = BaseRequestHandler::createDefaultFailResponse( response->id, enErrorIdType::ERR_PARSE_METDHOD );
+	response->data = m_stdResponseHelper->createStdResponse( enResponseId::E400_BAD_REQUEST, msg );
 
 	registerResponse( std::move( response ) );
 }
@@ -394,7 +388,7 @@ void RequestDispatcher::Dump()
 	ss << "registered requests:";
 	std::for_each(m_requests.begin(),
                     m_requests.end(),
-                    [&](const auto & t) {ss << "\n\t[" << t.first << ":" << t.second->address << "] "; });
+                    [&](const auto & t) {ss << "\n\t[" << t.first << ":" << t.second->getAddress() << "] "; });
     ss << std::endl << std::endl;
 
 

@@ -31,7 +31,7 @@ RequestPtr getRequest( unsigned int id )
 	buf << "[ request " << id << " ]";
 
 	RequestPtr request = std::make_unique<RequestData>();
-	request->address = buf.str();
+	request->setAddress( buf.str() );
 
 	return request;
 }
@@ -44,7 +44,7 @@ void pushRequestThreadFunc(const std::chrono::milliseconds & sleepDuration)
 
 		size_t oldW = g_dispatcher.waitingRequestCount();
 		size_t oldS = g_dispatcher.sentRequestCount();
-		std::string tempAddr = request->address;
+		std::string tempAddr = request->getAddress();
 
 		g_dispatcher.registerRequest( ( g_value++ ) % N_SOCKETS, std::move( request ) );
 
@@ -81,8 +81,8 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 		COUT_LOG << " [th id " << std::this_thread::get_id() << " PullReq_" << funcId << " ]: "
 					<< " REQ:"
 					<< " pull"
-					<< " id: " << request->id
-					<< " adr: " << request->address
+					<< " id: " << request->getId()
+					<< " adr: " << request->getAddress()
 					<< " W [" << oldW << " -> " << g_dispatcher.waitingRequestCount() << "]"
 					<< " S [" << oldS << " -> " << g_dispatcher.sentRequestCount() << "]";
 
@@ -95,7 +95,7 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 
 
 		ResponsePtr response = std::make_unique<ResponseData>();
-		response->id = request->id;
+		response->id = request->getId();
 
 		g_dispatcher.registerResponse( std::move( response ) );
 
@@ -103,7 +103,7 @@ void pullRequestsThreadFunc( const std::chrono::milliseconds & sleepDuration )
 		COUT_LOG << " [th id " << std::this_thread::get_id() << " PullReq_" << funcId << " ]: "
 					<< " RESP:"
 					<< " registring response"
-					<< " id: " << request->id
+					<< " id: " << request->getId()
 					<< " resps [" << oldReps << " -> " << g_dispatcher.responsesCount() << "]"
 					<< " respQ [" << oldQ << " -> " << g_dispatcher.responsesQueueCount() << "]";
 
@@ -241,7 +241,7 @@ void testOne()
 	try
 	{
 		RequestData * pRequest = disp.scheduleNextRequest();
-		auto id1 = pRequest->id;
+		auto id1 = pRequest->getId();
 
 		COUT_LOG << "sending request #" << id1 << std::endl
 					<< "-----------------------" << std::endl;	
@@ -251,7 +251,7 @@ void testOne()
 
 
 		pRequest = disp.scheduleNextRequest();
-		auto id2 = pRequest->id;
+		auto id2 = pRequest->getId();
 
 		COUT_LOG << "sending request #" << id2 << std::endl
 					<< "-----------------------" << std::endl;	
@@ -270,7 +270,7 @@ void testOne()
 
 
 		pRequest = disp.scheduleNextRequest();
-		id1 = pRequest->id;
+		id1 = pRequest->getId();
 		
 		COUT_LOG << "sending request #" << id1 << std::endl
 					<< "-----------------------" << std::endl;
@@ -290,7 +290,7 @@ void testOne()
 
 
 		pRequest = disp.scheduleNextRequest();
-		auto id3 = pRequest->id;
+		auto id3 = pRequest->getId();
 		
 		COUT_LOG << "sending request #" << id3 << std::endl
 					<< "-----------------------" << std::endl;

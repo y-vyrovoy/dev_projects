@@ -9,6 +9,8 @@
 #include "RequestParser.h"
 #include "RequestHandler.h"
 #include "ConfigHelper.h"
+	
+#include "StdResponsesHelper.h"
 
 class RequestDispatcher;
 
@@ -44,12 +46,13 @@ private:
 	static std::atomic<bool>					m_isServerRunning;
 	std::atomic<bool>							m_isInitialized;
     
+	std::unique_ptr< StdResponseHelper >		m_stdResponseHelper;
 
 	std::unique_ptr< RequestDispatcher >		m_requestDispatcher;
     std::unique_ptr< IConnectionManager >		m_connectionManager;
     
 	std::unique_ptr< IRequestParser >			m_requestParser;
-	std::unique_ptr< BaseRequestHandler >		m_requestHandler;
+	std::unique_ptr< IRequestHandler >			m_requestHandler;
 
 	ConfigHelperPtr								m_config;
 };
