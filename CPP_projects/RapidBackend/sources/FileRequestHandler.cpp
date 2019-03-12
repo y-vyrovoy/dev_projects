@@ -3,14 +3,22 @@
 
 #include "FileRequestHandler.h"
 
-#include <cstring>
 #include <algorithm>
-
+#include <fstream>		// std::fstream
 
 #include "RequestDispatcher.h"
 #include "Utils.h"
 #include "Logger.h"
 #include "ConfigHelper.h"
+
+
+#ifdef _WIN32
+	static const char PATH_SEPARATOR = '\\';
+	static const char PATH_SEPARATOR_WRONG = '/';
+#else
+	static const char PATH_SEPARATOR = '/';
+	static const char PATH_SEPARATOR_WRONG = '\\';
+#endif
 
 FileRequestHandler::FileRequestHandler()
 {
@@ -18,7 +26,7 @@ FileRequestHandler::FileRequestHandler()
 
 FileRequestHandler::~FileRequestHandler()
 {
-	// TODO: check is the working thread avilve and stop it if necessary
+	// TODO: check is the working thread alive and stop it if necessary
 }
 
 void FileRequestHandler::Init( const ConfigHelperPtr & config,
@@ -34,6 +42,12 @@ void FileRequestHandler::Init( const ConfigHelperPtr & config,
 	{
 		throw std::runtime_error( "Can't get root folder from config" );
 	}
+
+	m_mapTypes["html"] = "text/html; charset=UTF-8";
+	m_mapTypes["css"] = "text/css";
+	m_mapTypes["jpg"] = "image/jpg";
+	m_mapTypes["ico"] = "image/png";
+	
 }
 
 void FileRequestHandler::start()
@@ -62,21 +76,13 @@ void FileRequestHandler::threadJob()
 				continue;
 			}
 
-			DEBUG_LOG_F << "Starting request processing: id=" << request->id;
-
-
 			//Here's the next request - let's send new response
 
-			ResponsePtr response(new ResponseData);
+			ResponsePtr response( new ResponseData );
 			response->id = request->id;
+			response->data = createResponse( request );
 
-			// TODO: getting response from ResponseCompiler
-			
-			const static char * pchMessage = "Default response message";
-			
-			memcpy( response->data.data(), pchMessage, std::min( response->data.size(), std::strlen( pchMessage ) + 1 ) );
-
-			m_responseCallback( std::move(response) );
+			m_responseCallback( std::move( response ) );
 			
 		}
 		catch (cTerminationException exTerm)
@@ -93,28 +99,90 @@ void FileRequestHandler::threadJob()
 	}
 }
 
+static const char APP_CONTENT_TYPE[] = "application";
 
-std::vector<char> FileRequestHandler::createFaultResponse( RequestIdType id, enErrorIdType err ) const
+std::vector<char> FileRequestHandler::createResponse( const RequestData * request ) const
 {
+	// opening file
+	std::string sFilePathname = m_config->getRootFolder() + request->address;
+
+	std::fstream file( sFilePathname, std::ios::in | std::ios::binary );
+	if ( !file.is_open() )
+	{
+		std::string sErrMessage = "Can't open file [" + sFilePathname + "]";
+
+		WARN_LOG_F << "ReqId [" << request->id << "]. " << sErrMessage << ". Sending FAIL RESPONSE ";
+		return createDefaultFailResponse( request->id, enErrorIdType::ERR_CANT_FIND_FILE, sErrMessage );
+	}
+
+	// !!! TODO: manage cast streamoff -> size_t
+
+	file.seekg (0, std::ios::end);
+	auto fileSize = static_cast< size_t >( file.tellg() );
+	file.seekg (0, std::ios::beg);
+
+
+	// adding response header
 	std::stringstream buffer;
+	buffer << 
+		"HTTP/1.1 200 OK\r\n"
+		"Connection: keep-alive\r\n"
+		"Webpage Content\r\n";
 
-	//buffer << RESPONSE_HEADER;
 
-	//buffer
-	//	<< "<tr><td>id</td><td>" << id << "</td></tr>";
-	//
-	//switch ( err )
-	//{
-	//case enErrorIdType::ERR_PARSE_METDHOD:
-	//	buffer << "<tr><td>Failed to parse http method</td></tr>";
-	//	break;
-	//}
+	// adding content type to header
+	const char * pType = getContentType( request->address );
+	if ( !pType )
+	{
+		pType = APP_CONTENT_TYPE;
+	}
 
-	//buffer << RESPONSE_FOOTER << '\0';
+	buffer << "Content-Type: " << pType << "\r\n";
+	buffer << "Content-Length: " << fileSize << "\r\n";
+	buffer << "\r\n";
 
-	//std::string str = buffer.str();
 
-	//DEBUG_LOG_F << str;
+	// !!! TODO: manage cast streamoff -> size_t
 
-	return sstreamToVector( buffer );
+	buffer.seekp( 0, std::ios::end );
+	auto headerSize = static_cast< size_t >( buffer.tellp() );
+	buffer.seekp (0, std::ios::beg);
+
+	std::vector<char> vecFile;
+	vecFile.reserve( headerSize + fileSize );
+
+	std::copy( std::istreambuf_iterator<char>( buffer ), std::istreambuf_iterator<char>(), std::back_inserter( vecFile ) );
+	std::copy( std::istreambuf_iterator<char>( file ), std::istreambuf_iterator<char>(), std::back_inserter( vecFile ) );
+
+	return vecFile;
+}
+
+const char * FileRequestHandler::getContentType( const std::string & filePathname ) const
+{
+	size_t posLastSlash = filePathname.rfind( '/' );
+	if ( posLastSlash == std::string::npos )
+		return nullptr;
+
+	size_t posDot = filePathname.rfind( '.' );
+	if ( posDot == std::string::npos )
+		return nullptr;
+
+	// empty filename
+	if ( posLastSlash >= posDot - 1 )
+		return nullptr;
+
+	size_t posQuestionMark = filePathname.find( '?' );
+	if ( posQuestionMark == std::string::npos )
+		posQuestionMark = filePathname.length();
+
+	if ( posDot >= posQuestionMark - 1 )
+		return nullptr;
+
+	std::string extension = filePathname.substr( posDot + 1, posQuestionMark - ( posDot + 1 ) );
+
+	auto itType = m_mapTypes.find( extension );
+	if ( itType == m_mapTypes.end() )
+		return nullptr;
+
+	return itType->second.data();
 }

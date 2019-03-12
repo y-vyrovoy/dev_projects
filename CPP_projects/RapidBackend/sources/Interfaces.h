@@ -31,7 +31,7 @@ public:
 
 
 public:
-	virtual int Parse(const std::vector<char> & request, RequestData & ) const = 0 ;
+	virtual int Parse( const std::vector<char> & request, const RequestPtr & requestDataResult ) const = 0 ;
 };
 
 
@@ -73,26 +73,4 @@ protected:
 	StoppableThreadPtr		m_responsesThread;
 
 	std::atomic<bool>		m_forceStopThread;
-};
-
-
-class IRequestHandler
-{
-public:
-	virtual void Init( const ConfigHelperPtr & config,
-						RequestDispatcher * requestDispatcher, 
-						std::function<void( std::unique_ptr<ResponseData> )> responseCB ) = 0;
-
-	virtual void start() = 0;
-	virtual void stop() = 0;
-
-	virtual std::vector<char> createFaultResponse( RequestIdType id, enErrorIdType err ) const = 0 ;
-
-
-protected:
-	virtual void threadJob() = 0;
-
-	std::thread m_workThread;
-	RequestDispatcher * m_queueManager;
-	std::function<void( std::unique_ptr<ResponseData> )> m_responseCallback;
 };

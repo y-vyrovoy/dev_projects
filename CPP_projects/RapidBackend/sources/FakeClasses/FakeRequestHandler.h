@@ -3,11 +3,11 @@
 #include <functional>
 #include <string>
 
-#include "../Interfaces.h"
+#include "../BaseRequestHandler.h"
 
 class RequestDispatcher;
 
-class FakeRequestHandler : public IRequestHandler
+class FakeRequestHandler : public BaseRequestHandler
 {
 public:
 	FakeRequestHandler();
@@ -19,8 +19,6 @@ public:
 
 	void start() override;
 	void stop() override;
-
-	std::vector<char> createFaultResponse( RequestIdType id, enErrorIdType err ) const override;
 
 protected:
 	void threadJob() override;

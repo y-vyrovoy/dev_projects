@@ -8,7 +8,7 @@
 
 enum class HTTP_METHOD {ERR_METHOD, GET, PUT, HEAD, POST, TRACE, DEL, CONNECT, OPTIONS};
 
-enum class enErrorIdType { ERR_PARSE_METDHOD };
+enum class enErrorIdType { ERR_PARSE_METDHOD, ERR_CANT_FIND_FILE };
 
 using RequestIdType = unsigned int;
 

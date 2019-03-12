@@ -44,8 +44,8 @@ void ServerFramework::Initialize( ConfigHelperPtr & config )
 		m_requestParser.reset( new RequestParser );
 
 		// --------- Setting up request handler ------------
-		m_requestHandler.reset( new FakeRequestHandler );
-		//m_requestHandler.reset( new FileRequestHandler );
+		//m_requestHandler.reset( new FakeRequestHandler );
+		m_requestHandler.reset( new FileRequestHandler );
 		m_requestHandler->Init( m_config,
 								m_requestDispatcher.get(),
 								[this] ( std::unique_ptr<ResponseData> response ) {onResponse( std::move( response ) ); } );
@@ -104,15 +104,14 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 	{
 		std::unique_ptr<RequestData> requestData( new RequestData );
 
-		if ( m_requestParser->Parse( request, *requestData ) != 0 )
+		Utils::SaveRequest( socket, static_cast<RequestIdType>( -1 ), request );
+
+		if ( m_requestParser->Parse( request, requestData ) != 0 )
 		{
 			ERROR_LOG_F << "Failed to parse request from " << socket << " socket";
 
-			ResponsePtr response( new ResponseData() );
-			response->id = m_requestDispatcher->getNextRequestId();
-			response->data = m_requestHandler->createFaultResponse( response->id, enErrorIdType::ERR_PARSE_METDHOD );
-
-			m_requestDispatcher->registerResponse( std::move( response ) );
+			std::string msg( request.begin(), request.end() );
+			m_requestDispatcher->registerFailResponse( socket, msg );
 		}
 		else
 		{
@@ -122,6 +121,7 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 
 			m_requestDispatcher->registerRequest( socket, std::move( requestData ) );
 		}
+	
 	}
 	catch ( std::exception & ex )
 	{

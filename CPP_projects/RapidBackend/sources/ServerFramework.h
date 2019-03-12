@@ -49,7 +49,7 @@ private:
     std::unique_ptr< IConnectionManager >		m_connectionManager;
     
 	std::unique_ptr< IRequestParser >			m_requestParser;
-	std::unique_ptr< IRequestHandler >			m_requestHandler;
+	std::unique_ptr< BaseRequestHandler >		m_requestHandler;
 
 	ConfigHelperPtr								m_config;
 };

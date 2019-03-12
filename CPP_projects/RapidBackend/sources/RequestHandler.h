@@ -2,12 +2,13 @@
 
 #include <functional>
 
-#include "Interfaces.h"
+#include "BaseRequestHandler.h"
 #include "DataTypes.h"
+
 
 class RequestDispatcher;
 
-class RequestHandler : public IRequestHandler
+class RequestHandler : public BaseRequestHandler
 {
 public:
 	RequestHandler();
@@ -19,8 +20,6 @@ public:
 
 	void start() override;
 	void stop() override;
-
-	std::vector<char> createFaultResponse( RequestIdType id, enErrorIdType err ) const override;
 
 private:
 	void threadJob();

@@ -32,6 +32,9 @@ public:
 
 	void registerResponse( ResponsePtr response );
 
+	void registerFailResponse( const SOCKET socket, const std::string & msg );
+	void registerFailResponse( const SOCKET socket, const RequestPtr & request );
+
 	ResponseData * pullResponse();
 
 	ResponseData * pullResponse( std::chrono::milliseconds waitMS );

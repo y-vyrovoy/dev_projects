@@ -6,6 +6,7 @@
 
 #include "Logger.h"
 #include "MessageException.h"
+#include "BaseRequestHandler.h"
 
 RequestIdType RequestDispatcher::m_nextRequestID;
 
@@ -164,10 +165,46 @@ void RequestDispatcher::registerResponse( ResponsePtr response )
 
 	m_responses[id] = std::move( response );
 
+
     // if request is the first in chain it should be placed to general response queue 
     SOCKET sock = it->second;
+
+	DEBUG_LOG_F << "soket [" << sock << "] id [" << id << "]";
+
 	syncPutTopResponseToQueue( sock );
 }
+
+void RequestDispatcher::registerFailResponse( const SOCKET socket, const std::string & msg )
+{
+	ResponsePtr response( new ResponseData() );
+	response->id = getNextRequestId();
+
+	RequestIdType id = response->id;
+
+	// mapping request with socket
+    m_requestId2SocketMap[id] = socket;
+
+    // updating response chain
+    m_requestsChains[socket].push_back( id );
+
+	response->data = BaseRequestHandler::createDefaultFailResponse( id, enErrorIdType::ERR_PARSE_METDHOD, msg );
+
+	registerResponse( std::move( response ) );
+}
+
+void RequestDispatcher::registerFailResponse( const SOCKET socket, const RequestPtr & request )
+{
+	ResponsePtr response( new ResponseData() );
+	response->id = getNextRequestId();
+
+	// mapping request with socket
+    m_requestId2SocketMap[response->id] = socket;
+
+	response->data = BaseRequestHandler::createDefaultFailResponse( response->id, enErrorIdType::ERR_PARSE_METDHOD );
+
+	registerResponse( std::move( response ) );
+}
+
 
 /// NOT thread safe
 void RequestDispatcher::syncPutTopResponseToQueue( SOCKET sock )
@@ -320,9 +357,13 @@ void RequestDispatcher::remove( RequestIdType id )
 	
 	syncRemoveRequestFromSocketChain( id );
 	
-	m_requestId2SocketMap.erase( m_requestId2SocketMap.find( id ) );
+	auto itMap = m_requestId2SocketMap.find( id );
+	if( itMap != m_requestId2SocketMap.end() )
+		m_requestId2SocketMap.erase( itMap );
 	
-	m_requests.erase( m_requests.find( id ) );
+	auto itRequest = m_requests.find( id );
+	if( itRequest != m_requests.end() )
+		m_requests.erase( itRequest );
 
 	SOCKET s = getSocket( id );
 

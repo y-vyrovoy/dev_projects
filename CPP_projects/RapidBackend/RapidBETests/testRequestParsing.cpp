@@ -25,14 +25,14 @@ namespace RapidBETests
 			fakeRequest.assign( request, request + sizeof( request ) );
 
 			RequestParser parser;
-			RequestData result;
+			RequestPtr result( new RequestData );
 
 			parser.Parse( fakeRequest, result );
 
-			Assert::IsTrue( result.http_method == HTTP_METHOD::GET );
-			Assert::AreEqual( result.address, std::string( "/some/web/page?param1=12&param2=true" ) );
-			Assert::AreEqual( result.nVersionMajor, 1 );
-			Assert::AreEqual( result.nVersionMinor, 1 );
+			Assert::IsTrue( result->http_method == HTTP_METHOD::GET );
+			Assert::AreEqual( result->address, std::string( "/some/web/page?param1=12&param2=true" ) );
+			Assert::AreEqual( result->nVersionMajor, 1 );
+			Assert::AreEqual( result->nVersionMinor, 1 );
 		}
 
 		TEST_METHOD( testParsePost )
@@ -46,14 +46,14 @@ namespace RapidBETests
 			fakeRequest.assign( request, request + sizeof( request ) );
 
 			RequestParser parser;
-			RequestData result;
+			RequestPtr result( new RequestData );
 
 			parser.Parse( fakeRequest, result );
 
-			Assert::IsTrue( result.http_method == HTTP_METHOD::POST );
-			Assert::AreEqual( result.address, std::string( "/some/web/page?param1=12&param2=true" ) );
-			Assert::AreEqual( result.nVersionMajor, 1 );
-			Assert::AreEqual( result.nVersionMinor, 1 );
+			Assert::IsTrue( result->http_method == HTTP_METHOD::POST );
+			Assert::AreEqual( result->address, std::string( "/some/web/page?param1=12&param2=true" ) );
+			Assert::AreEqual( result->nVersionMajor, 1 );
+			Assert::AreEqual( result->nVersionMinor, 1 );
 		}
 
 		TEST_METHOD( testParseConnect )
@@ -67,14 +67,14 @@ namespace RapidBETests
 			fakeRequest.assign( request, request + sizeof( request ) );
 
 			RequestParser parser;
-			RequestData result;
+			RequestPtr result( new RequestData );
 
 			parser.Parse( fakeRequest, result );
 
-			Assert::IsTrue( result.http_method == HTTP_METHOD::CONNECT );
-			Assert::AreEqual( result.address, std::string( "/some/web/page?param1=12&param2=true" ) );
-			Assert::AreEqual( result.nVersionMajor, 1 );
-			Assert::AreEqual( result.nVersionMinor, 1 );
+			Assert::IsTrue( result->http_method == HTTP_METHOD::CONNECT );
+			Assert::AreEqual( result->address, std::string( "/some/web/page?param1=12&param2=true" ) );
+			Assert::AreEqual( result->nVersionMajor, 1 );
+			Assert::AreEqual( result->nVersionMinor, 1 );
 		}
 
 		TEST_METHOD( testParseParams )
@@ -95,18 +95,18 @@ namespace RapidBETests
 			fakeRequest.assign( request, request + sizeof( request ) );
 
 			RequestParser parser;
-			RequestData result;
+			RequestPtr result( new RequestData );
 
 			parser.Parse( fakeRequest, result );
 
-			Assert::IsTrue( result.paramsMap.find("Host") !=  result.paramsMap.end() );
-			Assert::IsTrue( result.paramsMap["Host"] == "127.0.0.1" );
+			Assert::IsTrue( result->paramsMap.find("Host") !=  result->paramsMap.end() );
+			Assert::IsTrue( result->paramsMap["Host"] == "127.0.0.1" );
 
-			Assert::IsTrue( result.paramsMap.find("Accept-Language") !=  result.paramsMap.end() );
-			Assert::IsTrue( result.paramsMap["Accept-Language"] == "en-GB,en;q=0.9,ru-RU;q=0.8,ru;q=0.7,en-US;q=0.6" );
+			Assert::IsTrue( result->paramsMap.find("Accept-Language") !=  result->paramsMap.end() );
+			Assert::IsTrue( result->paramsMap["Accept-Language"] == "en-GB,en;q=0.9,ru-RU;q=0.8,ru;q=0.7,en-US;q=0.6" );
 
-			Assert::IsTrue( result.paramsMap.find("Accept") !=  result.paramsMap.end() );
-			Assert::IsTrue( result.paramsMap["Accept"] == "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
+			Assert::IsTrue( result->paramsMap.find("Accept") !=  result->paramsMap.end() );
+			Assert::IsTrue( result->paramsMap["Accept"] == "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
 		}
 
 TEST_METHOD( testGetContentLengthNoContentLength )

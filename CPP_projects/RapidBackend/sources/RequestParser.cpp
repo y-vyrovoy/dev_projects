@@ -7,7 +7,7 @@
 
 #include "Logger.h"
 
-int RequestParser::Parse( const std::vector<char> & request, RequestData & requestDataResult ) const
+int RequestParser::Parse( const std::vector<char> & request, const RequestPtr & requestDataResult ) const
 {
 	if ( request.size() == 0 )
 	{
@@ -34,7 +34,7 @@ int RequestParser::Parse( const std::vector<char> & request, RequestData & reque
 	return 0;
 }
 
-int RequestParser::ParseStartLine( const std::vector<char> & request, RequestData & requestData ) const
+int RequestParser::ParseStartLine( const std::vector<char> & request, const RequestPtr & requestData ) const
 {
 	size_t NSize = request.size();
 
@@ -48,8 +48,8 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, RequestDat
 
 	// HTTP method
 
-	requestData.http_method = parseHttpMethod( request );
-	if ( requestData.http_method == HTTP_METHOD::ERR_METHOD )
+	requestData->http_method = parseHttpMethod( request );
+	if ( requestData->http_method == HTTP_METHOD::ERR_METHOD )
 	{
 		SPAM_LOG_F << "No HTTP method in request header";
 		return RET_UKNOWN_METHOD;
@@ -57,8 +57,8 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, RequestDat
 
 	// request parameters
 
-	requestData.address = parseHeaderParams( request );
-	if ( requestData.address.empty() )
+	requestData->address = parseHeaderParams( request );
+	if ( requestData->address.empty() )
 	{
 		SPAM_LOG_F << "No parameters section in request header";
 		return RET_NO_PARAMS_SECTION;
@@ -75,8 +75,8 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, RequestDat
 	}
 
 
-	requestData.nVersionMajor = httpVersion.first;
-	requestData.nVersionMinor = httpVersion.second;
+	requestData->nVersionMajor = httpVersion.first;
+	requestData->nVersionMinor = httpVersion.second;
 
 
 	// --------------- parsing request header finished ----------------------------
@@ -138,7 +138,7 @@ HTTP_METHOD RequestParser::charToHttpMethod( std::vector<char>::const_iterator i
 	return HTTP_METHOD::ERR_METHOD;
 }
 
-int RequestParser::ParseParams( const std::vector<char> & request, RequestData & requestData ) const
+int RequestParser::ParseParams( const std::vector<char> & request, const RequestPtr & requestData ) const
 {
 	// Every line before \r\n\r\n should be like [XXX: ddddddd\r\n]
 	// Parameter block finishes with the empty line [\r\n]
@@ -180,7 +180,7 @@ int RequestParser::ParseParams( const std::vector<char> & request, RequestData &
 
 		std::string paramValue( itSemicolon + 1, itEndl );
 
-		requestData.paramsMap[paramName] = paramValue;
+		requestData->paramsMap[paramName] = paramValue;
 
 		it = itEndl + 1;
 

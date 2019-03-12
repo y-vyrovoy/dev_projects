@@ -26,6 +26,8 @@
 #define DEFAULT_PORT			"80"
 #define DEFAULT_RECV_BUF_LEN	4096
 
+#define DONT_START_WATCHDOGS
+
 namespace
 {
 	void SpamLogHiResTP( const std::string & funcName, const HiResTimePoint & tp )

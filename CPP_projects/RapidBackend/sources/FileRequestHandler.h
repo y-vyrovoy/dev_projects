@@ -1,15 +1,19 @@
 #pragma once
 
 #include <functional>
+#include <filesystem>
 
-#include "Interfaces.h"
+#include "BaseRequestHandler.h"
 #include "DataTypes.h"
+
 
 class RequestDispatcher;
 
-class FileRequestHandler : public IRequestHandler
+class FileRequestHandler : public BaseRequestHandler
 {
 public:
+	enum class enContentType { TEXT, MULTYPART, MESSAGE, IMAGE, AUDIO, VIDEO, APPLICATION, ERR_TYPE };
+
 	FileRequestHandler();
 	~FileRequestHandler();
 
@@ -20,21 +24,26 @@ public:
 	void start() override;
 	void stop() override;
 
-	std::vector<char> createFaultResponse( RequestIdType id, enErrorIdType err ) const override;
-
 private:
 
 	void threadJob();
 
+	std::vector<char> createResponse( const RequestData * request ) const;
 
-	std::thread				m_workThread;
+	const char * getContentType( const std::string & filePathname ) const;
+
+
+	std::thread												m_workThread;
 	
-	RequestDispatcher *		m_queueManager;
+	RequestDispatcher *										m_queueManager;
 	
-	std::function<void( std::unique_ptr<ResponseData> )> m_responseCallback;
+	std::function<void( std::unique_ptr<ResponseData> )>	m_responseCallback;
 
-	ConfigHelperPtr			m_config;
+	ConfigHelperPtr											m_config;
 
-	std::string				m_rootFolder;
+	std::string												m_rootFolder;
+
+	std::map<std::string, std::string>						m_mapTypes;
+
 };
 

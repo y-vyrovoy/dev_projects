@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\sources\BaseRequestHandler.h" />
     <ClInclude Include="..\sources\ConfigHelper.h" />
     <ClInclude Include="..\sources\FakeClasses\FakeConnectionManager.h" />
     <ClInclude Include="..\sources\FakeClasses\FakeRequestHandler.h" />
@@ -176,6 +177,7 @@
     <ClInclude Include="..\sources\WaitSentQueue.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\sources\BaseRequestHandler.cpp" />
     <ClCompile Include="..\sources\ConfigHelper.cpp" />
     <ClCompile Include="..\sources\DataTypes.cpp" />
     <ClCompile Include="..\sources\FakeClasses\FakeConnectionManager.cpp" />

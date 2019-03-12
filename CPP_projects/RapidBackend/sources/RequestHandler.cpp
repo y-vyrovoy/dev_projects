@@ -78,29 +78,3 @@ void RequestHandler::threadJob()
 
 	}
 }
-
-
-std::vector<char> RequestHandler::createFaultResponse( RequestIdType id, enErrorIdType err ) const
-{
-	std::stringstream buffer;
-
-	//buffer << RESPONSE_HEADER;
-
-	//buffer
-	//	<< "<tr><td>id</td><td>" << id << "</td></tr>";
-	//
-	//switch ( err )
-	//{
-	//case enErrorIdType::ERR_PARSE_METDHOD:
-	//	buffer << "<tr><td>Failed to parse http method</td></tr>";
-	//	break;
-	//}
-
-	//buffer << RESPONSE_FOOTER << '\0';
-
-	//std::string str = buffer.str();
-
-	//DEBUG_LOG_F << str;
-
-	return sstreamToVector( buffer );
-}

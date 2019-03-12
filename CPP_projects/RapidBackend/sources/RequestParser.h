@@ -8,7 +8,7 @@
 class RequestParser : public IRequestParser
 {
 public:
-	int Parse( const std::vector<char> & request, RequestData & requestDataResult ) const override;
+	int Parse( const std::vector<char> & request, const RequestPtr & requestDataResult ) const override;
 
 	static bool getHeaderLength( std::vector<char> & vecBuffer, size_t & outLength );
 	static bool getContentLength( std::vector<char> & vecBuffer, size_t & outLength );
@@ -20,8 +20,8 @@ private:
 	static std::string parseHeaderParams( const std::vector<char> & vecBuffer );
 	static std::pair<char, char> parseHttpVersion( const std::vector<char> & vecBuffer );
 
-	int ParseStartLine( const std::vector<char> & request, RequestData  & requestData ) const;
-	int ParseParams( const std::vector<char> & request, RequestData & requestData ) const;
+	int ParseStartLine( const std::vector<char> & request, const RequestPtr & requestData ) const;
+	int ParseParams( const std::vector<char> & request, const RequestPtr & requestData ) const;
 
 	
 
