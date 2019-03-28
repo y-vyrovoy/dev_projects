@@ -14,8 +14,13 @@
 
 using namespace std::chrono_literals;
 
+void mainTest();
+
 int main(int argc, char** argv)
 {
+	//mainTest();
+	//return 0;
+	
 	try
 	{
 		ConfigHelperPtr config( new ConfigHelper );

@@ -17,11 +17,11 @@ public:
 
 private:
 	static HTTP_METHOD parseHttpMethod( const std::vector<char> & vecBuffer);
-	static std::string parseHeaderParams( const std::vector<char> & vecBuffer );
+	static std::string parseHeaderAddress( const std::vector<char> & vecBuffer );
 	static std::pair<char, char> parseHttpVersion( const std::vector<char> & vecBuffer );
 
-	int ParseStartLine( const std::vector<char> & request, const RequestPtr & requestData ) const;
-	int ParseParams( const std::vector<char> & request, const RequestPtr & requestData ) const;
+	void ParseStartLine( const std::vector<char> & request, const RequestPtr & requestData ) const;
+	void ParseParams( const std::vector<char> & request, const RequestPtr & requestData ) const;
 
 	
 

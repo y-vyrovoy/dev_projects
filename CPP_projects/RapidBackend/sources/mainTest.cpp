@@ -390,6 +390,31 @@ void testWaitSentMap()
 	}
 		
 }
+void testParser()
+{
+	char request[] =
+		"GET HTTP/1.1\r\n"
+		"Host: 127.0.0.1\r"
+	;
+
+	std::vector<char> fakeRequest;
+	fakeRequest.assign( request, request + sizeof( request ) );
+
+	RequestParser parser;
+	RequestPtr result( new RequestData );
+
+	try
+	{
+		parser.Parse( fakeRequest, result );
+		std::cout << L"Parse() didn't failed processing bad request" << std::endl;
+	}
+	catch( std::exception & ex)
+	{
+		std::stringstream ss;
+		ss << "Parse() is ok. Caught exception: " << ex.what();
+		std::cout << ss.str().data() << std::endl;
+	}
+}
 
 void mainTest(  )
 {
@@ -397,7 +422,9 @@ void mainTest(  )
 
 	//testOne();
 	//testSync();
-	testAsync();
+	//testAsync();
 
 	//testWaitSentMap();
+
+	testParser();
 }

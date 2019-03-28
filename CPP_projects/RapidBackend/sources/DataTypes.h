@@ -23,15 +23,6 @@ class RequestData
 public:
     // id is used to match request and response
 
-	//RequestIdType id;
-
-	//HTTP_METHOD http_method;
-	//std::string address;
-	//int nVersionMajor;
-	//int nVersionMinor;
-	//std::map<std::string, std::string> paramsMap;
-	//std::vector<char> data;
-
 	DEFINE_PROPERTY( RequestIdType, Id )
 
 	DEFINE_PROPERTY( HTTP_METHOD, HTTP_method )
@@ -68,3 +59,14 @@ const char * getHttpMethodString( const HTTP_METHOD & method );
 using RequestPtr = std::unique_ptr<RequestData>;
 
 using ResponsePtr = std::unique_ptr<ResponseData>;
+
+
+using HiResClock = std::chrono::high_resolution_clock;
+using HiResTimePoint = HiResClock::time_point;
+using HiResTimePointAtm = std::atomic<HiResClock::time_point>;
+
+#define CastToSec std::chrono::duration_cast< std::chrono::seconds >
+#define CastToMS std::chrono::duration_cast< std::chrono::milliseconds >
+#define CastToUS std::chrono::duration_cast< std::chrono::microseconds >
+
+using TimePoint = std::chrono::system_clock::time_point;

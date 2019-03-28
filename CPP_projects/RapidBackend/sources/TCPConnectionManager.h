@@ -4,7 +4,6 @@
 #include <atomic>
 #include <chrono>
 #include <vector>
-#include <memory>			// std::shared_ptr
 #include <WinSock2.h>
 
 #include "Utils.h"
@@ -12,17 +11,7 @@
 #include "Interfaces.h"
 #include "SockTypes.h"
 #include "RequestDispatcher.h"
-
-using HiResClock = std::chrono::high_resolution_clock;
-using HiResTimePoint = HiResClock::time_point;
-using HiResTimePointAtm = std::atomic<HiResClock::time_point>;
-
-#define CastToSec std::chrono::duration_cast< std::chrono::seconds >
-#define CastToMS std::chrono::duration_cast< std::chrono::milliseconds >
-#define CastToUS std::chrono::duration_cast< std::chrono::microseconds >
-
-using TimePoint = std::chrono::system_clock::time_point;
-
+#include "SocketContainer.h"
 
 using namespace std::chrono_literals;
 
@@ -81,7 +70,8 @@ private:
 
 private:
 	SOCKET										m_listenSocket;
-	std::vector<SOCKET>							m_clientSockets;
+	//std::vector<SOCKET>							m_clientSockets;
+	SocketContainer								m_clientSockets;
 
 	fd_set										m_active_fd_set;
 
@@ -102,4 +92,5 @@ private:
 	DEFINE_PROPERTY ( std::chrono::milliseconds, watchdogCheckPeriod)
 	DEFINE_PROPERTY ( std::chrono::milliseconds, requestCheckPeriod)
 	DEFINE_PROPERTY ( std::chrono::milliseconds, responseCheckPeriod)
+
 };

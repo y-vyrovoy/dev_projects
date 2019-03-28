@@ -477,7 +477,8 @@ void TCPConnectionManager::addClientSocket( SOCKET clientSocket )
 {
 	FD_SET( clientSocket, &m_active_fd_set );
 
-	m_clientSockets.push_back( clientSocket );
+	//m_clientSockets.push_back( clientSocket );
+	m_clientSockets.add( clientSocket );
 }
 
 void TCPConnectionManager::closeListenSocket()
@@ -490,12 +491,17 @@ void TCPConnectionManager::closeClientSocket( SOCKET clientSocket )
 {
 	FD_CLR( clientSocket, &m_active_fd_set );
 
-	auto it = std::find( m_clientSockets.begin(), m_clientSockets.end(), clientSocket );
-	
-	if ( it == m_clientSockets.end() )
+	//auto it = std::find( m_clientSockets.begin(), m_clientSockets.end(), clientSocket );
+	//
+	//if ( it == m_clientSockets.end() )
+	//	return;
+
+	//m_clientSockets.erase( it );
+
+	if ( !m_clientSockets.contains( clientSocket ) )
 		return;
 
-	m_clientSockets.erase( it );
+	m_clientSockets.remove( clientSocket );
 
 	closesocket( clientSocket );
 }
@@ -504,7 +510,7 @@ void TCPConnectionManager::closeClientsSockets()
 {
 	for ( auto it : m_clientSockets )
 	{
-		closesocket( it );
+		closesocket( it.first );
 	}
 }
 
@@ -592,7 +598,7 @@ void TCPConnectionManager::watchdogThreadFunction( StopFlagPtr forceStop )
 	HiResTimePoint tpNow = HiResClock::now();
 	m_syncPoint = tpNow + m_watchdogCheckPeriod;
 
-	while ( !*forceStop )
+	while ( !( *forceStop ) )
 	{
 		std::unique_lock<std::mutex> lock( mut );
 

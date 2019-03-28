@@ -11,29 +11,16 @@ int RequestParser::Parse( const std::vector<char> & request, const RequestPtr & 
 {
 	if ( request.size() == 0 )
 	{
-		INFO_LOG_F << "Empty request. Size is 0";
-		return 3;
+		throw std::runtime_error( "Empty request. Size is 0" );
 	}
 
-	int paramsStart = ParseStartLine( request, requestDataResult );
-
-	if ( paramsStart < 0 )
-	{
-		SPAM_LOG_F << "ParseFirstLine() failed. Request" << std::endl
-					<< "[" << request.data() << "]";
-		return 1;
-	}
-
-	if ( ParseParams( request, requestDataResult ) != 0 )
-	{
-		SPAM_LOG_F << ": " << "ParseParams() failed";
-		return 2;
-	}
+	ParseStartLine( request, requestDataResult );
+	ParseParams( request, requestDataResult );
 
 	return 0;
 }
 
-int RequestParser::ParseStartLine( const std::vector<char> & request, const RequestPtr & requestData ) const
+void RequestParser::ParseStartLine( const std::vector<char> & request, const RequestPtr & requestData ) const
 {
 	size_t NSize = request.size();
 
@@ -50,17 +37,15 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, const Requ
 	requestData->setHTTP_method( parseHttpMethod( request ) );
 	if ( requestData->getHTTP_method() == HTTP_METHOD::ERR_METHOD )
 	{
-		SPAM_LOG_F << "No HTTP method in request header";
-		return RET_UKNOWN_METHOD;
+		throw std::runtime_error( "ParseStartLine(): No HTTP method in request header" );
 	}
 
 	// request parameters
 
-	requestData->setAddress( parseHeaderParams( request ) );
+	requestData->setAddress( parseHeaderAddress( request ) );
 	if ( requestData->getAddress().empty() )
 	{
-		SPAM_LOG_F << "No parameters section in request header";
-		return RET_NO_PARAMS_SECTION;
+		throw std::runtime_error( "ParseStartLine(): No address section in request header" );
 	}
 
 
@@ -69,8 +54,7 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, const Requ
 	std::pair<char, char> httpVersion = parseHttpVersion( request );
 	if ( httpVersion.first == 0 && httpVersion.second == 0) 
 	{
-		SPAM_LOG_F << "No HTTP/ section in request header";
-		return RET_NO_HTTP_SECTION;
+		throw std::runtime_error( "ParseStartLine(): No \"HTTP/\" section in request header" );
 	}
 
 
@@ -79,8 +63,6 @@ int RequestParser::ParseStartLine( const std::vector<char> & request, const Requ
 
 
 	// --------------- parsing request header finished ----------------------------
-
-	return 0;
 }
 
 
@@ -110,7 +92,7 @@ HTTP_METHOD RequestParser::charToHttpMethod( std::vector<char>::const_iterator i
 	}
 	else if ( std::distance(itBegin, itEnd) == 5 )
 	{
-		if ( !std::equal( itBegin, itEnd, "TRACE" ) )
+		if ( std::equal( itBegin, itEnd, "TRACE" ) )
 		{
 			return HTTP_METHOD::TRACE;
 		}
@@ -137,7 +119,7 @@ HTTP_METHOD RequestParser::charToHttpMethod( std::vector<char>::const_iterator i
 	return HTTP_METHOD::ERR_METHOD;
 }
 
-int RequestParser::ParseParams( const std::vector<char> & request, const RequestPtr & requestData ) const
+void RequestParser::ParseParams( const std::vector<char> & request, const RequestPtr & requestData ) const
 {
 	// Every line before \r\n\r\n should be like [XXX: ddddddd\r\n]
 	// Parameter block finishes with the empty line [\r\n]
@@ -148,11 +130,11 @@ int RequestParser::ParseParams( const std::vector<char> & request, const Request
 
 	auto itHeaderEnd = std::search( request.begin(), request.end(), delimeter, delimeter + delimeterSize );
 	if ( itHeaderEnd == request.end() )
-		return -1;
+		throw std::runtime_error( "ParseParams(). Failed to parse request" );
 
 	auto itNewLine = std::find( request.begin(), request.end(), '\r' );
 	if ( itNewLine == request.end() )
-		return -1;
+		throw std::runtime_error( "ParseParams(). Failed to parse request" );
 
 	itNewLine++;
 
@@ -172,7 +154,7 @@ int RequestParser::ParseParams( const std::vector<char> & request, const Request
 		//Param value
 		auto itEndl = std::find( it, request.end(), '\r' );
 		if ( itEndl == request.end() )
-			return -1;
+			throw std::runtime_error( "ParseParams(). Failed to parse request" );
 
 		if ( *( itSemicolon + 1 ) == ' ' )
 			itSemicolon++;
@@ -197,8 +179,6 @@ int RequestParser::ParseParams( const std::vector<char> & request, const Request
 	{
 		// TODO: get data 
 	}
-
-    return 0;
 }
 
 inline char RequestParser::GetDigit( char chSymbol ) const
@@ -239,15 +219,20 @@ HTTP_METHOD RequestParser::parseHttpMethod( const std::vector<char> & vecBuffer 
 	return charToHttpMethod( vecBuffer.begin(), it );
 }
 
-std::string RequestParser::parseHeaderParams( const std::vector<char> & vecBuffer )
+std::string RequestParser::parseHeaderAddress( const std::vector<char> & vecBuffer )
 {
-	auto itBegin = std::find( vecBuffer.begin(), vecBuffer.end(), '/' );
-	if ( itBegin == vecBuffer.end() )
+	auto itEOL = std::find( vecBuffer.begin(), vecBuffer.end(), '\r' );
+	if ( itEOL == vecBuffer.end() )
 		return "";
 
 
-	auto itEnd = std::find( itBegin, vecBuffer.end(), ' ' );
-	if ( itEnd == vecBuffer.end() )
+	auto itBegin = std::find( vecBuffer.begin(), itEOL, '/' );
+	if ( itBegin == itEOL )
+		return "";
+
+
+	auto itEnd = std::find( itBegin, itEOL, ' ' );
+	if ( itEnd == itEOL )
 		return "";
 
 	return std::string(itBegin, itEnd);;

@@ -114,39 +114,23 @@ void ServerFramework::onRequest( SOCKET socket, const std::vector<char> & reques
 	{
 		std::unique_ptr<RequestData> requestData( new RequestData );
 
-		Utils::SaveRequest( socket, static_cast<RequestIdType>( -1 ), request );
+		// uncomment to save EVERY REQUEST
+		//Utils::SaveRequest( socket, static_cast<RequestIdType>( -1 ), request );
 
-		if ( m_requestParser->Parse( request, requestData ) != 0 )
-		{
-			ERROR_LOG_F << "Failed to parse request from " << socket << " socket";
-
-			std::string msg( request.begin(), request.end() );
-			m_requestDispatcher->registerFailResponse( socket, msg );
-		}
-		else
-		{
-			//INFO_LOG_F << "New request."
-			//			<< " [ address " << requestData->address << " ]" 
-			//			<< " [ socket = " << socket << " ]";
-
-			m_requestDispatcher->registerRequest( socket, std::move( requestData ) );
-		}
-	
+		m_requestParser->Parse( request, requestData );
+		m_requestDispatcher->registerRequest( socket, std::move( requestData ) );
 	}
 	catch ( std::exception & ex )
 	{
-		ERROR_LOG_F << ex.what();
+		ERROR_LOG_F << "Failed to parse request from " << socket << " socket. Error: " << ex.what();
+
+		std::string msg( request.begin(), request.end() );
+		m_requestDispatcher->registerFailResponse( socket, msg );
 	}
 }
 
 void ServerFramework::onResponse( ResponsePtr response )
 {
-	std::string logString{ response->data.begin(), response->data.end() };
-
-	//INFO_LOG_F << "Response"
-	//	<< " [id=" << response->id << "]"
-	//	<< " [data=" << logString << "]";
-
 	m_requestDispatcher->registerResponse( std::move( response ) );
 }
 
