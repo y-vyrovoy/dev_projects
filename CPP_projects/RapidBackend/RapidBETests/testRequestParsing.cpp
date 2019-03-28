@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
+#include "CppUnitTestLogger.h"
 
 #include <string>
 #include <vector>
@@ -77,6 +78,104 @@ namespace RapidBETests
 			Assert::AreEqual( result->getVersionMinor(), 1 );
 		}
 
+		TEST_METHOD( testWrongRequestFirstLine1 )
+		{
+			char request[] =
+				"OLOLO /some/web/page?param1=12&param2=true HTTP/1.1\r\n"
+				"Host: 127.0.0.1\r"
+			;
+
+			std::vector<char> fakeRequest;
+			fakeRequest.assign( request, request + sizeof( request ) );
+
+			RequestParser parser;
+			RequestPtr result( new RequestData );
+
+			try
+			{
+				parser.Parse( fakeRequest, result );
+				Assert::Fail( L"Parse() didn't failed processing bad request" );
+			}
+			catch( std::exception & ex)
+			{
+				std::stringstream ss;
+				ss << "Parse() is ok. Caught exception: " << ex.what();
+				Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage( ss.str().data() );
+			}
+		}
+
+		TEST_METHOD( testWrongRequestFirstLine2 )
+		{
+			char request[] =
+				"GET HTTP/1.1\r\n"
+				"Host: 127.0.0.1\r"
+			;
+
+			std::vector<char> fakeRequest;
+			fakeRequest.assign( request, request + sizeof( request ) );
+
+			RequestParser parser;
+			RequestPtr result( new RequestData );
+
+			try
+			{
+				parser.Parse( fakeRequest, result );
+				Assert::Fail( L"Parse() didn't failed processing bad request" );
+			}
+			catch( std::exception & ex)
+			{
+				std::stringstream ss;
+				ss << "Parse() is ok. Caught exception: " << ex.what();
+				Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage( ss.str().data() );
+			}
+		}
+
+		TEST_METHOD( testWrongRequestFirstLine3 )
+		{
+			char request[] =
+				"GET /some/web/page?param1=12&param2=true HTT/1.1\r\n"
+				"Host: 127.0.0.1\r"
+			;
+
+			std::vector<char> fakeRequest;
+			fakeRequest.assign( request, request + sizeof( request ) );
+
+			RequestParser parser;
+			RequestPtr result( new RequestData );
+
+			try
+			{
+				parser.Parse( fakeRequest, result );
+				Assert::Fail( L"Parse() didn't failed processing bad request" );
+			}
+			catch( std::exception & ex)
+			{
+				std::stringstream ss;
+				ss << "Parse() is ok. Caught exception: " << ex.what();
+				Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage( ss.str().data() );
+			}
+		}
+
+		TEST_METHOD( testWrongRequestFirstLine4 )
+		{
+			std::vector<char> fakeRequest;
+
+			RequestParser parser;
+			RequestPtr result( new RequestData );
+
+			try
+			{
+				parser.Parse( fakeRequest, result );
+				Assert::Fail( L"Parse() didn't failed processing bad request" );
+			}
+			catch( std::exception & ex)
+			{
+				std::stringstream ss;
+				ss << "Parse() is ok. Caught exception: " << ex.what();
+				Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage( ss.str().data() );
+			}
+		}
+
 		TEST_METHOD( testParseParams )
 		{
 			char request[] =
@@ -109,7 +208,7 @@ namespace RapidBETests
 			Assert::IsTrue( result->getParamsMap()["Accept"] == "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" );
 		}
 
-TEST_METHOD( testGetContentLengthNoContentLength )
+		TEST_METHOD( testGetContentLengthNoContentLength )
 		{
 			char requestNoContentLength[] =
 				"GET /some/web/page?param1=12&param2=true HTTP/1.1\r\n"
