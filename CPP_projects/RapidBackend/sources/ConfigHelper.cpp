@@ -99,6 +99,20 @@ const bool ConfigHelper::getOptional( const char * paramName, std::string & para
 	}
 }
 
+const bool ConfigHelper::getOptional( const char * paramName, int & paramValue ) const
+{
+	try
+	{
+		paramValue = std::stoi( get( paramName ) );
+		return true;
+	}
+	catch( const std::exception & )
+	{
+		paramValue = 0;
+		return false;
+	}
+}
+
 std::string ConfigHelper::getLogFilename() const
 {
 	std::string logFilename;

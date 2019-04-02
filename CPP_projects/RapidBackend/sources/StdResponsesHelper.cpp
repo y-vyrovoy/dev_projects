@@ -12,6 +12,7 @@ void StdResponseHelper::Init()
 
 	m_mapNames[E400_BAD_REQUEST] = { "Bad Request" };
 	m_mapNames[E404_CANT_FIND_FILE] = { "Not Found" };
+	m_mapNames[E408_REQUEST_TIMEOUT] = { "Request Timeout" };
 
 	m_mapNames[E500_INT_SERVER_ERROR] = { "Internal Server Error" };
 	m_mapNames[E520_UNKNOWN_ERROR] = { "Unknown Error" };

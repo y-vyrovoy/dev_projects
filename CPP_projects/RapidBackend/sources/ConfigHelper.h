@@ -22,6 +22,8 @@ public:
 
 	virtual const bool getOptional( const char * paramName, std::string & paramValue ) const;
 
+	virtual const bool getOptional( const char * paramName, int & paramValue ) const;
+
 	std::string getLogFilename() const;
 
 	std::string getRootFolder() const;

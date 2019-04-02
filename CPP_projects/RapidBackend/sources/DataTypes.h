@@ -64,9 +64,11 @@ using ResponsePtr = std::unique_ptr<ResponseData>;
 using HiResClock = std::chrono::high_resolution_clock;
 using HiResTimePoint = HiResClock::time_point;
 using HiResTimePointAtm = std::atomic<HiResClock::time_point>;
+using HiResDuration = std::chrono::high_resolution_clock::duration;
 
 #define CastToSec std::chrono::duration_cast< std::chrono::seconds >
 #define CastToMS std::chrono::duration_cast< std::chrono::milliseconds >
 #define CastToUS std::chrono::duration_cast< std::chrono::microseconds >
+#define CastToNS std::chrono::duration_cast< std::chrono::nanoseconds >
 
 using TimePoint = std::chrono::system_clock::time_point;

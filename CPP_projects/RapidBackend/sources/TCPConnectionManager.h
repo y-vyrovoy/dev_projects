@@ -82,15 +82,22 @@ private:
 
 	HiResTimePointAtm							m_syncPoint;
 
-	HiResTimePointAtm							m_nextRequestThreadTick;
-	HiResTimePointAtm							m_nextResponseThreadTick;
+	HiResTimePointAtm							m_requestThreadLastTick;
+	HiResDuration								m_requestThreadWdThreshold;
+	HiResDuration								m_requestSelectTimeout;
 
+	HiResTimePointAtm							m_responseThreadLastTick;
+	HiResDuration								m_responseThreadWdThreshold;
+	HiResDuration								m_responseQueueTimeout;
+	
 	std::atomic_bool							m_requestThreadIsOn;
 	std::atomic_bool							m_responseThreadIsOn;
 
+	HiResDuration								m_requestTimeout;
 
-	DEFINE_PROPERTY ( std::chrono::milliseconds, watchdogCheckPeriod)
-	DEFINE_PROPERTY ( std::chrono::milliseconds, requestCheckPeriod)
-	DEFINE_PROPERTY ( std::chrono::milliseconds, responseCheckPeriod)
+
+	DEFINE_PROPERTY ( std::chrono::milliseconds, watchdogCheckPeriod )
+	//DEFINE_PROPERTY ( std::chrono::milliseconds, requestCheckPeriod )
+	//DEFINE_PROPERTY ( std::chrono::milliseconds, responseCheckPeriod )
 
 };

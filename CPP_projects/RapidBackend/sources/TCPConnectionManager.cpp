@@ -45,9 +45,15 @@ TCPConnectionManager::TCPConnectionManager()
 	: m_listenSocket( INVALID_SOCKET )
 	, m_listenPort( DEFAULT_PORT )
 	, m_watchdogCheckPeriod( 5s )
-	, m_requestCheckPeriod( 2s )
-	, m_responseCheckPeriod( 2s )
+	, m_requestTimeout( 2s )
+
+	, m_requestThreadWdThreshold( 1s )
+	, m_requestSelectTimeout( 600ms )
 	, m_requestThreadIsOn( false )
+
+	, m_responseThreadWdThreshold( 1s )
+	, m_responseQueueTimeout( 600ms )
+	, m_responseThreadIsOn( false )
 {
 }
 
@@ -56,7 +62,7 @@ void TCPConnectionManager::init( const ConfigHelperPtr & config )
 	m_config = config;
 
 	std::string listenPort;
-	if( m_config->getOptional("port", listenPort))
+	if( m_config->getOptional( "port", listenPort ) )
 	{
 		m_listenPort = listenPort;
 		INFO_LOG_F << "Setting listen port: " << m_listenPort;
@@ -65,6 +71,18 @@ void TCPConnectionManager::init( const ConfigHelperPtr & config )
 	{
 		WARN_LOG_F << "No listen port in config. Default value is " << m_listenPort;
 	} 
+
+	int timeoutSec;
+	if( m_config->getOptional( "timeout", timeoutSec ) )
+	{
+		m_requestTimeout = std::chrono::seconds( timeoutSec );
+		INFO_LOG_F << "Setting timeout: " << timeoutSec << " sec";
+	}
+	else
+	{
+		WARN_LOG_F << "No timeout in config. Default value is " << m_requestTimeout.count() << " sec";
+	} 
+
 	
 }
 
@@ -149,9 +167,6 @@ void TCPConnectionManager::restartRequestJob()
 void TCPConnectionManager::startRequestThread()
 {
 	INFO_LOG_F << "Starting request thread";
-	
-	// let's start the new one
-	m_nextRequestThreadTick = m_syncPoint.load() + m_requestCheckPeriod;
 
 	m_requestsThread.reset( new StoppableThread( [this] ( StopFlagPtr forceStop ) { waitForRequestJob( forceStop ); } ) );
 	m_requestsThread->start();
@@ -184,9 +199,6 @@ void TCPConnectionManager::startResponseThread()
 {
 	INFO_LOG_F << "Starting response thread";
 	
-	// let's start the new one
-	m_nextResponseThreadTick = m_syncPoint.load() + m_responseCheckPeriod;
-
 	m_responsesThread.reset( new StoppableThread( [this] ( StopFlagPtr forceStop ) { waitForResponseJob( forceStop ); } ) );
 	m_responsesThread->start();
 
@@ -306,6 +318,10 @@ void TCPConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 
 	timeval selectTimeout;
 
+	m_requestThreadLastTick = HiResClock::now();
+
+	HiResTimePoint tpStart = HiResClock::now();
+
 	try
 	{
 		initListenSocket();
@@ -315,15 +331,11 @@ void TCPConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 
 			///// ------------- tick issues ----------------
 
-			// tick to let know that the thread is alive
-			HiResTimePoint tpNow = HiResClock::now();
+			
+			//HiResTimePoint tpNow = HiResClock::now();
 
-			// timeout should fit m_nextRequestThreadTick
-
-			std::chrono::milliseconds timeToSleep = CastToMS( m_nextRequestThreadTick.load() - tpNow );
-
-			selectTimeout.tv_sec = static_cast<long>( CastToSec( timeToSleep ).count() );
-			selectTimeout.tv_usec = CastToUS( timeToSleep ).count() % 1000000;
+			selectTimeout.tv_sec = static_cast<long>( CastToSec( m_requestSelectTimeout ).count() );
+			selectTimeout.tv_usec = CastToUS( m_requestSelectTimeout ).count() % 1000000;
 					   			 
 
 
@@ -332,15 +344,24 @@ void TCPConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 			read_fd_set = m_active_fd_set;
 
 			int retVal = select( FD_SETSIZE, &read_fd_set, NULL, NULL, &selectTimeout );
+
+			// tick watchdog ( we're alive! )
+			m_requestThreadLastTick = HiResClock::now();
+
+
 			if ( retVal < 0 )
 			{
 				ERROR_LOG_F << "select() failed with error: " << WSAGetLastError();
 			}
+			else if ( retVal == 0 )
+			{
+				continue;
+			}
 
-			int readySockets = ( FD_SETSIZE < retVal ) ? FD_SETSIZE : retVal;
+			int NReadySockets = ( FD_SETSIZE < retVal ) ? FD_SETSIZE : retVal;
 
 			// Service all the sockets with input pending.
-			for ( int i = 0; i < readySockets; ++i )
+			for ( int i = 0; i < NReadySockets; ++i )
 			{
 				SOCKET sock = read_fd_set.fd_array[i];
 
@@ -365,9 +386,8 @@ void TCPConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 
 						// Data arriving on an already-connected socket. 
 						std::vector<char> vecRequest;
-						int res = readRequest( sock, vecRequest );
-
-						if ( res )
+		
+						if ( readRequest( sock, vecRequest ) )
 						{
 							INFO_LOG_F << "Closing socket [ socket = " << sock << " ]";
 
@@ -382,10 +402,8 @@ void TCPConnectionManager::waitForRequestJob( StopFlagPtr forceStop )
 				}
 			}
 
-			if ( m_nextRequestThreadTick.load() <= HiResClock::now() + 50ms )
-			{
-				m_nextRequestThreadTick = m_nextRequestThreadTick.load() + m_requestCheckPeriod;
-			}
+			// tick watchdog
+			m_requestThreadLastTick = HiResClock::now();
 		}
 
 		INFO_LOG_F << "Request thread was forced to terminate [forceStop]";
@@ -477,6 +495,7 @@ void TCPConnectionManager::addClientSocket( SOCKET clientSocket )
 {
 	FD_SET( clientSocket, &m_active_fd_set );
 
+	// TODO : remove after test
 	//m_clientSockets.push_back( clientSocket );
 	m_clientSockets.add( clientSocket );
 }
@@ -491,6 +510,7 @@ void TCPConnectionManager::closeClientSocket( SOCKET clientSocket )
 {
 	FD_CLR( clientSocket, &m_active_fd_set );
 
+	// TODO : remove after test
 	//auto it = std::find( m_clientSockets.begin(), m_clientSockets.end(), clientSocket );
 	//
 	//if ( it == m_clientSockets.end() )
@@ -508,7 +528,7 @@ void TCPConnectionManager::closeClientSocket( SOCKET clientSocket )
 
 void TCPConnectionManager::closeClientsSockets()
 {
-	for ( auto it : m_clientSockets )
+	for ( auto && it : m_clientSockets )
 	{
 		closesocket( it.first );
 	}
@@ -522,20 +542,19 @@ void TCPConnectionManager::waitForResponseJob( StopFlagPtr forceStop )
 		return;
 	}
 
+	m_responseThreadLastTick = HiResClock::now();
+
 	try
 	{
 		while ( *forceStop == false )
 		{
-			///// ------------- tick issues ----------------
+			///// ------------- watchdog tick issues ----------------
 
 			// tick to let know that the thread is alive
-			HiResTimePoint tpNow = HiResClock::now();
+			//HiResTimePoint tpNow = HiResClock::now();
 
 			//SpamLogHiResTP( __FUNCTION__ "\t", m_nextResponseThreadTick.load() );			
 			
-			// timeout should fit m_nextRequestThreadTick
-			std::chrono::milliseconds timeToSleep = CastToMS( m_nextResponseThreadTick.load() - tpNow );
-
 
 			///// ------------- essential job issues ----------------
 
@@ -543,7 +562,7 @@ void TCPConnectionManager::waitForResponseJob( StopFlagPtr forceStop )
 			SOCKET sendSocket;
 
 			// waiting while the next response will be ready
-			m_getResponseCallback( sendSocket, response, timeToSleep );
+			m_getResponseCallback( sendSocket, response, CastToMS( m_responseQueueTimeout ) );
 
 			if ( response != nullptr )
 			{
@@ -572,10 +591,7 @@ void TCPConnectionManager::waitForResponseJob( StopFlagPtr forceStop )
 				m_onResponseSentCallback( response->id );
 			}
 
-			if ( m_nextResponseThreadTick.load() <= HiResClock::now() + 50ms )
-			{
-				m_nextResponseThreadTick = m_nextResponseThreadTick.load() + m_responseCheckPeriod;
-			}
+			m_responseThreadLastTick = HiResClock::now();
 		}
 
 		INFO_LOG_F << "Response thread was forced to terminate [forceStop]";
@@ -600,34 +616,35 @@ void TCPConnectionManager::watchdogThreadFunction( StopFlagPtr forceStop )
 
 	while ( !( *forceStop ) )
 	{
-		std::unique_lock<std::mutex> lock( mut );
-
 		// sleeping the rest of m_watchdogCheckPeriod
 		// this is necessary to be sure that watchdog period is exactly m_watchdogCheckPeriod 
 		
+		std::unique_lock<std::mutex> lock( mut );
 		cv.wait_for( lock, CastToMS( m_syncPoint.load() - HiResClock::now() ) );
+
 		if ( *forceStop )
 			break;
 
-		tpNow = HiResClock::now();
+		SpamLogHiResTP( __FUNCTION__ "\t", HiResClock::now() );			
 
-
-		if (  m_requestThreadIsOn && ( m_nextRequestThreadTick.load() < tpNow - 50ms) ) 
+		if (  m_requestThreadIsOn && 
+			( std::chrono::duration_cast< std::chrono::milliseconds >( HiResClock::now() - m_requestThreadLastTick.load() ) > m_requestThreadWdThreshold ) ) 
 		{
-			ERROR_LOG_F << "Request thread is down. Restarting request and response threads";
+			ERROR_LOG_F << "Request thread is down. Restarting request and response threads" 
+				<< " " << ( std::chrono::duration_cast< std::chrono::milliseconds >( HiResClock::now() - m_requestThreadLastTick.load() ) ).count();
 			restartAsync();
 		}
 
-		if ( m_responseThreadIsOn && ( m_nextResponseThreadTick.load() < tpNow - 50ms ) )
+		SPAM_LOG_F << "#1 [" << std::this_thread::get_id() << "]";
+
+		if ( m_responseThreadIsOn && 
+			( std::chrono::duration_cast< std::chrono::milliseconds >( HiResClock::now() - m_responseThreadLastTick.load() ) > m_responseThreadWdThreshold ) ) 
 		{
 			ERROR_LOG_F << "Response thread is down. Restarting response thread";
 			restartResponseAsync();
 		}
 		
-		if ( m_syncPoint.load() <= HiResClock::now() + 50ms )
-		{
-			m_syncPoint.store( m_syncPoint.load() + m_watchdogCheckPeriod );
-		}
+		m_syncPoint.store( m_syncPoint.load() + m_watchdogCheckPeriod );
 	}
 
 	INFO_LOG_F << "Watchdog thread was forced to terminate [forceStop]";
